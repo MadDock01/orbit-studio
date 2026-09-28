@@ -11609,8 +11609,10 @@ $.global.CompX_alignLayers_v2_disabled = function (directionModeStr) {
     var engine = null;
     try { engine = $.global.CompXCurveEngine; } catch (eCurve) { compxAuditFallback("HOST_COMPDELTATOPOSITIONDELTA_003", eCurve); }
     if (!engine) { $.global.CompXCurveEngine = {}; engine = $.global.CompXCurveEngine; }
-    if (engine.engineVersion && engine.engineVersion >= 2) return;
-    engine.engineVersion = 2;
+    // Bump this whenever the engine changes: $.global outlives a reload of
+    // the host script, so an older engine would otherwise stay in place.
+    if (engine.engineVersion && engine.engineVersion >= 3) return;
+    engine.engineVersion = 3;
 
     /* ───────────────────────────────────────────────────────────────────
        CompX Curve 2.0 engine — powers the rebuilt Graph Editor 2.0 panel.
@@ -11973,6 +11975,85 @@ $.global.CompX_alignLayers_v2_disabled = function (directionModeStr) {
             pairApplied++;
         }
 
+        /* ── VALUE mode: bake the exact curve, one key per frame ──
+           parts[4] carries the curve already evaluated by the panel (with
+           Invert applied) as evenly spaced y samples from x = 0 to 1, so
+           every model, elastic and bounce included, lands as plain value
+           keyframes the Value Graph shows exactly. Interior keys between
+           the first and last selected key are replaced. */
+        var ySamples = [];
+        if (graphMode === "value") {
+            var yBits = String(parts[4] || "").split(",");
+            for (i = 0; i < yBits.length; i++) { var yv = parseFloat(yBits[i]); if (!isNaN(yv)) ySamples.push(yv); }
+        }
+        function sampleY(x) {
+            var n = ySamples.length - 1;
+            if (n < 1) return x;
+            var f = Math.max(0, Math.min(1, x)) * n;
+            var lo = Math.floor(f), hi = Math.min(n, lo + 1);
+            return ySamples[lo] + (ySamples[hi] - ySamples[lo]) * (f - lo);
+        }
+
+        function applyValueBake(prop) {
+            var vt = prop.propertyValueType;
+            if (vt === PropertyValueType.CUSTOM_VALUE || vt === PropertyValueType.SHAPE) { unsupported++; return; }
+            var range = self.fx20KeyRange(prop);
+            if (!range || range.first === range.last) return;
+            var t1 = prop.keyTime(range.first);
+            var t2 = prop.keyTime(range.last);
+            var duration = t2 - t1;
+            if (duration <= 0) return;
+            var v1 = prop.keyValue(range.first);
+            var v2 = prop.keyValue(range.last);
+            var isArr = (v1 !== undefined && v1.length !== undefined);
+            var spatial = (vt === PropertyValueType.TwoD_SPATIAL || vt === PropertyValueType.ThreeD_SPATIAL);
+
+            // A CompX curve expression would override the baked keys.
+            try { if (String(prop.expression || "").indexOf("// CompX Curve 2.0") === 0) prop.expression = ""; }
+            catch (exprErr) { compxAuditFallback("HOST_VALUEBAKE_EXPR_001", exprErr); }
+
+            var keepIn = prop.keyInInterpolationType(range.first);
+            var keepOut = prop.keyOutInterpolationType(range.last);
+            for (k = range.last - 1; k > range.first; k--) prop.removeKey(k);
+
+            var fd = comp.frameDuration;
+            var frames = Math.round(duration / fd);
+            var made = 0;
+            for (var f = 1; f < frames; f++) {
+                var tt = t1 + f * fd;
+                if (tt >= t2 - fd * 0.25) break;
+                var y = sampleY((tt - t1) / duration), val;
+                if (isArr) { val = []; for (d = 0; d < v1.length; d++) val.push(v1[d] + (v2[d] - v1[d]) * y); }
+                else val = v1 + (v2 - v1) * y;
+                var idx = prop.addKey(tt);
+                prop.setValueAtKey(idx, val);
+                made++;
+            }
+
+            var firstIdx = -1, lastIdx = -1;
+            for (k = 1; k <= prop.numKeys; k++) {
+                if (Math.abs(prop.keyTime(k) - t1) < 0.0001) firstIdx = k;
+                if (Math.abs(prop.keyTime(k) - t2) < 0.0001) lastIdx = k;
+            }
+            if (firstIdx === -1 || lastIdx === -1) return;
+            var zero = spatial ? (v1.length === 3 ? [0, 0, 0] : [0, 0]) : null;
+            for (k = firstIdx; k <= lastIdx; k++) {
+                try {
+                    prop.setInterpolationTypeAtKey(k,
+                        k === firstIdx ? keepIn : KeyframeInterpolationType.LINEAR,
+                        k === lastIdx ? keepOut : KeyframeInterpolationType.LINEAR);
+                } catch (interpErr) { compxAuditFallback("HOST_VALUEBAKE_INTERP_001", interpErr); }
+                // Straight path between the baked positions, no auto-bezier loops.
+                if (spatial && k > firstIdx && k < lastIdx) {
+                    try { prop.setSpatialAutoBezierAtKey(k, false); prop.setSpatialTangentsAtKey(k, zero, zero); }
+                    catch (spErr) { compxAuditFallback("HOST_VALUEBAKE_SPATIAL_001", spErr); }
+                }
+                try { prop.setSelectedAtKey(k, true); } catch (selErr3) { compxAuditFallback("HOST_VALUEBAKE_SELECT_001", selErr3); }
+            }
+            applied += made;
+            pairApplied++;
+        }
+
         /* ── expression writer for procedural models ── */
         function exprBody(t1Idx, t2Idx) {
             var inv = inverted ? "true" : "false";
@@ -12082,7 +12163,8 @@ $.global.CompX_alignLayers_v2_disabled = function (directionModeStr) {
         try {
             for (j = 0; j < props.length; j++) {
                 try {
-                    if (model === "bezier") applyBezierEase(props[j]);
+                    if (graphMode === "value") applyValueBake(props[j]);
+                    else if (model === "bezier") applyBezierEase(props[j]);
                     else if (model === "custom" && graphMode === "bake") applyCustomBake(props[j]);
                     else if (model === "custom") applyExpression(props[j]);
                     else if (model === "steps") applySteps(props[j]);
@@ -12096,10 +12178,15 @@ $.global.CompX_alignLayers_v2_disabled = function (directionModeStr) {
         app.endUndoGroup();
 
         if (pairApplied === 0) {
+            if (unsupported > 0 && graphMode === "value") return "ERR: Paths and custom properties cannot be baked as values. Use SPEED.";
             if (unsupported > 0) return "ERR: That property type only supports the Bezier model.";
+            if (graphMode === "value") return "ERR: Select the first and last keyframe of the move (at least two frames apart).";
             return model === "bezier"
                 ? "ERR: Select at least two adjacent keyframes on a property."
                 : "ERR: Select two or more keyframes to shape between.";
+        }
+        if (graphMode === "value") {
+            return "SUCCESS: Curve baked into " + applied + " value key" + (applied === 1 ? "" : "s") + " on " + pairApplied + " propert" + (pairApplied === 1 ? "y" : "ies") + ".";
         }
         if (model === "elastic" || model === "bounce" || model === "wave" || (model === "custom" && graphMode === "expr")) {
             return "SUCCESS: " + model.charAt(0).toUpperCase() + model.slice(1) + " expression driving " + pairApplied + " propert" + (pairApplied === 1 ? "y" : "ies") + ".";
