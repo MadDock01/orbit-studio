@@ -82,7 +82,7 @@
     var updateTimer = null;
 
     var style = read("style", "strip");
-    if (STYLES.join(" ").indexOf(style) < 0) style = "strip";
+    if (STYLES.indexOf(style) < 0) style = "strip";
 
     function say(message, state) {
       if (!status) return;
@@ -93,21 +93,26 @@
     }
 
     // A field that is empty, non-numeric or out of range falls back to its
-    // default rather than sending NaN into a host call.
-    function numberOf(spec) {
+    // default rather than sending NaN into a host call. The field itself is
+    // only rewritten when "tidy" is set (on change/blur, or before a build):
+    // doing it while the user types turned a cleared field or a lone "-"
+    // back into the default under their cursor.
+    function numberOf(spec, tidy) {
       var el = document.getElementById(spec.id);
       if (!el) return spec.def;
       var n = parseFloat(el.value);
       if (!isFinite(n)) n = spec.def;
       n = Math.max(spec.min, Math.min(spec.max, spec.decimals ? n : Math.round(n)));
-      var text = spec.decimals ? String(n) : String(n);
-      if (text !== el.value) el.value = text;
+      if (tidy) {
+        var text = String(n);
+        if (text !== el.value) el.value = text;
+      }
       return n;
     }
 
-    function options() {
+    function options(tidy) {
       var o = {}, i;
-      for (i = 0; i < FIELDS.length; i++) o[FIELDS[i].key] = numberOf(FIELDS[i]);
+      for (i = 0; i < FIELDS.length; i++) o[FIELDS[i].key] = numberOf(FIELDS[i], tidy);
       // Path uses one field for how hard a card turns to follow the curve,
       // and it lands on the same Tilt slider the other looks drive.
       if (style === "path") o.tilt = o.tiltPath;
@@ -201,15 +206,19 @@
         if (!parsed || !parsed.success) return;
         markRig(parsed.exists === true);
         if (parsed.exists) {
-          if (parsed.style && STYLES.join(" ").indexOf(parsed.style) >= 0 && parsed.style !== style) {
+          if (parsed.style && STYLES.indexOf(parsed.style) >= 0 && parsed.style !== style) {
             setStyle(parsed.style, false);
           }
-          var i, spec, el;
+          var i, spec, el, key;
           for (i = 0; i < FIELDS.length; i++) {
             spec = FIELDS[i];
+            // One Tilt slider on the rig: on a path it is the FOLLOW field.
+            key = spec.key;
+            if (spec.key === "tilt" && parsed.style === "path") continue;
+            if (spec.key === "tiltPath") key = parsed.style === "path" ? "tilt" : "";
             el = document.getElementById(spec.id);
-            if (el && parsed[spec.key] !== undefined && parsed[spec.key] !== null) {
-              el.value = String(parsed[spec.key]);
+            if (el && key && parsed[key] !== undefined && parsed[key] !== null) {
+              el.value = String(Math.round(Number(parsed[key]) * 100) / 100);
               write(spec.id, el.value);
             }
           }
@@ -230,11 +239,15 @@
       el = document.getElementById(spec.id);
       if (!el) continue;
       el.value = read(spec.id, String(spec.def));
-      numberOf(spec);
+      numberOf(spec, true);
       (function (s, input) {
         input.addEventListener("input", function () {
           write(s.id, input.value);
           queueUpdate();
+        });
+        input.addEventListener("change", function () {
+          numberOf(s, true);
+          write(s.id, input.value);
         });
       })(spec, el);
     }
@@ -260,7 +273,7 @@
 
     if (buildBtn) {
       buildBtn.addEventListener("click", function () {
-        call("ae_carouselBuild(" + argOf(style) + "," + argOf(JSON.stringify(options())) + ")",
+        call("ae_carouselBuild(" + argOf(style) + "," + argOf(JSON.stringify(options(true))) + ")",
           "Building…",
           function (parsed) { if (parsed && parsed.success) markRig(true); });
       });
@@ -291,13 +304,14 @@
 
     function gridField(id) {
       var spec = gridSpec(id);
-      return spec ? numberOf(spec) : 0;
+      return spec ? numberOf(spec, true) : 0;
     }
 
     var gridModes = document.getElementById("gridModes");
     var gridRect = document.getElementById("gridRectFields");
     var gridRound = document.getElementById("gridRoundFields");
     var gridMode = read(GRID_MODE_KEY, "rect");
+    if (["rect", "radial", "sphere"].indexOf(gridMode) < 0) gridMode = "rect";
 
     // Columns and rows mean nothing to a ring or a sphere, and a single
     // count means nothing to a rectangle, so only the relevant row shows.
@@ -323,7 +337,7 @@
       el = document.getElementById(spec.id);
       if (!el) continue;
       el.value = read(spec.id, String(spec.def));
-      numberOf(spec);
+      numberOf(spec, true);
       (function (s, input) {
         input.addEventListener("input", function () { write(s.id, input.value); });
       })(spec, el);
