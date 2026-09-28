@@ -44,6 +44,16 @@
   var PEAK_CACHE_CAP = 400;
   var ONESHOT_MAX = 2;        // seconds; the One shots / Ambience line
   var ZOOMS = [1, 2, 4, 8, 16];
+  var CLOUD = "@freesound";   // activeFolder value for the Freesound source
+  var FS_SEARCH = "https://freesound.org/apiv2/search/text/";
+  var FS_FIELDS = "id,name,duration,previews,license,username,filesize,type,samplerate,channels,tags,url";
+  var FS_PAGE = 30;
+  var FS_MAX_BYTES = 40 * 1024 * 1024;
+  var LABELS = [
+    { name: "Red", c: "#ff5f6d" }, { name: "Orange", c: "#ffa94d" },
+    { name: "Yellow", c: "#ffe066" }, { name: "Green", c: "#3cff5f" },
+    { name: "Blue", c: "#4dabf7" }, { name: "Purple", c: "#b197fc" }
+  ];
 
   var fsMod = null, pathMod = null, osMod = null;
   try {
@@ -255,9 +265,16 @@
 
       search: document.getElementById("sfxdSearch"),
       searchClear: document.getElementById("sfxdSearchClear"),
+      tabs: document.getElementById("sfxdTabs"),
       filters: document.getElementById("sfxdFilters"),
       favCount: document.getElementById("sfxdFavCount"),
       density: document.getElementById("sfxdDensity"),
+      labelFilter: document.getElementById("sfxdLabelFilter"),
+      resizer: document.getElementById("sfxdResizer"),
+      body: panel.querySelector(".sfxd-body"),
+      lockPitch: document.getElementById("sfxdLockPitch"),
+      restoreDropped: document.getElementById("sfxdRestoreDropped"),
+      fsKey: document.getElementById("sfxdFsKey"),
       count: document.getElementById("sfxdCount"),
       sort: document.getElementById("sfxdSort"),
       results: document.getElementById("sfxdResults"),
@@ -307,6 +324,19 @@
     // ---------- state ----------
     var folders = readJson("folders", []);          // [{path, name}]
     var favs = readJson("favs", {});                // path -> 1
+    var labels = readJson("labels", {});            // path -> index into LABELS
+    var pins = readJson("pins", {});                // path -> time it was pinned
+    var dropped = readJson("dropped", {});          // path -> 1, removed from the index (file kept)
+    var labelFilter = read("labelFilter", "");      // "" is every label
+    var lockPitch = read("lockPitch", "0") === "1";
+    // Freesound: results of the last cloud search, as items shaped like the
+    // local ones (path "freesound:<id>", remote carries the rest).
+    var fsKey = read("fsKey", "");
+    var fsItems = [], fsNext = "", fsQuery = "", fsBusy = false, fsError = "", fsTimer = 0, fsToken = 0;
+    // Search tabs: each keeps its own query and filter chip.
+    var tabs = readJson("tabs", null);
+    if (!tabs || !tabs.length) tabs = [{ q: "", filter: filter }];
+    var tabIdx = Math.min(tabs.length - 1, Math.max(0, Number(read("tabIdx", 0)) || 0));
     var items = [];                                 // the whole index
     var view = [];                                  // what the list is showing
     var activeFolder = read("activeFolder", "");    // "" is every folder
@@ -406,7 +436,8 @@
         folders = kept;
         writeJson("folders", folders);
       }
-      items = next;
+      items = next.filter(function (it) { return !dropped[it.path]; });
+      paintDropped();
       paintFolders();
       render();
       if (!quiet) {
@@ -478,6 +509,11 @@
           '<span class="sfxd-fcount">' + (counts[f.path] || 0) + "</span>" +
           '<span class="sfxd-fdrop" role="button" tabindex="0" data-sfxd-drop="' + escapeAttr(f.path) + '" title="Stop indexing this folder">✕</span></button>';
       }
+      var cloudOn = activeFolder === CLOUD;
+      html += '<button type="button" class="sfxd-folder sfxd-cloud' + (cloudOn ? " is-on" : "") + '" data-sfxd-folder="' + CLOUD + '" role="option" aria-selected="' + cloudOn + '" title="Freesound cloud library">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18.5h10a4 4 0 0 0 .6-8A5.5 5.5 0 0 0 7 9.2a4.7 4.7 0 0 0 0 9.3Z"/></svg>' +
+        '<span class="sfxd-fname"><b>Freesound</b><small>' + (fsKey ? "Cloud library" : "Add an API key in Settings") + "</small></span>" +
+        (cloudOn && fsItems.length ? '<span class="sfxd-fcount">' + fsItems.length + "</span>" : "") + "</button>";
       el.folders.innerHTML = html;
 
       if (el.sourceCount) {
@@ -512,8 +548,9 @@
         if (!btn) return;
         activeFolder = btn.getAttribute("data-sfxd-folder");
         write("activeFolder", activeFolder);
+        paintSearchMode();
         paintFolders();
-        render();
+        if (activeFolder === CLOUD) fsSearch(false); else render();
       });
     }
 
@@ -588,13 +625,17 @@
       if (el.searchClear) el.searchClear.hidden = !query;
 
       var out = [], i, it;
-      for (i = 0; i < items.length; i++) {
-        it = items[i];
-        if (activeFolder && it.root !== activeFolder) continue;
+      var cloud = activeFolder === CLOUD;
+      var pool = cloud ? fsItems : items;
+      for (i = 0; i < pool.length; i++) {
+        it = pool[i];
+        if (cloud && dropped[it.path]) continue;
+        if (!cloud && activeFolder && it.root !== activeFolder) continue;
         if (filter === "fav" && !favs[it.path]) continue;
         if (filter === "oneshot" && !(it.duration >= 0 && it.duration <= ONESHOT_MAX)) continue;
         if (filter === "ambience" && !(it.duration > ONESHOT_MAX)) continue;
-        if (query) {
+        if (labelFilter !== "" && String(labels[it.path]) !== labelFilter) continue;
+        if (query && !cloud) {
           it._score = score(it, query);
           if (it._score < 0) continue;
         } else {
@@ -604,6 +645,12 @@
       }
 
       out.sort(function (a, b) {
+        var pa = pins[a.path] || 0, pb = pins[b.path] || 0;
+        if (pa || pb) {
+          if (!pa) return 1;
+          if (!pb) return -1;
+          return pa - pb;       // pinned first, in the order they were pinned
+        }
         if (sortBy === "name") return a.name.localeCompare(b.name);
         if (sortBy === "size") return b.size - a.size;
         if (sortBy === "duration") {
@@ -611,6 +658,7 @@
           var db = b.duration < 0 ? Infinity : b.duration;
           return da - db;
         }
+        if (cloud) return (a._rank || 0) - (b._rank || 0);   // Freesound's own relevance
         if (query && b._score !== a._score) return b._score - a._score;
         return a.name.localeCompare(b.name);
       });
@@ -625,13 +673,28 @@
       for (k in favs) if (favs[k]) favTotal++;
       if (el.favCount) el.favCount.textContent = favTotal;
 
-      if (el.count) {
+      var cloud = activeFolder === CLOUD;
+      if (el.count && cloud) {
+        el.count.textContent = fsBusy ? "Searching Freesound…"
+          : view.length ? view.length + " Freesound result" + (view.length === 1 ? "" : "s")
+          : "Freesound";
+      } else if (el.count) {
         el.count.textContent = !folders.length ? "No folders yet"
           : view.length ? view.length + " result" + (view.length === 1 ? "" : "s")
           : "Nothing matched";
       }
 
       el.results.classList.toggle("is-compact", compact);
+
+      if (!view.length && cloud) {
+        el.results.innerHTML = '<div class="sfxd-empty">' + escapeHtml(
+          !fsKey ? "Add your Freesound API key in Settings to search the cloud library."
+            : fsBusy ? "Searching Freesound…"
+            : fsError ? fsError
+            : !query || query.length < 2 ? "Type at least two characters to search Freesound."
+            : "Freesound found nothing for “" + query + "”.") + "</div>";
+        return;
+      }
 
       if (!view.length) {
         el.results.innerHTML = '<div class="sfxd-empty">' +
@@ -653,21 +716,30 @@
           '<div class="sfxd-row' + (on ? " is-on" : "") + '" data-sfxd-i="' + i + '" role="option" tabindex="0" aria-selected="' + (on ? "true" : "false") + '" title="' + escapeAttr(it.path) + '">' +
           '<button type="button" class="sfxd-rowplay" data-sfxd-play="' + i + '" title="Audition this sound" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg></button>' +
           '<span class="sfxd-rowmid">' +
-          '<span class="sfxd-rowname"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M8 10v4M12 8.5v7M16 10.5v3"/></svg><b>' + escapeHtml(it.name) + "</b></span>" +
+          '<span class="sfxd-rowname">' +
+          (labels[it.path] != null && LABELS[labels[it.path]] ? '<i class="sfxd-labeldot" style="--sfxd-label:' + LABELS[labels[it.path]].c + '" title="' + LABELS[labels[it.path]].name + ' label"></i>' : "") +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M8 10v4M12 8.5v7M16 10.5v3"/></svg><b>' + escapeHtml(it.name) + "</b>" +
+          (pins[it.path] ? '<svg class="sfxd-pinmark" viewBox="0 0 24 24" aria-label="Pinned to top"><path d="M9 3.5h6l-1 5 3.5 3.5h-11L10 8.5Z"/><path d="M12 12v8.5"/></svg>' : "") +
+          "</span>" +
           '<canvas class="sfxd-rowwave" data-sfxd-wave="' + i + '"></canvas>' +
           "</span>" +
           '<span class="sfxd-rowinfo">' +
           '<span class="sfxd-rowdur' + (known ? "" : " is-unknown") + '">' + (known ? fmtTime(it.duration) : "—:—") + "</span>" +
-          '<span class="sfxd-rowmeta">' + escapeHtml(it.ext) + " · " + fmtSize(it.size) + "</span>" +
+          '<span class="sfxd-rowmeta">' + escapeHtml(it.ext) + " · " +
+          (it.remote ? escapeHtml(it.remote.license) + " · " + escapeHtml(it.remote.user) : fmtSize(it.size)) + "</span>" +
           "</span>" +
           '<span class="sfxd-rowend">' +
-          (query ? '<span class="sfxd-score">' + it._score + "%</span>" : "") +
+          (query && !it.remote ? '<span class="sfxd-score">' + it._score + "%</span>" : "") +
           '<button type="button" class="sfxd-fav' + (favs[it.path] ? " is-on" : "") + '" data-sfxd-fav="' + i + '" title="' + (favs[it.path] ? "Remove from favourites" : "Add to favourites") + '" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7-4.3-7-9A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.7-7 9-7 9Z"/></svg></button>' +
           "</span></div>"
         );
       }
       if (view.length > cap) {
         html.push('<div class="sfxd-empty">' + (view.length - cap) + " more — narrow the search to see them.</div>");
+      }
+      if (cloud && fsNext) {
+        html.push('<div class="sfxd-empty"><button type="button" class="sfxd-mini" id="sfxdFsMore"' + (fsBusy ? " disabled" : "") + ">" +
+          (fsBusy ? "LOADING…" : "MORE FREESOUND RESULTS") + "</button></div>");
       }
       el.results.innerHTML = html.join("");
       queueRowWaves();
@@ -721,6 +793,7 @@
         if (!it) continue;
         if (peakCache[it.path]) { drawRowWave(c, peakCache[it.path]); continue; }
         drawRowWave(c, null);
+        if (it.remote) continue;   // no download just to draw a thumbnail
         if (it.size > PEAK_FILE_CAP || !fsMod) continue;
         observeRow(c, it);
       }
@@ -774,6 +847,16 @@
 
     function decodeFile(item, done) {
       var c = ctx();
+      if (item && item.remote) {
+        if (!c) { done(null); return; }
+        fetchRemote(item, function (arr) {
+          if (!arr) { done(null); return; }
+          try {
+            c.decodeAudioData(arr, function (buf) { done(buf); }, function () { done(null); });
+          } catch (e) { done(null); }
+        });
+        return;
+      }
       if (!c || !fsMod) { done(null); return; }
       var data;
       try { data = fsMod.readFileSync(item.path); } catch (e) { done(null); return; }
@@ -819,9 +902,87 @@
       if (ev.target && ev.target.id === "sfxdImportOld") importOldLibrary();
     });
 
-    if (el.search) el.search.addEventListener("input", render);
+    // ---------- search tabs ----------
+    var MAX_TABS = 8;
+    function saveTabs() { writeJson("tabs", tabs); write("tabIdx", tabIdx); }
+
+    function paintTabs() {
+      if (!el.tabs) return;
+      var html = "";
+      for (var i = 0; i < tabs.length; i++) {
+        var on = i === tabIdx;
+        var label = tabs[i].q ? tabs[i].q : (i === 0 ? "All sounds" : "New search");
+        html += '<span class="sfxd-tab' + (on ? " is-on" : "") + '">' +
+          '<button type="button" role="tab" class="sfxd-tabbtn" data-sfxd-tab="' + i + '" aria-selected="' + on + '" tabindex="' + (on ? "0" : "-1") + '" title="' + escapeAttr(label) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>' +
+          "<span>" + escapeHtml(label) + "</span></button>" +
+          (tabs.length > 1 ? '<button type="button" class="sfxd-tabclose" data-sfxd-tabclose="' + i + '" title="Close search" aria-label="Close search">✕</button>' : "") +
+          "</span>";
+      }
+      html += '<button type="button" class="sfxd-tabnew" id="sfxdTabNew" title="Open a new search tab" aria-label="New search"' + (tabs.length >= MAX_TABS ? " disabled" : "") + '>+</button>';
+      el.tabs.innerHTML = html;
+    }
+
+    function useTab(i, focus) {
+      tabIdx = Math.max(0, Math.min(tabs.length - 1, i));
+      var t = tabs[tabIdx];
+      if (el.search) el.search.value = t.q || "";
+      filter = t.filter || "all";
+      write("filter", filter);
+      saveTabs();
+      paintTabs();
+      paintFilters();
+      if (activeFolder === CLOUD) fsSearch(false); else render();
+      if (focus && el.search) el.search.focus();
+    }
+
+    if (el.tabs) {
+      el.tabs.addEventListener("click", function (ev) {
+        var close = ev.target.closest("[data-sfxd-tabclose]");
+        if (close) {
+          var ci = Number(close.getAttribute("data-sfxd-tabclose"));
+          tabs.splice(ci, 1);
+          if (tabIdx > ci || tabIdx >= tabs.length) tabIdx = Math.max(0, tabIdx - 1);
+          useTab(tabIdx);
+          return;
+        }
+        if (ev.target.closest("#sfxdTabNew")) {
+          if (tabs.length >= MAX_TABS) return;
+          tabs.push({ q: "", filter: "all" });
+          useTab(tabs.length - 1, true);
+          return;
+        }
+        var b = ev.target.closest("[data-sfxd-tab]");
+        if (b) useTab(Number(b.getAttribute("data-sfxd-tab")));
+      });
+      el.tabs.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        if (!ev.target.closest("[data-sfxd-tab]")) return;
+        ev.preventDefault();
+        useTab((tabIdx + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length);
+        var on = el.tabs.querySelector('[data-sfxd-tab="' + tabIdx + '"]');
+        if (on) on.focus();
+      });
+    }
+
+    var tabNameTimer = 0;
+    if (el.search) el.search.addEventListener("input", function () {
+      tabs[tabIdx].q = el.search.value.trim();
+      saveTabs();
+      clearTimeout(tabNameTimer);
+      tabNameTimer = setTimeout(paintTabs, 250);
+      if (activeFolder === CLOUD) scheduleFsSearch(); else render();
+    });
     if (el.searchClear) el.searchClear.addEventListener("click", function () {
-      el.search.value = ""; render(); el.search.focus();
+      el.search.value = ""; tabs[tabIdx].q = ""; saveTabs(); paintTabs(); render(); el.search.focus();
+    });
+
+    // Ctrl/Cmd+K jumps to the search while the workspace is on screen.
+    document.addEventListener("keydown", function (ev) {
+      if (!(ev.ctrlKey || ev.metaKey) || String(ev.key).toLowerCase() !== "k") return;
+      if (!panel.offsetParent) return;
+      ev.preventDefault();
+      if (el.search) { el.search.focus(); el.search.select(); }
     });
 
     if (el.filters) el.filters.addEventListener("click", function (ev) {
@@ -829,6 +990,8 @@
       if (!chip) return;
       filter = chip.getAttribute("data-sfxd-filter");
       write("filter", filter);
+      tabs[tabIdx].filter = filter;
+      saveTabs();
       paintFilters();
       render();
     });
@@ -853,6 +1016,440 @@
       el.density.setAttribute("aria-pressed", compact ? "true" : "false");
       paintResults();
     });
+
+    // ---------- Freesound ----------
+    // Search goes to the public API with the user's key; audition and insert
+    // use the HQ preview (an MP3), which needs no OAuth. Everything fetched is
+    // kept in Documents/CompX Freesound so the project never points at a temp
+    // file, and each download adds its credit line to CREDITS.txt there.
+    var httpsMod = null;
+    try { httpsMod = (typeof require !== "undefined" ? require : window.require)("https"); } catch (e) { httpsMod = null; }
+    if (httpsMod && typeof httpsMod.get !== "function") httpsMod = null;
+
+    function trustedFsUrl(u) {
+      return /^https:\/\/([a-z0-9-]+\.)*freesound\.org\//i.test(String(u || ""));
+    }
+
+    function licenseShort(url) {
+      var u = String(url || "").toLowerCase();
+      if (u.indexOf("publicdomain/zero") >= 0) return "CC0";
+      if (u.indexOf("sampling+") >= 0) return "Sampling+";
+      if (u.indexOf("by-nc") >= 0) return "CC BY-NC";
+      if (u.indexOf("/by/") >= 0 || u.indexOf("by/3") >= 0 || u.indexOf("by/4") >= 0) return "CC BY";
+      return "See license";
+    }
+
+    // GET over Node https when CEP has it (no CORS, redirects checked here),
+    // otherwise fetch. asBinary returns an ArrayBuffer, else parsed JSON.
+    function httpGet(url, asBinary, done) {
+      var finished = false;
+      function end(err, val) { if (finished) return; finished = true; done(err, val); }
+      if (!trustedFsUrl(url)) { end("Untrusted remote audio URL."); return; }
+      if (httpsMod) {
+        (function hop(u, left) {
+          if (!trustedFsUrl(u)) { end("Freesound redirected to an untrusted download address."); return; }
+          var req = httpsMod.get(u, { headers: { "User-Agent": "CompX-Orbit-Studio" } }, function (res) {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              res.resume();
+              if (left <= 0) { end("Freesound redirected the download too many times."); return; }
+              hop(String(res.headers.location).indexOf("http") === 0 ? res.headers.location : "https://freesound.org" + res.headers.location, left - 1);
+              return;
+            }
+            if (res.statusCode === 401 || res.statusCode === 403) { res.resume(); end("Freesound rejected the API key. Check it in Settings."); return; }
+            if (res.statusCode === 429) { res.resume(); end("Freesound request limit reached. Please try again later."); return; }
+            if (res.statusCode !== 200) { res.resume(); end("Freesound answered " + res.statusCode + "."); return; }
+            var chunks = [], total = 0;
+            res.on("data", function (d) {
+              total += d.length;
+              if (total > FS_MAX_BYTES) { req.abort(); end("This sound is too large to download safely."); return; }
+              chunks.push(d);
+            });
+            res.on("end", function () {
+              var buf = Buffer.concat(chunks);
+              if (asBinary) end(null, buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+              else { try { end(null, JSON.parse(buf.toString("utf8"))); } catch (e) { end("Freesound search failed."); } }
+            });
+          });
+          req.on("error", function () { end("Freesound could not be reached."); });
+          req.setTimeout(20000, function () { req.abort(); end(asBinary ? "The Freesound download timed out." : "The Freesound search timed out."); });
+        })(url, 4);
+        return;
+      }
+      if (!window.fetch) { end("CEP HTTPS is unavailable."); return; }
+      window.fetch(url).then(function (res) {
+        if (res.url && !trustedFsUrl(res.url)) throw "Freesound redirected to an untrusted download address.";
+        if (res.status === 401 || res.status === 403) throw "Freesound rejected the API key. Check it in Settings.";
+        if (res.status === 429) throw "Freesound request limit reached. Please try again later.";
+        if (!res.ok) throw "Freesound answered " + res.status + ".";
+        return asBinary ? res.arrayBuffer() : res.json();
+      }).then(function (v) {
+        if (asBinary && v && v.byteLength > FS_MAX_BYTES) { end("This sound is too large to download safely."); return; }
+        end(null, v);
+      }, function (e) {
+        end(typeof e === "string" ? e : (asBinary ? "The Freesound download failed." : "Freesound search failed."));
+      });
+    }
+
+    function toItem(r, rank) {
+      var prev = r.previews || {};
+      var safe = String(r.name || ("freesound " + r.id)).replace(/\.[a-z0-9]{2,4}$/i, "");
+      return {
+        path: "freesound:" + r.id,
+        name: safe,
+        file: safe,
+        ext: "MP3",
+        size: Number(r.filesize) || 0,
+        duration: typeof r.duration === "number" ? r.duration : -1,
+        rootName: "Freesound",
+        _rank: rank,
+        remote: {
+          id: r.id,
+          preview: prev["preview-hq-mp3"] || prev["preview-lq-mp3"] || "",
+          license: licenseShort(r.license),
+          licenseUrl: r.license || "",
+          user: r.username || "unknown",
+          page: r.url || ("https://freesound.org/s/" + r.id + "/"),
+          tags: (r.tags || []).slice(0, 12)
+        }
+      };
+    }
+
+    function fsSearch(more) {
+      clearTimeout(fsTimer);
+      var q = (el.search && el.search.value || "").trim();
+      if (!more) { fsItems = []; fsNext = ""; fsError = ""; }
+      if (!fsKey || q.length < 2) { fsBusy = false; render(); paintFolders(); return; }
+      var url = more ? fsNext
+        : FS_SEARCH + "?query=" + encodeURIComponent(q) + "&fields=" + FS_FIELDS + "&page_size=" + FS_PAGE;
+      if (!url) return;
+      url += (url.indexOf("?") >= 0 ? "&" : "?") + "token=" + encodeURIComponent(fsKey);
+      var mine = ++fsToken;
+      fsBusy = true; fsQuery = q;
+      render();
+      say(more ? "Loading more Freesound results…" : "Searching Freesound…");
+      httpGet(url, false, function (err, data) {
+        if (mine !== fsToken) return;
+        fsBusy = false;
+        if (err) { fsError = err; say(err, "error"); render(); return; }
+        var list = (data && data.results) || [], base = fsItems.length;
+        for (var i = 0; i < list.length; i++) fsItems.push(toItem(list[i], base + i));
+        fsNext = data && data.next ? String(data.next).replace(/([?&])token=[^&]*&?/, "$1").replace(/[?&]$/, "") : "";
+        say(fsItems.length ? (data.count || fsItems.length) + " Freesound result" + ((data.count || fsItems.length) === 1 ? "" : "s") + " for “" + q + "”." : "Freesound found nothing for “" + q + "”.",
+          fsItems.length ? "ok" : "");
+        render();
+        paintFolders();
+      });
+    }
+
+    function scheduleFsSearch() {
+      clearTimeout(fsTimer);
+      fsTimer = setTimeout(function () { fsSearch(false); }, 450);
+    }
+
+    function fsDir() {
+      if (!fsMod || !pathMod || !osMod) return "";
+      var dir = pathMod.join(osMod.homedir(), "Documents", "CompX Freesound");
+      try { if (!fsMod.existsSync(dir)) fsMod.mkdirSync(dir, { recursive: true }); } catch (e) { return ""; }
+      return dir;
+    }
+
+    function addCredit(dir, item) {
+      try {
+        var file = pathMod.join(dir, "CREDITS.txt");
+        var line = "\"" + item.name + "\" by " + item.remote.user + " — " + item.remote.page + " — " + (item.remote.licenseUrl || item.remote.license);
+        var have = fsMod.existsSync(file) ? String(fsMod.readFileSync(file, "utf8")) : "";
+        if (have.indexOf(item.remote.page) >= 0) return;
+        fsMod.writeFileSync(file, have + (have && have.slice(-1) !== "\n" ? "\n" : "") + line + "\n");
+      } catch (e) { /* credits are a courtesy, never a blocker */ }
+    }
+
+    // Returns the audio as an ArrayBuffer, downloading the preview once and
+    // reading the kept copy after that.
+    function fetchRemote(item, done) {
+      var dir = fsDir();
+      var safe = item.name.replace(/[^A-Za-z0-9_\- ]+/g, "").replace(/\s+/g, "_").slice(0, 48) || "sound";
+      var local = dir ? pathMod.join(dir, item.remote.id + "_" + safe + ".mp3") : "";
+      if (local) {
+        try {
+          if (fsMod.existsSync(local)) {
+            var data = fsMod.readFileSync(local);
+            item.local = local;
+            done(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
+            return;
+          }
+        } catch (e) { /* download it again */ }
+      }
+      if (!item.remote.preview) { say("This Freesound result has no downloadable preview.", "error"); done(null); return; }
+      say("Downloading " + item.name + " from Freesound…");
+      httpGet(item.remote.preview, true, function (err, arr) {
+        if (err || !arr || !arr.byteLength) { say(err || "Freesound returned an empty audio file.", "error"); done(null); return; }
+        if (local) {
+          try {
+            fsMod.writeFileSync(local, Buffer.from(new Uint8Array(arr)));
+            item.local = local;
+            item.size = arr.byteLength;
+            addCredit(dir, item);
+          } catch (e) { item.local = ""; }
+        }
+        done(arr);
+      });
+    }
+
+    if (el.results) el.results.addEventListener("click", function (ev) {
+      if (ev.target && ev.target.id === "sfxdFsMore") fsSearch(true);
+    });
+
+    if (el.fsKey) {
+      el.fsKey.value = fsKey;
+      el.fsKey.addEventListener("change", function () {
+        fsKey = el.fsKey.value.trim();
+        write("fsKey", fsKey);
+        paintFolders();
+        if (activeFolder === CLOUD) fsSearch(false);
+        say(fsKey ? "Freesound key saved." : "Freesound key removed.");
+      });
+    }
+
+    function paintSearchMode() {
+      if (!el.search) return;
+      var cloud = activeFolder === CLOUD;
+      el.search.placeholder = cloud ? "Search Freesound…" : "Search local sounds…";
+      el.search.setAttribute("aria-label", cloud ? "Search Freesound" : "Search local sounds");
+    }
+
+    // ---------- context menu ----------
+    // Right-click (or the Menu key / Shift+F10) on a row: favourite, pin to
+    // top, colour label, and remove from the index. The same menu shell
+    // carries the colour-label filter.
+    var menu = document.createElement("div");
+    menu.className = "sfxd-menu";
+    menu.id = "sfxdMenu";
+    menu.setAttribute("role", "menu");
+    menu.hidden = true;
+    panel.appendChild(menu);
+    var menuItem = null, menuReturn = null, menuOpenedAt = 0;
+
+    function swatches(active, attr) {
+      var html = '<div class="sfxd-menu-swatches" role="group" aria-label="Color label">';
+      for (var i = 0; i < LABELS.length; i++) {
+        html += '<button type="button" role="menuitemradio" class="sfxd-swatch' + (String(active) === String(i) ? " is-on" : "") +
+          '" ' + attr + '="' + i + '" style="--sfxd-label:' + LABELS[i].c + '" aria-checked="' + (String(active) === String(i)) +
+          '" title="' + LABELS[i].name + '"></button>';
+      }
+      return html + "</div>";
+    }
+
+    function openMenu(html, x, y, returnTo) {
+      menu.innerHTML = html;
+      menu.hidden = false;
+      menuOpenedAt = Date.now();
+      menuReturn = returnTo || null;
+      var box = panel.getBoundingClientRect();
+      var w = menu.offsetWidth, h = menu.offsetHeight;
+      var left = Math.max(box.left + 4, Math.min(x, box.right - w - 4));
+      var top = Math.max(box.top + 4, Math.min(y, box.bottom - h - 4));
+      menu.style.left = (left - box.left) + "px";
+      menu.style.top = (top - box.top) + "px";
+      var first = menu.querySelector("button");
+      if (first) { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }
+    }
+
+    function closeMenu() {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      menuItem = null;
+      if (el.labelFilter) el.labelFilter.setAttribute("aria-expanded", "false");
+      if (menuReturn && menuReturn.focus) { try { menuReturn.focus(); } catch (e) { /* gone */ } }
+      menuReturn = null;
+    }
+
+    function openRowMenu(item, x, y, row) {
+      menuItem = item;
+      var fav = !!favs[item.path], pinned = !!pins[item.path];
+      openMenu(
+        '<div class="sfxd-menu-title">' + escapeHtml(item.name) + "</div>" +
+        '<button type="button" role="menuitem" data-sfxd-act="play">Preview sound</button>' +
+        '<button type="button" role="menuitem" data-sfxd-act="fav">' + (fav ? "Remove from favorites" : "Add to favorites") + "</button>" +
+        '<button type="button" role="menuitem" data-sfxd-act="pin">' + (pinned ? "Unpin from top" : "Pin to top") + "</button>" +
+        '<div class="sfxd-menu-sep"></div><div class="sfxd-menu-label">Color label</div>' +
+        swatches(labels[item.path], "data-sfxd-label") +
+        (labels[item.path] != null ? '<button type="button" role="menuitem" data-sfxd-act="unlabel">Remove color label</button>' : "") +
+        '<div class="sfxd-menu-sep"></div>' +
+        '<button type="button" role="menuitem" class="is-danger" data-sfxd-act="drop">Remove from index (keeps source file)</button>',
+        x, y, row);
+    }
+
+    function openLabelFilterMenu() {
+      var r = el.labelFilter.getBoundingClientRect();
+      el.labelFilter.setAttribute("aria-expanded", "true");
+      openMenu(
+        '<div class="sfxd-menu-label">Filter by color label</div>' +
+        swatches(labelFilter, "data-sfxd-labelfilter") +
+        '<button type="button" role="menuitem" data-sfxd-act="alllabels">' + (labelFilter === "" ? "✓ " : "") + "All labels</button>",
+        r.right - 170, r.bottom + 4, el.labelFilter);
+    }
+
+    function paintLabelFilter() {
+      if (!el.labelFilter) return;
+      var on = labelFilter !== "" && LABELS[labelFilter];
+      el.labelFilter.classList.toggle("is-on", !!on);
+      el.labelFilter.style.setProperty("--sfxd-label", on ? LABELS[labelFilter].c : "transparent");
+      el.labelFilter.title = on ? "Showing " + LABELS[labelFilter].name + " labels — click to change" : "Filter by color label";
+    }
+
+    function paintDropped() {
+      if (!el.restoreDropped) return;
+      var n = 0, k;
+      for (k in dropped) if (dropped[k]) n++;
+      el.restoreDropped.hidden = n === 0;
+      el.restoreDropped.textContent = "RESTORE " + n + " REMOVED SOUND" + (n === 1 ? "" : "S");
+    }
+
+    menu.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b) return;
+      var lf = b.getAttribute("data-sfxd-labelfilter");
+      if (lf !== null) {
+        labelFilter = labelFilter === lf ? "" : lf;
+        write("labelFilter", labelFilter);
+        paintLabelFilter(); closeMenu(); render();
+        return;
+      }
+      var act = b.getAttribute("data-sfxd-act");
+      if (act === "alllabels") {
+        labelFilter = ""; write("labelFilter", ""); paintLabelFilter(); closeMenu(); render();
+        return;
+      }
+      var it = menuItem;
+      if (!it) { closeMenu(); return; }
+      var lab = b.getAttribute("data-sfxd-label");
+      if (lab !== null) {
+        labels[it.path] = Number(lab);
+        writeJson("labels", labels);
+        closeMenu(); render();
+        return;
+      }
+      if (act === "play") { closeMenu(); select(it, true); return; }
+      if (act === "fav") {
+        if (favs[it.path]) delete favs[it.path]; else favs[it.path] = 1;
+        writeJson("favs", favs);
+      } else if (act === "pin") {
+        if (pins[it.path]) delete pins[it.path]; else pins[it.path] = Date.now();
+        writeJson("pins", pins);
+      } else if (act === "unlabel") {
+        delete labels[it.path];
+        writeJson("labels", labels);
+      } else if (act === "drop") {
+        dropped[it.path] = 1;
+        writeJson("dropped", dropped);
+        items = items.filter(function (x) { return x.path !== it.path; });
+        paintDropped();
+        paintFolders();
+        say("Removed from the search index. The source file was kept.");
+      }
+      closeMenu();
+      render();
+    });
+
+    menu.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") { ev.preventDefault(); closeMenu(); return; }
+      if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+      ev.preventDefault();
+      var list = Array.prototype.slice.call(menu.querySelectorAll("button"));
+      var i = list.indexOf(document.activeElement);
+      i = ev.key === "ArrowDown" ? (i + 1) % list.length : (i - 1 + list.length) % list.length;
+      list[i].focus();
+    });
+
+    document.addEventListener("mousedown", function (ev) {
+      if (!menu.hidden && !menu.contains(ev.target) && ev.target !== el.labelFilter) closeMenu();
+    }, true);
+    window.addEventListener("resize", closeMenu);
+    // A scroll that lands right after opening is the one that brought the row
+    // into view, not the user moving on.
+    if (el.results) el.results.addEventListener("scroll", function () {
+      if (Date.now() - menuOpenedAt > 250) closeMenu();
+    });
+
+    if (el.results) {
+      el.results.addEventListener("contextmenu", function (ev) {
+        var row = ev.target.closest("[data-sfxd-i]");
+        if (!row) return;
+        var it = view[Number(row.getAttribute("data-sfxd-i"))];
+        if (!it) return;
+        ev.preventDefault();
+        openRowMenu(it, ev.clientX, ev.clientY, row);
+      });
+      el.results.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ContextMenu" && !(ev.shiftKey && ev.key === "F10")) return;
+        var row = ev.target.closest && ev.target.closest("[data-sfxd-i]");
+        if (!row) return;
+        var it = view[Number(row.getAttribute("data-sfxd-i"))];
+        if (!it) return;
+        ev.preventDefault();
+        var r = row.getBoundingClientRect();
+        openRowMenu(it, r.left + 24, r.bottom - 4, row);
+      });
+    }
+
+    if (el.labelFilter) el.labelFilter.addEventListener("click", function () {
+      if (!menu.hidden && el.labelFilter.getAttribute("aria-expanded") === "true") closeMenu();
+      else openLabelFilterMenu();
+    });
+
+    if (el.restoreDropped) el.restoreDropped.addEventListener("click", function () {
+      dropped = {};
+      writeJson("dropped", dropped);
+      rescan(true);
+      say("Removed sounds are back in the index.");
+    });
+
+    // ---------- library drawer width ----------
+    // Drag the bar between the folder list and the results, or use the arrow
+    // keys on it. The width is remembered.
+    function setLibWidth(px) {
+      if (!el.body) return;
+      var max = Math.max(160, el.body.clientWidth * 0.55);
+      var w = Math.round(Math.max(120, Math.min(max, px)));
+      el.body.style.setProperty("--sfxd-lib-w", w + "px");
+      if (el.resizer) el.resizer.setAttribute("aria-valuenow", String(w));
+      return w;
+    }
+    var savedLibW = Number(read("libWidth", 0));
+    if (savedLibW) setLibWidth(savedLibW);
+    if (el.resizer && el.body) {
+      el.resizer.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        var lib = el.body.querySelector(".sfxd-lib");
+        var startX = ev.clientX, startW = lib ? lib.getBoundingClientRect().width : 180;
+        el.resizer.classList.add("is-drag");
+        try { el.resizer.setPointerCapture(ev.pointerId); } catch (e) { /* old CEP */ }
+        function move(e) { setLibWidth(startW + e.clientX - startX); }
+        function up() {
+          el.resizer.classList.remove("is-drag");
+          el.resizer.removeEventListener("pointermove", move);
+          el.resizer.removeEventListener("pointerup", up);
+          el.resizer.removeEventListener("pointercancel", up);
+          var w = lib ? Math.round(lib.getBoundingClientRect().width) : 0;
+          if (w) write("libWidth", w);
+          lanePeakCache = {}; queueRowWaves();
+        }
+        el.resizer.addEventListener("pointermove", move);
+        el.resizer.addEventListener("pointerup", up);
+        el.resizer.addEventListener("pointercancel", up);
+      });
+      el.resizer.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        ev.preventDefault();
+        var lib = el.body.querySelector(".sfxd-lib");
+        var w = lib ? lib.getBoundingClientRect().width : 180;
+        write("libWidth", setLibWidth(w + (ev.key === "ArrowRight" ? 1 : -1) * (ev.shiftKey ? 40 : 10)));
+      });
+      el.resizer.addEventListener("dblclick", function () {
+        el.body.style.removeProperty("--sfxd-lib-w");
+        write("libWidth", 0);
+      });
+    }
 
     // ---------- selection ----------
     function select(item, autoPlay) {
@@ -891,9 +1488,12 @@
       if (el.format) el.format.textContent = current.ext || "—";
       if (el.size) el.size.textContent = fmtSize(current.size);
       if (el.length) el.length.textContent = current.duration >= 0 ? fmtTime(current.duration) : "—:—";
-      if (el.source) el.source.textContent = current.rootName || "Local";
+      if (el.source) el.source.textContent = current.remote
+        ? "Freesound · " + current.remote.user + " · " + current.remote.license
+        : (current.rootName || "Local");
+      if (el.source) el.source.title = current.remote ? current.remote.page : "";
       if (el.tags) {
-        var tags = tagsOf(current.file), html = "", i;
+        var tags = current.remote ? current.remote.tags.slice(0, 8) : tagsOf(current.file), html = "", i;
         for (i = 0; i < tags.length; i++) {
           html += '<button type="button" class="sfxd-tag" data-sfxd-tag="' + escapeAttr(tags[i]) + '" title="Search for this word">' + escapeHtml(tags[i]) + "</button>";
         }
@@ -1108,7 +1708,7 @@
       var bits = [];
       if (fx.gain) bits.push((fx.gain > 0 ? "+" : "") + fx.gain.toFixed(1) + " dB");
       if (fx.pitch) bits.push((fx.pitch > 0 ? "+" : "") + fx.pitch + " st");
-      if (Math.abs(fx.speed - 1) > 0.001) bits.push(fx.speed.toFixed(2) + "×");
+      if (Math.abs(fx.speed - 1) > 0.001) bits.push(fx.speed.toFixed(2) + "×" + (lockPitch ? " (pitch locked)" : ""));
       if (el.fxState) el.fxState.textContent = bits.length ? bits.join(" · ") : "Effects";
       if (el.fxBtn) el.fxBtn.classList.toggle("is-active", bits.length > 0);
     }
@@ -1136,6 +1736,20 @@
       readFx();
       say("Effects back to unity.");
     });
+    function paintLockPitch() {
+      if (!el.lockPitch) return;
+      el.lockPitch.classList.toggle("is-on", lockPitch);
+      el.lockPitch.setAttribute("aria-pressed", lockPitch ? "true" : "false");
+      el.lockPitch.title = lockPitch ? "Unlock pitch from speed" : "Lock pitch while changing speed";
+    }
+    if (el.lockPitch) el.lockPitch.addEventListener("click", function () {
+      lockPitch = !lockPitch;
+      write("lockPitch", lockPitch ? "1" : "0");
+      paintLockPitch();
+      readFx();
+      say(lockPitch ? "Pitch locked: speed now changes only the length." : "Pitch follows speed again, like tape.");
+    });
+
     if (el.fxBtn) el.fxBtn.addEventListener("click", function () {
       var open = el.fxRack.hidden;
       el.fxRack.hidden = !open;
@@ -1219,7 +1833,7 @@
     function renderSegment(done) {
       var c = ctx();
       if (!c || !buffer) { done(null); return; }
-      var key = [selA.toFixed(5), selB.toFixed(5), reversed ? 1 : 0, fx.gain, fx.pitch, fx.speed].join("|");
+      var key = [selA.toFixed(5), selB.toFixed(5), reversed ? 1 : 0, fx.gain, fx.pitch, fx.speed, lockPitch ? 1 : 0].join("|");
       if (rendered && renderKey === key) { done(rendered); return; }
 
       var sliced = segmentSlice(c);
@@ -1233,6 +1847,13 @@
 
       function applySpeed(buf) {
         if (Math.abs(fx.speed - 1) < 0.002 && linear === 1) { finish(buf); return; }
+        if (lockPitch && Math.abs(fx.speed - 1) >= 0.002) {
+          // Pitch locked: change only the length, then apply the gain.
+          var stretched = olaStretch(buf, 1 / fx.speed, c);
+          if (linear === 1) finish(stretched);
+          else renderRate(stretched, 1, linear, finish);
+          return;
+        }
         renderRate(buf, fx.speed, linear, finish);
       }
 
@@ -1379,8 +2000,9 @@
         // file wherever it can.
         var untouched = selA <= 0.0001 && selB >= 0.9999 && !reversed &&
           !fx.gain && !fx.pitch && Math.abs(fx.speed - 1) < 0.002;
-        var outPath = current.path;
+        var outPath = current.remote ? current.local : current.path;
         var layerName = current.name;
+        if (current.remote && !outPath) { fail("The Freesound download is not on disk yet."); return; }
 
         if (!untouched) {
           try {
@@ -1436,6 +2058,7 @@
     if (rail) rail.addEventListener("click", function (ev) {
       var btn = ev.target.closest(".app-tab");
       if (btn && btn.getAttribute("data-apptab") !== "sfxdesign") stop();
+      if (btn) closeMenu();
     });
 
     var resizeTimer = 0;
@@ -1470,6 +2093,13 @@
     }
     if (el.host && window.CompXHostBridge) el.host.classList.add("is-live");
 
+    if (el.search) el.search.value = tabs[tabIdx].q || "";
+    filter = tabs[tabIdx].filter || filter;
+    paintTabs();
+    paintSearchMode();
+    paintLockPitch();
+    paintLabelFilter();
+    paintDropped();
     readFx();
     paintFilters();
     paintFolders();
@@ -1478,6 +2108,7 @@
 
     if (folders.length) rescan(true);
     render();
+    if (activeFolder === CLOUD) fsSearch(false);
     say(folders.length
       ? items.length + " sounds indexed across " + folders.length + " folder" + (folders.length === 1 ? "" : "s") + "."
       : "Add a folder to index your sounds.");
