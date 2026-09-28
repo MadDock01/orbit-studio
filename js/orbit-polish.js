@@ -425,6 +425,63 @@
     }
   });
 
+
+  // ------------------------------------------------------------------ library icons
+  // The MOGRT library toolbar used letters and symbols (F, L, !, ✕★) as
+  // icons. They are swapped for line icons here. main.js rewrites some
+  // of these labels (Add, Batch), so each button is watched and repainted
+  // whenever its text changes; the text it set picks the icon.
+  var ICON_PATHS = {
+    add: '<path d="M12 5v14M5 12h14"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/>',
+    removeMarked: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+    missing: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
+    relink: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    batch: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    reset: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>',
+    more: '<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
+    grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+    list: '<path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/>'
+  };
+  var LIB_ICONS = {
+    btnAddFiles: "add", btnAddFolder: "folder", btnRemoveMarkedSfx: "removeMarked",
+    btnCheckMissing: "missing", btnRelinkLibrary: "relink", btnReset: "reset",
+    btnLibMore: "more", btnGridView: "grid", btnListView: "list", btnRefreshView: "refresh",
+    btnBatchMode: function (text) { return text === "×" ? "close" : "batch"; }
+  };
+
+  function iconSvg(name) {
+    return '<svg class="orbit-lib-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"' +
+      ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON_PATHS[name] + "</svg>";
+  }
+
+  function paintLibIcon(btn, pick) {
+    var svg = btn.querySelector("svg.orbit-lib-ico");
+    var text = btn.textContent.trim();
+    // Only our own icon inside: nothing new was written, nothing to do.
+    if (svg && !text && btn.childNodes.length === 1) return;
+    var name = typeof pick === "function" ? pick(text) : pick;
+    btn.innerHTML = iconSvg(name);
+    btn.firstChild.setAttribute("data-ico", name);
+    btn.setAttribute("data-orbit-lib-ico", "");
+    if (!btn.getAttribute("aria-label") && btn.title) btn.setAttribute("aria-label", btn.title);
+  }
+
+  function libraryIcons() {
+    Object.keys(LIB_ICONS).forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (!btn) return;
+      var pick = LIB_ICONS[id];
+      paintLibIcon(btn, pick);
+      if (window.MutationObserver) {
+        new MutationObserver(function () { paintLibIcon(btn, pick); })
+          .observe(btn, { childList: true, characterData: true, subtree: true });
+      }
+    });
+  }
+
   // ------------------------------------------------------------------ init
   // The saved size goes on before first paint of the panel content.
   if (currentScale() !== 1) document.documentElement.style.zoom = String(currentScale());
@@ -434,6 +491,7 @@
     for (var i = 0; i < logos.length; i++) fixLogo(logos[i]);
     addFindButton();
     buildScaleCard();
+    libraryIcons();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();

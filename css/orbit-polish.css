@@ -551,3 +551,61 @@
   font: 700 8.5px/1 "Segoe UI", sans-serif;
   letter-spacing: 0.08em;
 }
+
+/* ============================================================
+   Caption Studio: fit narrow panels
+   The simple-caption grid sized its column from content, so the
+   step bar and source cards ran past the right edge below ~450px.
+   ============================================================ */
+#flexAutoCaptions .cx-simple-srt { grid-template-columns: minmax(0, 1fr) !important; }
+#flexAutoCaptions .cx-simple-srt > * { min-width: 0; }
+#flexAutoCaptions .cx-cap-stepbar-step { min-width: 0 !important; }
+#flexAutoCaptions .cx-cap-stepbar-step small { font-size: 7.5px !important; }
+#flexAutoCaptions .cx-cap-sources { margin-bottom: 10px; }
+#flexAutoCaptions .cx-cap-source-card { min-width: 0; }
+#flexAutoCaptions .cx-cap-source-icon svg { width: 15px; height: 15px; }
+@media (max-width: 460px) {
+  #flexAutoCaptions .cx-cap-stepbar { gap: 2px !important; padding: 5px !important; }
+  #flexAutoCaptions .cx-cap-stepbar-arrow { display: none; }
+  #flexAutoCaptions .cx-cap-stepbar-step { padding: 5px 1px !important; }
+  #flexAutoCaptions .cx-cap-stepbar-step small { display: none; }
+  #flexAutoCaptions .cx-cap-stepbar-step b { font-size: 7.5px !important; letter-spacing: 0.06em !important; }
+  #flexAutoCaptions .cx-cap-sources { grid-template-columns: minmax(0, 1fr) !important; }
+  #flexAutoCaptions .cx-cap-source-or { justify-self: center; }
+  #flexAutoCaptions .cx-cap-source-card {
+    display: grid !important;
+    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-areas: "icon title" "icon sub" "btn btn" "file file";
+    column-gap: 9px !important; row-gap: 3px !important;
+    align-items: center !important;
+    text-align: left !important;
+  }
+  #flexAutoCaptions .cx-cap-source-icon { grid-area: icon; margin: 0 !important; }
+  #flexAutoCaptions .cx-cap-source-card strong { grid-area: title; }
+  #flexAutoCaptions .cx-cap-source-card > span { grid-area: sub; }
+  #flexAutoCaptions .cx-cap-source-card .tool-btn { grid-area: btn; margin-top: 4px; }
+  #flexAutoCaptions .cx-cap-source-card .cx-simple-srt-file { grid-area: file; text-align: center; }
+  #flexAutoCaptions .cx-simple-srt-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* MOGRT library toolbar: line icons instead of letters */
+#sfxMogrtView [data-orbit-lib-ico] { font-size: 0 !important; }
+#sfxMogrtView [data-orbit-lib-ico] svg.orbit-lib-ico {
+  width: 14px; height: 14px;
+  display: block;
+  pointer-events: none;
+}
+#sfxMogrtView .lib-view-btn[data-orbit-lib-ico] svg.orbit-lib-ico,
+#sfxMogrtView #btnRefreshView svg.orbit-lib-ico { width: 13px; height: 13px; }
+
+/* Orbit 3D: button captions were 5.5–6.5px, below readable size */
+#panel-advanced small { font-size: 7.5px !important; line-height: 1.25 !important; }
+#panel-advanced button b,
+#panel-advanced :is(.cx3d-rig-select, .cx3d-lens-control, .cx3d-shot-row) > span { font-size: 7.5px !important; }
+#panel-advanced button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+#panel-advanced .cx3d-footer-status { font-size: 8px !important; }

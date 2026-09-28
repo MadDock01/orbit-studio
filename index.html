@@ -40,7 +40,7 @@
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-guide.css?v=2" rel="stylesheet"/>
-<link href="css/orbit-polish.css?v=4" rel="stylesheet"/>
+<link href="css/orbit-polish.css?v=5" rel="stylesheet"/>
 </head>
 <body>
 
@@ -331,7 +331,7 @@
 <div class="cx-simple-stage-panel" data-simple-stage-panel="source">
 <div class="cx-cap-sources">
 <div class="cx-cap-source-card transcribe active">
-<div class="cx-cap-source-icon">▶</div>
+<div class="cx-cap-source-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg></div>
 <strong>Transcribe Media</strong>
 <span>Video or Audio</span>
 <button class="tool-btn" id="btnSimpleMediaPick" type="button">SELECT MEDIA</button>
@@ -339,7 +339,7 @@
 </div>
 <div class="cx-cap-source-or">OR</div>
 <div class="cx-cap-source-card">
-<div class="cx-cap-source-icon">📄</div>
+<div class="cx-cap-source-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
 <strong>Import SRT File</strong>
 <span>Drop .srt file here</span>
 <button class="tool-btn" id="btnSimpleSrtPick" type="button">BROWSE FILE</button>
@@ -352,7 +352,7 @@
 <label class="cx-cap-field"><span>Language</span><select class="counter-select" id="simpleCaptionLanguage"><option value="">Auto Language</option><option value="en">English</option><option value="bn">Bangla</option><option value="hi">Hindi</option><option value="ur">Urdu</option></select></label>
 </div>
 <p class="cx-simple-lang-hint" id="simpleLangHint" hidden>Bangla: pick <b>Whisper Small</b> or bigger. Tiny and Base often write Bangla speech in English letters (Banglish).</p>
-<button class="tool-btn wide primary" disabled id="btnSimpleTranscribe" type="button">✨ TRANSCRIBE MEDIA</button>
+<button class="tool-btn wide primary" disabled id="btnSimpleTranscribe" type="button">TRANSCRIBE MEDIA</button>
 <div class="cx-simple-transcribe-progress" id="simpleTranscribeProgress" hidden aria-live="polite">
 <div class="cx-simple-transcribe-progress-head">
 <span><i></i><b id="simpleTranscribeProgressText">Starting local transcription…</b></span>
