@@ -156,6 +156,10 @@
 
 #app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-btn-label {
   font-size: var(--gd-label) !important;
+  /* A shrinking flex item with overflow:hidden cut the descenders (j, p). */
+  flex: 0 0 auto;
+  line-height: 1.15 !important;
+  text-overflow: ellipsis;
 }
 
 /* ---- Match / SVG switches on the right of the bottom rail ---- */
