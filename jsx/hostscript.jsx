@@ -10593,9 +10593,12 @@ function compxTravelPathPolyInComp(picked, time) {
     if (!shapeVal || !shapeVal.vertices || shapeVal.vertices.length < 2) return null;
     var flat = _cmFlatten(shapeVal, 12);
     if (!flat || flat.length < 2) return null;
+    // Layer.toComp() is expression-only; it threw here every time, so the
+    // travel path always came back empty.
     var layer = picked.layer, out = [], i, pt;
+    var m = compxMorphMatrix(layer, time);
     for (i = 0; i < flat.length; i++) {
-      pt = layer.toComp([flat[i][0], flat[i][1]]);
+      pt = compxMorphApply(m, [flat[i][0], flat[i][1]]);
       out.push([pt[0], pt[1]]);
     }
     return out;
@@ -14800,7 +14803,9 @@ function compxSimpleSrt_applyTextFx(layer, presetFile, start, end) {
   // Supply it per cue: their fallback uses absolute second 1 and breaks later cues.
   var markers = layer.property("ADBE Marker");
   while (markers.numKeys > 0) markers.removeKey(markers.numKeys);
-  markers.setValueAtTime(start + Math.min(0.45, (end - start) * 0.35), new MarkerValue("In"));
+  // At the cue start: the words animate in as they are spoken. It used to sit
+  // up to 0.45s later, so every caption lagged the voice.
+  markers.setValueAtTime(start, new MarkerValue("In"));
 }
 
 function ae_createSimpleSrtCaptions(dataStr) {
@@ -14839,23 +14844,43 @@ function ae_createSimpleSrtCaptions(dataStr) {
     originalTime = comp.time;
     originalSelection = comp.selectedLayers;
     var created = 0, ignored = 0;
+    // The animation is optional: an empty preset name means plain captions.
     var animationPresetName = String(data.textAnimationPreset || "");
     var animationPresetLabel = String(data.textAnimationName || animationPresetName || "Text Animation");
-    if (!/^[^\/\\:]+\.ffx$/i.test(animationPresetName) || animationPresetName.indexOf("..") >= 0) {
-      return toolResult(false, "Select a valid IN text animation before creating captions.");
+    var animationPresetFile = null;
+    if (animationPresetName) {
+      if (!/^[^\/\\:]+\.ffx$/i.test(animationPresetName) || animationPresetName.indexOf("..") >= 0) {
+        return toolResult(false, "That text animation is not valid. Pick another one, or None.");
+      }
+      animationPresetFile = new File(compxCopyPasta_joinPath(compxCopyPasta_getExtensionRoot(), "presets", "text-animations", animationPresetName));
+      if (!animationPresetFile.exists) return toolResult(false, "Caption animation preset is missing: " + animationPresetName);
     }
-    var animationPresetFile = new File(compxCopyPasta_joinPath(compxCopyPasta_getExtensionRoot(), "presets", "text-animations", animationPresetName));
-    if (!animationPresetFile.exists) return toolResult(false, "Caption animation preset is missing: " + animationPresetName);
+
+    // SRT 00:00 is the start of the media. With "selected clip", captions
+    // follow that clip wherever it sits in the comp (and its time stretch).
+    var timeOffset = 0, timeScale = 1, timingNote = "";
+    if (String(data.timingBase || "comp") === "layer") {
+      var clip = null;
+      for (var sel = 0; sel < originalSelection.length; sel++) {
+        var candidate = originalSelection[sel];
+        if (candidate instanceof AVLayer && candidate.source && !(candidate instanceof TextLayer)) { clip = candidate; break; }
+      }
+      if (!clip) return toolResult(false, "Select the video/audio clip the SRT belongs to, or set \"Place captions from\" to the start of the comp.");
+      timeOffset = Number(clip.startTime) || 0;
+      timeScale = (Number(clip.stretch) || 100) / 100;
+      timingNote = " Synced to " + clip.name + ".";
+    }
 
     app.beginUndoGroup("Create SRT Captions");
     undoStarted = true;
 
+    var toComp = function (t) { return timeOffset + (Number(t) || 0) * timeScale; };
     for (var i = 0; i < cues.length; i++) {
       var cue = cues[i] || {};
-      var start = Math.max(0, Number(cue.start) || 0);
+      var start = Math.max(0, toComp(cue.start));
       if (start >= comp.duration) { ignored++; continue; }
-      var nextStart = i + 1 < cues.length ? Math.max(0, Number(cues[i + 1].start) || comp.duration) : comp.duration;
-      var requestedEnd = Number(cue.end);
+      var nextStart = i + 1 < cues.length ? Math.max(0, toComp(cues[i + 1].start)) : comp.duration;
+      var requestedEnd = toComp(cue.end);
       if (!(requestedEnd > start)) requestedEnd = start + 0.5;
       var end = Math.min(comp.duration, requestedEnd, nextStart);
       if (!(end > start)) end = Math.min(comp.duration, start + Math.max(comp.frameDuration, 0.08));
@@ -14909,12 +14934,14 @@ function ae_createSimpleSrtCaptions(dataStr) {
       transform.property("ADBE Anchor Point").setValue([rect.left + rect.width / 2, rect.top + rect.height / 2]);
       var finalPosition = [comp.width / 2, comp.height * vertical];
       transform.property("ADBE Position").setValue(finalPosition);
-      try {
-        compxSimpleSrt_applyTextFx(layer, animationPresetFile, start, end);
-      } catch (animationPresetError) {
-        throw new Error("Could not apply " + animationPresetLabel + " to caption " + (created + 1) + ": " + String(animationPresetError));
+      if (animationPresetFile) {
+        try {
+          compxSimpleSrt_applyTextFx(layer, animationPresetFile, start, end);
+        } catch (animationPresetError) {
+          throw new Error("Could not apply " + animationPresetLabel + " to caption " + (created + 1) + ": " + String(animationPresetError));
+        }
       }
-      if (data.font) {
+      if (animationPresetFile && data.font) {
         try {
           var appliedDoc = textProperty.value;
           appliedDoc.text = displayedText;
@@ -14940,7 +14967,7 @@ function ae_createSimpleSrtCaptions(dataStr) {
     }
     app.endUndoGroup();
     undoStarted = false;
-    return toolResult(created > 0, created + " SRT caption layer" + (created === 1 ? "" : "s") + " created directly in " + comp.name + (animationPresetFile ? " with " + animationPresetLabel : "") + "." + (ignored ? " " + ignored + " invalid/out-of-range cue(s) ignored." : ""));
+    return toolResult(created > 0, created + " SRT caption layer" + (created === 1 ? "" : "s") + " created directly in " + comp.name + (animationPresetFile ? " with " + animationPresetLabel : " (no animation)") + "." + timingNote + (ignored ? " " + ignored + " invalid/out-of-range cue(s) ignored." : ""));
   } catch (error) {
     for (var rollback = pendingLayers.length - 1; rollback >= 0; rollback--) {
       try { pendingLayers[rollback].remove(); } catch (rollbackError) { compxAuditFallback("HOST_SIMPLE_SRT_ROLLBACK_001", rollbackError); }
@@ -19092,28 +19119,74 @@ function compxMorphRect(layer, time) {
   return null;
 }
 
-// A layer's Position is expressed in its parent's space, so the target's
-// comp-space point has to be converted before it can be keyed on a child.
-function compxMorphToParentSpace(layer, compPoint) {
+// Layer.toComp()/fromComp() exist only in expressions, not in ExtendScript,
+// so the transforms are composed here as 2D affine matrices
+// [a, b, c, d, tx, ty]:  x' = a*x + c*y + tx,  y' = b*x + d*y + ty
+// (a 3D layer is flattened to its X/Y and Z rotation).
+function compxMorphMul(m, n) {
+  return [
+    m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+    m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+    m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]
+  ];
+}
+function compxMorphApply(m, p) {
+  return [p[0] * m[0] + p[1] * m[2] + m[4], p[0] * m[1] + p[1] * m[3] + m[5]];
+}
+function compxMorphInvert(m) {
+  var det = m[0] * m[3] - m[1] * m[2];
+  if (Math.abs(det) < 1e-12) return [1, 0, 0, 1, 0, 0];
+  var ia = m[3] / det, ib = -m[1] / det, ic = -m[2] / det, id = m[0] / det;
+  return [ia, ib, ic, id, -(ia * m[4] + ic * m[5]), -(ib * m[4] + id * m[5])];
+}
+function compxMorphPosAt(layer, time) {
+  var tr = compxMorphTransform(layer), pos = tr.property("ADBE Position");
+  if (pos.dimensionsSeparated) {
+    return [tr.property("ADBE Position_0").valueAtTime(time, false), tr.property("ADBE Position_1").valueAtTime(time, false),
+      layer.threeDLayer ? tr.property("ADBE Position_2").valueAtTime(time, false) : 0];
+  }
+  var v = pos.valueAtTime(time, false);
+  return [v[0], v[1], v.length > 2 ? v[2] : 0];
+}
+// Layer space -> comp space, through every parent.
+function compxMorphMatrix(layer, time) {
+  var tr = compxMorphTransform(layer);
+  var pos = compxMorphPosAt(layer, time);
+  var ap = tr.property("ADBE Anchor Point").valueAtTime(time, false);
+  var sc = tr.property("ADBE Scale").valueAtTime(time, false);
+  var rot = 0;
+  try { rot = tr.property("ADBE Rotate Z").valueAtTime(time, false); } catch (eR) { rot = 0; }
+  var r = rot * Math.PI / 180, sx = sc[0] / 100, sy = sc[1] / 100;
+  var a = Math.cos(r) * sx, b = Math.sin(r) * sx, c = -Math.sin(r) * sy, d = Math.cos(r) * sy;
+  var m = [a, b, c, d, pos[0] - (ap[0] * a + ap[1] * c), pos[1] - (ap[0] * b + ap[1] * d)];
+  var parent = null;
+  try { parent = layer.parent; } catch (eP) { parent = null; }
+  return parent ? compxMorphMul(compxMorphMatrix(parent, time), m) : m;
+}
+function compxMorphWorldRot(m) { return Math.atan2(m[1], m[0]) * 180 / Math.PI; }
+function compxMorphWorldScale(m) { return [Math.sqrt(m[0] * m[0] + m[1] * m[1]), Math.sqrt(m[2] * m[2] + m[3] * m[3])]; }
+function compxMorphParentMatrix(layer, time) {
   var parent = null;
   try { parent = layer.parent; } catch (e) { parent = null; }
-  if (!parent) return compPoint;
-  try {
-    var p = parent.fromComp(compPoint);
-    return [p[0], p[1], p.length > 2 ? p[2] : 0];
-  } catch (e) {
-    compxAuditFallback("HOST_MORPH_PARENTSPACE_001", e);
-    return compPoint;
-  }
+  return parent ? compxMorphMatrix(parent, time) : [1, 0, 0, 1, 0, 0];
+}
+// The middle of what the layer draws, in comp space.
+function compxMorphVisualCenter(layer, time) {
+  var r = compxMorphRect(layer, time);
+  var local = r ? [r.left + r.width / 2, r.top + r.height / 2] : compxMorphTransform(layer).property("ADBE Anchor Point").valueAtTime(time, false);
+  return compxMorphApply(compxMorphMatrix(layer, time), local);
 }
 
-function compxMorphCompPoint(layer, time) {
-  try {
-    var p = layer.toComp([0, 0, 0], time);
-    return [p[0], p[1], p.length > 2 ? p[2] : 0];
-  } catch (e) { compxAuditFallback("HOST_MORPH_COMPPOINT_001", e); }
-  var v = compxMorphTransform(layer).property("ADBE Position").valueAtTime(time, false);
-  return [v[0], v[1], v.length > 2 ? v[2] : 0];
+// Joining X/Y(/Z) back into one Position, when nothing is keyed on them.
+function compxMorphJoinPosition(layer) {
+  var tr = compxMorphTransform(layer), pos = tr.property("ADBE Position");
+  if (!pos.dimensionsSeparated) return true;
+  var names = ["ADBE Position_0", "ADBE Position_1", "ADBE Position_2"], i;
+  for (i = 0; i < names.length; i++) {
+    var p = tr.property(names[i]);
+    if (p && (p.numKeys > 0 || p.expressionEnabled)) return false;
+  }
+  try { pos.dimensionsSeparated = false; return true; } catch (e) { return false; }
 }
 
 function compxMorphFitValue(prop, vec) {
@@ -19174,28 +19247,17 @@ function compxMorphShortestRotation(from, to) {
   return from + delta;
 }
 
-function compxMorphScaleToMatch(source, target, time) {
-  var sRect = compxMorphRect(source, time);
-  var tRect = compxMorphRect(target, time);
-  var sScale = compxMorphTransform(source).property("ADBE Scale").value;
-  if (!sRect || !tRect) return null;
-  if (sRect.width < 0.01 || sRect.height < 0.01) return null;
-  var tScale = [100, 100];
-  try { tScale = compxMorphTransform(target).property("ADBE Scale").value; } catch (e) { compxAuditFallback("HOST_MORPH_TSCALE_001", e); }
-  var sx = (tScale[0] * tRect.width) / sRect.width;
-  var sy = (tScale[1] * tRect.height) / sRect.height;
-  if (!isFinite(sx) || !isFinite(sy)) return null;
-  var out = [sx, sy];
-  if (sScale.length > 2) out.push(sScale[2]);
-  return out;
-}
-
 function compxMorphKey(prop, time, value) {
   try { prop.setValueAtTime(time, value); return true; }
   catch (e) { compxAuditFallback("HOST_MORPH_KEY_001", e); return false; }
 }
 
 // 1. MORPH — every selected layer travels into the target
+//
+// Each source ends with its visual middle on the target's visual middle,
+// the target's on-screen rotation and a scale that makes the two the same
+// size on screen — worked out through parents, anchors and scale, so it
+// holds for parented layers and off-centre anchors too.
 function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, centerAnchors) {
   var undoOpen = false;
   try {
@@ -19220,44 +19282,77 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
     undoOpen = true;
 
     if (centerAnchors) compxMorphCenterAnchor(target, t0);
-    var targetPoint = compxMorphCompPoint(target, t0);
-    var targetRot = 0;
-    try { targetRot = compxMorphTransform(target).property("ADBE Rotate Z").valueAtTime(t0, false); } catch (eT) { targetRot = 0; }
+    var tM = compxMorphMatrix(target, t0);
+    var tCenter = compxMorphVisualCenter(target, t0);
+    var tRot = compxMorphWorldRot(tM);
+    var tScale = compxMorphWorldScale(tM);
+    var tRect = compxMorphRect(target, t0);
+    var tZ = compxMorphPosAt(target, t0)[2];
 
-    var moved = 0, skipped = 0, locked = 0, i;
+    var moved = 0, skipped = 0, locked = 0, keyed = [], i;
     for (i = 0; i < sources.length; i++) {
       var layer = sources[i];
       if (layer.locked) { locked++; continue; }
-      if (layer === target) continue;
-
-      var start = t0 + i * stagger;
-      var end = start + dur;
-
-      if (centerAnchors) compxMorphCenterAnchor(layer, start);
 
       var tr = compxMorphTransform(layer);
       var posProp = tr.property("ADBE Position");
       var scaleProp = tr.property("ADBE Scale");
       var rotProp = tr.property("ADBE Rotate Z");
+      var opProp = tr.property("ADBE Opacity");
 
-      if (!posProp || posProp.expressionEnabled) { skipped++; continue; }
-      // Separated dimensions have no single Position to key.
-      if (posProp.numKeys === 0 && posProp.value === undefined) { skipped++; continue; }
+      // A layer this tab morphed before gets its keys replaced; one the user
+      // animated themselves is left alone rather than mixed with new keys.
+      var ours = String(layer.comment || "").indexOf(COMPX_MORPH_TAG) === 0;
+      var animated = posProp.numKeys > 1 || scaleProp.numKeys > 1 || (rotProp && rotProp.numKeys > 1);
+      if (animated && !ours) { keyed.push(layer.name); continue; }
+      if (!compxMorphJoinPosition(layer) || posProp.expressionEnabled) { skipped++; continue; }
+      if (ours) {
+        var props = [posProp, scaleProp, rotProp, opProp], q;
+        for (q = 0; q < props.length; q++) {
+          if (!props[q] || props[q].expressionEnabled) continue;
+          var keep = props[q].numKeys ? props[q].keyValue(1) : null;
+          while (props[q].numKeys > 0) props[q].removeKey(props[q].numKeys);
+          if (keep !== null) props[q].setValue(keep);
+        }
+      }
 
+      var start = t0 + i * stagger;
+      var end = start + dur;
+      if (centerAnchors) compxMorphCenterAnchor(layer, start);
+
+      var sRect = compxMorphRect(layer, start);
+      var pM = compxMorphParentMatrix(layer, start);
+      var pRot = compxMorphWorldRot(pM), pScale = compxMorphWorldScale(pM);
+
+      // Rotation: the target's on-screen angle, in this layer's parent space.
+      var startRot = rotProp ? rotProp.valueAtTime(start, false) : 0;
+      var endRot = compxMorphShortestRotation(startRot, tRot - pRot);
+
+      // Scale: same on-screen size as the target.
+      var startScale = scaleProp.valueAtTime(start, false);
+      var endScale = null;
+      if (sRect && tRect && sRect.width > 0.01 && sRect.height > 0.01) {
+        var wx = tScale[0] * tRect.width / sRect.width, wy = tScale[1] * tRect.height / sRect.height;
+        endScale = [100 * wx / Math.max(1e-6, pScale[0]), 100 * wy / Math.max(1e-6, pScale[1])];
+        if (startScale.length > 2) endScale.push(startScale[2]);
+      }
+      var endSF = endScale ? [endScale[0] / 100, endScale[1] / 100] : [startScale[0] / 100, startScale[1] / 100];
+
+      // Position: put this layer's visual middle on the target's.
+      var ap = tr.property("ADBE Anchor Point").valueAtTime(start, false);
+      var off = sRect ? [sRect.left + sRect.width / 2 - ap[0], sRect.top + sRect.height / 2 - ap[1]] : [0, 0];
+      var er = endRot * Math.PI / 180;
+      var ox = off[0] * endSF[0], oy = off[1] * endSF[1];
+      var offParent = [ox * Math.cos(er) - oy * Math.sin(er), ox * Math.sin(er) + oy * Math.cos(er)];
+      var centerParent = compxMorphApply(compxMorphInvert(pM), tCenter);
       var startPos = posProp.valueAtTime(start, false);
-      var endVec = compxMorphToParentSpace(layer, targetPoint);
-      var endPos = compxMorphFitValue(posProp, endVec);
+      var endPos = compxMorphFitValue(posProp, [centerParent[0] - offParent[0], centerParent[1] - offParent[1],
+        startPos.length > 2 ? (layer.threeDLayer && target.threeDLayer ? tZ : startPos[2]) : 0]);
 
       compxMorphKey(posProp, start, startPos);
       if (overshoot > 0) {
-        var peakT = start + dur * 0.72;
-        var peak = [];
-        var d;
-        var startArr = (startPos instanceof Array) ? startPos : [startPos];
-        var endArr = (endPos instanceof Array) ? endPos : [endPos];
-        for (d = 0; d < endArr.length; d++) {
-          peak.push(endArr[d] + (endArr[d] - startArr[d]) * overshoot * 0.25);
-        }
+        var peakT = start + dur * 0.72, peak = [], d;
+        for (d = 0; d < endPos.length; d++) peak.push(endPos[d] + (endPos[d] - startPos[d]) * overshoot * 0.25);
         compxMorphKey(posProp, peakT, compxMorphFitValue(posProp, peak));
         compxMorphEaseAt(posProp, peakT, 70, 70);
       }
@@ -19265,33 +19360,26 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
       compxMorphEaseAt(posProp, start, 33, 85);
       compxMorphEaseAt(posProp, end, 85, 33);
 
-      if (scaleProp && !scaleProp.expressionEnabled) {
-        var endScale = compxMorphScaleToMatch(layer, target, start);
-        if (endScale) {
-          compxMorphKey(scaleProp, start, scaleProp.valueAtTime(start, false));
-          compxMorphKey(scaleProp, end, compxMorphFitValue(scaleProp, endScale));
-          compxMorphEaseAt(scaleProp, start, 33, 85);
-          compxMorphEaseAt(scaleProp, end, 85, 33);
-        }
+      if (endScale && !scaleProp.expressionEnabled) {
+        compxMorphKey(scaleProp, start, startScale);
+        compxMorphKey(scaleProp, end, compxMorphFitValue(scaleProp, endScale));
+        compxMorphEaseAt(scaleProp, start, 33, 85);
+        compxMorphEaseAt(scaleProp, end, 85, 33);
       }
 
       if (rotProp && !rotProp.expressionEnabled) {
-        var startRot = rotProp.valueAtTime(start, false);
         compxMorphKey(rotProp, start, startRot);
-        compxMorphKey(rotProp, end, compxMorphShortestRotation(startRot, targetRot));
+        compxMorphKey(rotProp, end, endRot);
         compxMorphEaseAt(rotProp, start, 33, 85);
         compxMorphEaseAt(rotProp, end, 85, 33);
       }
 
-      if (fadeOut) {
-        var opProp = tr.property("ADBE Opacity");
-        if (opProp && !opProp.expressionEnabled) {
-          var fadeStart = Math.max(start, end - fd * 3);
-          compxMorphKey(opProp, fadeStart, opProp.valueAtTime(fadeStart, false));
-          compxMorphKey(opProp, end, 0);
-          compxMorphEaseAt(opProp, fadeStart, 50, 50);
-          compxMorphEaseAt(opProp, end, 50, 50);
-        }
+      if (fadeOut && opProp && !opProp.expressionEnabled) {
+        var fadeStart = Math.max(start, end - fd * 3);
+        compxMorphKey(opProp, fadeStart, opProp.valueAtTime(fadeStart, false));
+        compxMorphKey(opProp, end, 0);
+        compxMorphEaseAt(opProp, fadeStart, 50, 50);
+        compxMorphEaseAt(opProp, end, 50, 50);
       }
 
       compxMorphTag(layer, COMPX_MORPH_TAG);
@@ -19301,18 +19389,19 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
     app.endUndoGroup();
     undoOpen = false;
 
-    if (moved === 0) return toolResult(false, "Nothing to morph — every selected layer was locked or already expression driven.");
-    var msg = moved + " layer" + (moved === 1 ? "" : "s") + " morphing into " + target.name + ".";
-    if (locked) msg += " " + locked + " locked skipped.";
-    if (skipped) msg += " " + skipped + " skipped (expression on Position).";
-    return toolResult(true, msg);
+    var tail = "";
+    if (locked) tail += " " + locked + " locked skipped.";
+    if (skipped) tail += " " + skipped + " skipped (Position has an expression, or separated dimensions with keys).";
+    if (keyed.length) tail += " Already animated, left alone: " + keyed.slice(0, 4).join(", ") + (keyed.length > 4 ? "…" : "") + ".";
+    if (moved === 0) return toolResult(false, "Nothing to morph." + tail);
+    return toolResult(true, moved + " layer" + (moved === 1 ? "" : "s") + " morphing into " + target.name + "." + tail);
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_MORPH_UNDO_001", eEnd); }
     return toolResult(false, "Morph error: " + String(e));
   }
 }
 
-// 2. STRETCH — squash along travel, stretch across it, driven by speed
+// 2. STRETCH — stretch along travel, squash across it, driven by speed
 function ae_morphStretch(amountPct) {
   var undoOpen = false;
   try {
@@ -19335,15 +19424,20 @@ function ae_morphStretch(amountPct) {
       if (!scaleProp) continue;
       // Speed is normalised against a reference of 1800 px/s, so the effect
       // tops out instead of turning a fast move into a sliver.
+      // Stretch along the main direction of travel, squash across it, and
+      // keep Z on a 3D layer (a 2-value result there is an expression error).
       scaleProp.expression =
         "// COMPX_MORPH_STRETCH\n" +
         "try {\n" +
         "  var amt = " + amount + ";\n" +
         "  var ref = 1800;\n" +
-        "  var v = length(thisLayer.transform.position.velocityAtTime(time));\n" +
-        "  var k = Math.min(v / ref, 1) * amt;\n" +
+        "  var vel = thisLayer.transform.position.velocityAtTime(time);\n" +
+        "  var k = Math.min(length(vel) / ref, 1) * amt;\n" +
+        "  var across = Math.abs(vel[0]) >= Math.abs(vel[1]);\n" +
         "  var s = value;\n" +
-        "  [ s[0] * (1 - k), s[1] * (1 + k) ];\n" +
+        "  var sx = s[0] * (across ? 1 + k : 1 - k);\n" +
+        "  var sy = s[1] * (across ? 1 - k : 1 + k);\n" +
+        "  s.length > 2 ? [sx, sy, s[2]] : [sx, sy];\n" +
         "} catch (err) {\n" +
         "  value;\n" +
         "}";
@@ -19472,6 +19566,11 @@ function ae_morphSlice(count, vertical) {
         var mask = copy.property("ADBE Mask Parade").addProperty("ADBE Mask Atom");
         mask.name = "Slice " + (s + 1);
         mask.property("ADBE Mask Shape").setValue(shape);
+        // With masks already on the layer, Add would merge the strip into
+        // them; Intersect cuts the strip out of what the layer already shows.
+        if (copy.property("ADBE Mask Parade").numProperties > 1) {
+          try { mask.maskMode = MaskMode.INTERSECT; } catch (eMode) { compxAuditFallback("HOST_MORPH_SLICE_MODE_001", eMode); }
+        }
         compxMorphTag(copy, COMPX_MORPH_GEN);
         made++;
       }
@@ -19508,7 +19607,9 @@ function ae_morphClean() {
       layer = comp.layer(i);
       tag = "";
       try { tag = String(layer.comment || ""); } catch (eC) { tag = ""; }
-      if (tag.indexOf(COMPX_MORPH_GEN) < 0) continue;
+      // Only this tab's copies: the grid rig and the guide grid also carry
+      // COMPX_MORPH_GEN inside their tags and used to be deleted here.
+      if (tag.indexOf(COMPX_MORPH_GEN) !== 0) continue;
       try { layer.locked = false; } catch (eL) { compxAuditFallback("HOST_MORPH_CLEAN_LOCK_001", eL); }
       try { layer.remove(); removed++; } catch (eR) { compxAuditFallback("HOST_MORPH_CLEAN_RM_001", eR); }
     }
@@ -19520,7 +19621,7 @@ function ae_morphClean() {
       layer = comp.layer(i);
       tag = "";
       try { tag = String(layer.comment || ""); } catch (eC2) { tag = ""; }
-      if (tag.indexOf(COMPX_MORPH_TAG) < 0) continue;
+      if (tag !== COMPX_MORPH_TAG) continue;
       try {
         var scaleProp = compxMorphTransform(layer).property("ADBE Scale");
         if (scaleProp && scaleProp.expressionEnabled &&
@@ -19587,29 +19688,51 @@ function compxGridFindRig(comp) {
   return null;
 }
 
-// Cells sit under the rig, so their Position is already relative to it —
-// the layout only has to say where each index lands around the origin.
+var COMPX_GRID_CELL = "COMPX_GRID_CELL";          // + " dup" (made by Build) or " own" (a layer the user picked)
+var COMPX_GRID_EFFECTOR = "COMPX_GRID_EFFECTOR";  // + ":scale" / ":opacity"
+
+// Cells under the rig. Old builds tagged their copies with the generic morph tag.
+function compxGridCells(comp, rig) {
+  var out = [], i, layer, note;
+  for (i = 1; i <= comp.numLayers; i++) {
+    layer = comp.layer(i);
+    var parent = null;
+    try { parent = layer.parent; } catch (eP) { parent = null; }
+    if (!parent || parent.index !== rig.index) continue;
+    try { note = String(layer.comment || ""); } catch (eC) { note = ""; }
+    if (note.indexOf(COMPX_GRID_CELL) === 0 || note.indexOf(COMPX_MORPH_GEN) >= 0) out.push(layer);
+  }
+  return out;
+}
+
+// Cells sit under the rig, whose layer space starts at its anchor-relative
+// origin, so the rig's anchor is added back. The result matches the
+// layer's dimensions (2 values for a 2D layer, 3 for a 3D one), and it is
+// added to the cell's own Position (set to 0) so a cell can still be nudged.
 function compxGridExpression(mode, total) {
   var head =
     "// COMPX_GRID\n" +
     "try {\n" +
     '  var rig = thisComp.layer("' + COMPX_GRID_RIG + '");\n' +
     '  var i = thisLayer.effect("Grid Index")(1);\n' +
-    "  var n = " + total + ";\n";
-  var tail = "\n} catch (err) {\n  value;\n}";
+    "  var n = " + total + ";\n" +
+    "  var ap = rig.transform.anchorPoint;\n";
+  var tail =
+    "\n  var q = [p[0] + ap[0], p[1] + ap[1], p[2] + (ap.length > 2 ? ap[2] : 0)];\n" +
+    "  value.length > 2 ? value + q : value + [q[0], q[1]];\n" +
+    "} catch (err) {\n  value;\n}";
 
   if (mode === "radial") {
     return head +
       '  var r = rig.effect("Radius")(1);\n' +
       '  var a0 = rig.effect("Angle")(1);\n' +
-      "  var ang = degreesToRadians((i / n) * 360 + a0);\n" +
-      "  [Math.cos(ang) * r, Math.sin(ang) * r, 0];" + tail;
+      "  var ang = degreesToRadians((i / n) * 360 + a0 - 90);\n" +
+      "  var p = [Math.cos(ang) * r, Math.sin(ang) * r, 0];" + tail;
   }
 
   if (mode === "sphere") {
     // Fibonacci placement: each point steps one golden angle round the
-    // axis while y walks evenly from pole to pole, which spreads them
-    // without the crowding you get from a lat/long grid.
+    // axis while y walks evenly from pole to pole.
     return head +
       '  var r = rig.effect("Radius")(1);\n' +
       '  var a0 = degreesToRadians(rig.effect("Angle")(1));\n' +
@@ -19618,7 +19741,7 @@ function compxGridExpression(mode, total) {
       "  var y = i * off - 1 + off / 2;\n" +
       "  var rad = Math.sqrt(Math.max(0, 1 - y * y));\n" +
       "  var phi = i * inc + a0;\n" +
-      "  [Math.cos(phi) * rad * r, y * r, Math.sin(phi) * rad * r];" + tail;
+      "  var p = [Math.cos(phi) * rad * r, y * r, Math.sin(phi) * rad * r];" + tail;
   }
 
   return head +
@@ -19628,41 +19751,80 @@ function compxGridExpression(mode, total) {
     "  var rows = Math.ceil(n / cols);\n" +
     "  var col = i % cols;\n" +
     "  var row = Math.floor(i / cols);\n" +
-    "  [ (col - (cols - 1) / 2) * sx, (row - (rows - 1) / 2) * sy, 0 ];" + tail;
+    "  var p = [(col - (cols - 1) / 2) * sx, (row - (rows - 1) / 2) * sy, 0];" + tail;
 }
 
-// 1. BUILD — replicate the selected layer into a live grid
+// Hand a cell back: made copies are deleted, the user's own layers keep
+// living where the grid left them.
+function compxGridRelease(cell) {
+  var note = "";
+  try { note = String(cell.comment || ""); } catch (e) { note = ""; }
+  if (note.indexOf(COMPX_GRID_CELL + " own") === 0) {
+    try {
+      var pos = cell.property("ADBE Transform Group").property("ADBE Position");
+      var at = pos.value;
+      pos.expression = "";
+      pos.setValue(at);
+      var idx = cell.property("ADBE Effect Parade").property("Grid Index");
+      if (idx) idx.remove();
+      cell.comment = "";
+    } catch (eOwn) { compxAuditFallback("HOST_GRID_RELEASE_001", eOwn); }
+  } else {
+    try { cell.remove(); } catch (eDup) { compxAuditFallback("HOST_GRID_RELEASE_002", eDup); }
+  }
+}
+
+// 1. BUILD
+//   one layer selected  -> it is copied into every cell (the original is hidden)
+//   2+ layers selected  -> those layers themselves are laid out, in stack order
+// Building again replaces the previous grid instead of piling a second one on.
 function ae_gridBuild(mode, cols, rows, count, spacing, radius) {
   var undoOpen = false;
   try {
     if (!isAfterEffects()) return toolResult(false, "Grid is available in After Effects only.");
     var comp = getActiveComp();
     if (!comp) return toolResult(false, "Open a composition first.");
-    var layers = getSelectedLayers(comp);
-    if (layers.length === 0) return toolResult(false, "Select the layer to build the grid from.");
 
     var kind = String(mode || "rect");
     if (kind !== "radial" && kind !== "sphere") kind = "rect";
 
+    var picked = [], i, sel = getSelectedLayers(comp);
+    var oldRig = compxGridFindRig(comp);
+    for (i = 0; i < sel.length; i++) {
+      var l = sel[i];
+      if (oldRig && l.index === oldRig.index) continue;
+      if (l instanceof CameraLayer || l instanceof LightLayer) continue;
+      if (String(l.comment || "").indexOf(COMPX_GRID_EFFECTOR) === 0) continue;
+      if (l.locked) return toolResult(false, "“" + l.name + "” is locked. Unlock it or leave it out.");
+      picked.push(l);
+    }
+    if (!picked.length) return toolResult(false, "Select the layer to build the grid from (or 2+ layers to lay out).");
+    picked.sort(function (a, b) { return a.index - b.index; });
+
+    var arrange = picked.length >= 2;
     var nCols = Math.max(1, Math.min(60, Math.round(Number(cols) || 5)));
     var nRows = Math.max(1, Math.min(60, Math.round(Number(rows) || 5)));
     var nCount = Math.max(2, Math.min(COMPX_GRID_MAX, Math.round(Number(count) || 12)));
     var gap = Math.max(1, Number(spacing) || 120);
     var rad = Math.max(1, Number(radius) || 300);
-
-    var total = kind === "rect" ? nCols * nRows : nCount;
+    var total = arrange ? picked.length : (kind === "rect" ? nCols * nRows : nCount);
     if (total > COMPX_GRID_MAX) {
       return toolResult(false, "That is " + total + " cells. Keep it to " + COMPX_GRID_MAX + " or fewer.");
     }
 
-    var source = layers[0];
-    if (source.locked) return toolResult(false, "The selected layer is locked.");
-
     app.beginUndoGroup("Orbit Grid");
     undoOpen = true;
 
-    var rig = compxGridFindRig(comp);
-    if (!rig) {
+    var rig = oldRig;
+    if (rig) {
+      // Rebuild: clear the previous cells, except layers picked again now.
+      var old = compxGridCells(comp, rig), k, keep;
+      for (i = 0; i < old.length; i++) {
+        keep = false;
+        for (k = 0; k < picked.length; k++) if (picked[k].index === old[i].index) { keep = true; break; }
+        if (!keep) compxGridRelease(old[i]);
+      }
+    } else {
       rig = comp.layers.addNull(comp.duration);
       rig.name = COMPX_GRID_RIG;
       rig.property("ADBE Transform Group").property("ADBE Position")
@@ -19672,43 +19834,111 @@ function ae_gridBuild(mode, cols, rows, count, spacing, radius) {
     rig.threeDLayer = true;
     compxMorphTag(rig, "COMPX_GRID_RIG " + COMPX_MORPH_GEN);
 
-    compxGridSlider(rig, "Columns", nCols);
+    compxGridSlider(rig, "Columns", arrange && kind === "rect" ? Math.min(nCols, total) : nCols);
     compxGridSlider(rig, "Spacing X", gap);
     compxGridSlider(rig, "Spacing Y", gap);
     compxGridSlider(rig, "Radius", rad);
     compxGridSlider(rig, "Angle", 0);
 
     var expr = compxGridExpression(kind, total);
-    var made = 0, i;
+    var cells = [];
+    if (arrange) {
+      for (i = 0; i < picked.length; i++) cells.push({ layer: picked[i], tag: COMPX_GRID_CELL + " own" });
+    } else {
+      var source = picked[0];
+      for (i = 0; i < total; i++) {
+        var copy = source.duplicate();
+        copy.name = source.name + " " + (i + 1);
+        cells.push({ layer: copy, tag: COMPX_GRID_CELL + " dup" });
+      }
+      source.enabled = false;
+    }
 
-    for (i = 0; i < total; i++) {
-      var cell = source.duplicate();
-      cell.name = source.name + " " + (i + 1);
+    for (i = 0; i < cells.length; i++) {
+      var cell = cells[i].layer;
       // Sphere places cells on the z axis, so those have to be 3D.
       if (kind === "sphere") cell.threeDLayer = true;
+      // Lay a cell out about its middle, or text sits off its slot.
+      compxCarCenterAnchor(cell, cell.threeDLayer);
       try { cell.parent = rig; } catch (eP) { compxAuditFallback("HOST_GRID_PARENT_001", eP); }
       compxGridSlider(cell, "Grid Index", i);
       var posProp = cell.property("ADBE Transform Group").property("ADBE Position");
       try {
+        if (posProp.dimensionsSeparated) posProp.dimensionsSeparated = false;
+        posProp.expression = "";
+        posProp.setValue(cell.threeDLayer ? [0, 0, 0] : [0, 0]);
         posProp.expression = expr;
       } catch (eE) { compxAuditFallback("HOST_GRID_EXPR_001", eE); }
-      compxMorphTag(cell, COMPX_MORPH_GEN);
-      made++;
+      try { cell.comment = cells[i].tag; } catch (eT) { compxAuditFallback("HOST_GRID_TAG_001", eT); }
     }
-
-    source.enabled = false;
-    compxMorphTag(source, COMPX_MORPH_TAG);
+    compxGridRefreshEffectors(comp, rig);
     try { rig.selected = true; } catch (eS) { compxAuditFallback("HOST_GRID_SEL_001", eS); }
 
     app.endUndoGroup();
     undoOpen = false;
 
-    var label = kind === "rect" ? nCols + " x " + nRows + " grid" : (kind === "sphere" ? "sphere" : "ring") + " of " + total;
+    var shape = kind === "rect" ? "grid" : (kind === "sphere" ? "sphere" : "ring");
+    var label = arrange
+      ? total + " layers laid out as a " + shape
+      : (kind === "rect" ? nCols + " x " + nRows + " grid" : shape + " of " + total);
     return toolResult(true, label + " built. The sliders on " + COMPX_GRID_RIG + " drive it live.");
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_GRID_UNDO_001", eEnd); }
     return toolResult(false, "Grid error: " + String(e));
   }
+}
+
+// Every effector in the comp, by what it drives.
+function compxGridEffectors(comp) {
+  var out = { scale: [], opacity: [] }, i, note;
+  for (i = 1; i <= comp.numLayers; i++) {
+    try { note = String(comp.layer(i).comment || ""); } catch (e) { note = ""; }
+    if (note.indexOf(COMPX_GRID_EFFECTOR + ":opacity") === 0) out.opacity.push(comp.layer(i).name);
+    else if (note.indexOf(COMPX_GRID_EFFECTOR) === 0) out.scale.push(comp.layer(i).name);
+  }
+  return out;
+}
+
+// One expression per property that folds in every effector, so a second or
+// third effector adds to the first instead of being refused.
+function compxGridProxExpression(names, target) {
+  var list = [], i;
+  for (i = 0; i < names.length; i++) list.push('"' + String(names[i]).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"');
+  return "// COMPX_GRID_PROX\n" +
+    "try {\n" +
+    "  var names = [" + list.join(", ") + "];\n" +
+    "  var here = thisLayer.toComp(thisLayer.transform.anchorPoint);\n" +
+    "  var m = 1;\n" +
+    "  for (var j = 0; j < names.length; j++) {\n" +
+    "    try {\n" +
+    "      var e = thisComp.layer(names[j]);\n" +
+    '      var R = Math.max(1, e.effect("Falloff")(1));\n' +
+    '      var S = e.effect("Strength")(1) / 100;\n' +
+    "      var k = Math.max(0, 1 - length(here, e.toComp(e.transform.anchorPoint)) / R);\n" +
+    (target === "opacity" ? "      m *= Math.max(0, 1 - k * S);\n" : "      m *= Math.max(0, 1 + k * S);\n") +
+    "    } catch (gone) {}\n" +
+    "  }\n" +
+    "  value * m;\n" +
+    "} catch (err) {\n  value;\n}";
+}
+
+// Rewrite the proximity expressions on every cell of the rig. A property the
+// user scripted themselves (not ours) is left alone.
+function compxGridRefreshEffectors(comp, rig) {
+  var fx = compxGridEffectors(comp), cells = compxGridCells(comp, rig), driven = 0, i;
+  var jobs = [["ADBE Scale", fx.scale, "scale"], ["ADBE Opacity", fx.opacity, "opacity"]];
+  for (i = 0; i < cells.length; i++) {
+    var tr = cells[i].property("ADBE Transform Group");
+    for (var j = 0; j < jobs.length; j++) {
+      var prop = tr.property(jobs[j][0]);
+      if (!prop) continue;
+      var ours = !prop.expression || String(prop.expression).indexOf("// COMPX_GRID_PROX") === 0;
+      if (!ours) continue;
+      prop.expression = jobs[j][1].length ? compxGridProxExpression(jobs[j][1], jobs[j][2]) : "";
+      if (jobs[j][1].length) driven++;
+    }
+  }
+  return driven;
 }
 
 // 2. PROXIMITY — a null that swells or fades the cells nearest it
@@ -19721,21 +19951,22 @@ function ae_gridProximity(falloff, strength, affect) {
 
     var rig = compxGridFindRig(comp);
     if (!rig) return toolResult(false, "Build a grid first — proximity drives the cells under " + COMPX_GRID_RIG + ".");
+    if (!compxGridCells(comp, rig).length) return toolResult(false, "The grid has no cells. Build it again first.");
 
     var range = Math.max(10, Number(falloff) || 400);
     var power = Math.max(-200, Math.min(200, Number(strength) || 60));
-    var target = String(affect || "scale");
+    var target = String(affect || "scale") === "opacity" ? "opacity" : "scale";
 
     app.beginUndoGroup("Orbit Grid Proximity");
     undoOpen = true;
 
-    // Number the effectors so several can push on the same grid.
-    var n = 1, i, layer;
-    for (i = 1; i <= comp.numLayers; i++) {
-      layer = comp.layer(i);
-      if (layer.name.indexOf("Grid Effector ") === 0) n++;
-    }
-    var name = "Grid Effector " + n;
+    var n = 1, i, name;
+    do {
+      name = "Grid Effector " + n;
+      var taken = false;
+      for (i = 1; i <= comp.numLayers; i++) if (comp.layer(i).name === name) { taken = true; break; }
+      n++;
+    } while (taken);
 
     var effector = comp.layers.addNull(comp.duration);
     effector.name = name;
@@ -19744,48 +19975,15 @@ function ae_gridProximity(falloff, strength, affect) {
             .setValue([comp.width / 2, comp.height / 2, 0]);
     compxGridSlider(effector, "Falloff", range);
     compxGridSlider(effector, "Strength", power);
-    compxMorphTag(effector, COMPX_MORPH_GEN);
+    effector.comment = COMPX_GRID_EFFECTOR + ":" + target;
 
-    // Distance is measured in comp space so it stays right whatever the
-    // rig's own position, rotation or scale happen to be.
-    var head =
-      "// COMPX_GRID_PROX\n" +
-      "try {\n" +
-      '  var e = thisComp.layer("' + name + '");\n' +
-      '  var R = Math.max(1, e.effect("Falloff")(1));\n' +
-      '  var S = e.effect("Strength")(1) / 100;\n' +
-      "  var d = length(thisLayer.toComp(thisLayer.transform.anchorPoint), e.toComp([0,0,0]));\n" +
-      "  var k = Math.max(0, 1 - d / R);\n";
-    var tail = "\n} catch (err) {\n  value;\n}";
-
-    var applied = 0;
-    for (i = 1; i <= comp.numLayers; i++) {
-      layer = comp.layer(i);
-      var parent = null;
-      try { parent = layer.parent; } catch (eP) { parent = null; }
-      if (!parent || parent !== rig) continue;
-
-      var tr = layer.property("ADBE Transform Group");
-      if (target === "opacity") {
-        var op = tr.property("ADBE Opacity");
-        if (op && !op.expressionEnabled) {
-          op.expression = head + "  value * (1 - k * S);" + tail;
-          applied++;
-        }
-      } else {
-        var sc = tr.property("ADBE Scale");
-        if (sc && !sc.expressionEnabled) {
-          sc.expression = head + "  value * (1 + k * S);" + tail;
-          applied++;
-        }
-      }
-    }
+    var driven = compxGridRefreshEffectors(comp, rig);
 
     app.endUndoGroup();
     undoOpen = false;
 
-    if (applied === 0) return toolResult(false, "No free cells to drive — they may already carry an expression on that property.");
-    return toolResult(true, name + " added, driving " + target + " on " + applied + " cells. Move it in the comp to see it work.");
+    if (!driven) return toolResult(false, name + " added, but every cell already has its own " + target + " expression, so nothing is driven.");
+    return toolResult(true, name + " added, driving " + target + " on the grid (with any other effectors). Move it in the comp to see it work.");
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_GRID_PROX_UNDO_001", eEnd); }
     return toolResult(false, "Proximity error: " + String(e));
@@ -20495,8 +20693,22 @@ function ae_guideGrid(cols, rows, border, markerShape, fitLayer) {
     try {
       var posProp = layer.property("ADBE Transform Group").property("ADBE Position");
       if (target) {
+        // The grid is drawn about its own origin, so it has to sit on the
+        // middle of the target's box in the target's layer space. [0, 0]
+        // put it on the layer's corner (a text layer's baseline start).
         layer.parent = target;
-        posProp.setValue([0, 0]);
+        var box = null;
+        try { box = target.sourceRectAtTime(comp.time, false); } catch (eBox) { box = null; }
+        posProp.setValue(box && box.width > 0 ? [box.left + box.width / 2, box.top + box.height / 2] : [0, 0]);
+        // Tracking: centre and size follow the layer's box as it changes
+        // (typing, animated shapes). Disable the expressions to freeze it.
+        var TRACK = "try { var r = thisLayer.parent.sourceRectAtTime(time, false); ";
+        compxGuideSetExpr(posProp, TRACK + "[r.left + r.width / 2, r.top + r.height / 2]; } catch (err) { value; }", "HOST_GUIDE_TRACK_POS_001");
+        try {
+          var fxs = layer.property("ADBE Effect Parade");
+          compxGuideSetExpr(fxs.property("Width").property(1), TRACK + "r.width > 0 ? r.width : value; } catch (err) { value; }", "HOST_GUIDE_TRACK_W_001");
+          compxGuideSetExpr(fxs.property("Height").property(1), TRACK + "r.height > 0 ? r.height : value; } catch (err) { value; }", "HOST_GUIDE_TRACK_H_001");
+        } catch (eTrack) { compxAuditFallback("HOST_GUIDE_TRACK_001", eTrack); }
       } else {
         posProp.setValue([cx, cy]);
       }
@@ -20929,7 +21141,9 @@ function ae_flexGridShapeFallback(comp, cols, rows, cellW, cellH, border, opacit
   });
 }
 
-var COMPX_GRID_MAX = 8;
+// Its own name: sharing COMPX_GRID_MAX with the Carousel-tab grid (300)
+// re-declared that one as 8, so every grid over 8 cells was refused.
+var COMPX_GUIDE_GRID_MAX = 8;
 var COMPX_GRID_MARK = "COMPX_GRID_OVERLAY";
 
 function compxGridFindLive(comp) {
@@ -21184,8 +21398,8 @@ function compxGridBuildLive(comp, cfg) {
   var lineW = cfg.border;
   if (lineW <= 0) lineW = Math.max(2, Math.round(comp.width / 640));
   var color = [0.235, 1, 0.373];
-  var cols = Math.max(1, Math.min(COMPX_GRID_MAX, Math.round(Number(cfg.cols) || 3)));
-  var rows = Math.max(1, Math.min(COMPX_GRID_MAX, Math.round(Number(cfg.rows) || 3)));
+  var cols = Math.max(1, Math.min(COMPX_GUIDE_GRID_MAX, Math.round(Number(cfg.cols) || 3)));
+  var rows = Math.max(1, Math.min(COMPX_GUIDE_GRID_MAX, Math.round(Number(cfg.rows) || 3)));
   var box = compxGridLiveBox(comp, cfg, cols, rows);
   var cellW = box.gw / Math.max(1, cols);
   var cellH = box.gh / Math.max(1, rows);
@@ -21222,7 +21436,7 @@ function compxGridBuildLive(comp, cfg) {
   var hg = root.addProperty("ADBE Vector Group"); hg.name = "Grid Lines H";
   var hgContents = hg.property("ADBE Vectors Group");
   var n, strokeV, strokeH, fillV, fillH, vx, hy;
-  for (n = 0; n <= COMPX_GRID_MAX; n++) {
+  for (n = 0; n <= COMPX_GUIDE_GRID_MAX; n++) {
     vx = box.left + box.gw * (n / Math.max(1, cols));
     hy = box.top + box.gh * (n / Math.max(1, rows));
     compxGridAddLivePath(vgContents, "V" + n, compxGridLineExpr("v", n), n > cols ? [[0, 0], [0, 0]] : [[vx, 0], [vx, comp.height]]);
@@ -21253,8 +21467,8 @@ function compxGridBuildLive(comp, cfg) {
   if (Number(cfg.marker) > 0) {
     var my, mx, g, contents, pathG, path, fill, stroke, pos, op, mxX, myY;
     var markerSize = Math.max(2, Number(cfg.marker) || 22);
-    for (my = 0; my <= COMPX_GRID_MAX; my++) {
-      for (mx = 0; mx <= COMPX_GRID_MAX; mx++) {
+    for (my = 0; my <= COMPX_GUIDE_GRID_MAX; my++) {
+      for (mx = 0; mx <= COMPX_GUIDE_GRID_MAX; mx++) {
         g = root.addProperty("ADBE Vector Group");
         g.name = "Marker " + String(my + 1) + "x" + String(mx + 1);
         contents = g.property("ADBE Vectors Group");

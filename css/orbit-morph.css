@@ -325,3 +325,85 @@
   }
 }
 
+
+/* ============================================================
+   Round Pro card (moved here from Toolkit)
+   ============================================================ */
+#app #panel-morph .morph-seg {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+  padding: 3px !important;
+  border: 1px solid #22382c !important;
+  border-radius: 8px !important;
+  background: rgba(6, 12, 8, 0.56) !important;
+}
+
+#app #panel-morph .morph-seg-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  height: 26px !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #7f9488 !important;
+  font: 700 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.1em !important;
+  cursor: pointer !important;
+  transition: color 0.15s, background 0.15s, border-color 0.15s !important;
+}
+
+#app #panel-morph .morph-seg-btn svg {
+  flex: 0 0 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+}
+
+#app #panel-morph .morph-seg-btn:hover {
+  color: #eafff0 !important;
+  background: rgba(60, 255, 95, 0.05) !important;
+}
+
+#app #panel-morph .morph-seg-btn.active {
+  color: #eafff0 !important;
+  border-color: #3cff5f !important;
+  background: rgba(60, 255, 95, 0.1) !important;
+  box-shadow: 0 0 8px rgba(60, 255, 95, 0.16) !important;
+}
+
+#app #panel-morph .morph-seg-btn.active svg {
+  color: #3cff5f !important;
+}
+
+#app #panel-morph .morph-seg-btn:focus-visible {
+  outline: 1px solid #3cff5f !important;
+  outline-offset: 1px !important;
+}
+
+#app #panel-morph .morph-fields-radius {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#app #panel-morph .morph-fields-corners {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 300px) {
+  #app #panel-morph .morph-fields-corners {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Corners are locked while Link corners is on (or the shape is a circle). */
+#app #panel-morph .morph-field > input:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}

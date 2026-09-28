@@ -312,3 +312,300 @@
   background: #12251a;
   color: #eafff0;
 }
+
+/* ============================================================
+   Caption Studio: step-by-step flow
+   01 Source > 02 Timing > 03 Animation (optional) > 04 Text
+   ============================================================ */
+#flexAutoCaptions .cx-simple-step-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 8px;
+}
+#flexAutoCaptions .cx-simple-step-title b {
+  color: #eafff0;
+  font: 700 12px/1.25 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-step-title small {
+  color: #8ba295;
+  font: 500 10px/1.35 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 10px;
+}
+#flexAutoCaptions .cx-simple-step-nav .tool-btn {
+  flex: 0 1 auto;
+  min-width: 90px;
+  font-size: 10px !important;
+}
+#flexAutoCaptions .cx-simple-step-nav .tool-btn.primary {
+  margin-left: auto;
+}
+#flexAutoCaptions .cx-cap-stepbar-step small {
+  white-space: nowrap;
+}
+
+/* Timing report and cue list */
+#flexAutoCaptions .cx-srt-timing {
+  margin: 8px 0 6px;
+  padding: 7px 9px;
+  border: 1px solid #22322a;
+  border-radius: 7px;
+  font: 500 10px/1.4 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-srt-timing:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-srt-timing.is-ok {
+  color: #9ff5b3;
+  background: rgba(60, 255, 95, 0.06);
+}
+#flexAutoCaptions .cx-srt-timing.has-warn {
+  color: #ffd98a;
+  border-color: rgba(255, 193, 77, 0.35);
+  background: rgba(255, 193, 77, 0.07);
+}
+#flexAutoCaptions .cx-srt-cues {
+  max-height: 180px;
+  margin: 0 0 8px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #1b2720;
+  border-radius: 7px;
+  background: #070c08;
+}
+#flexAutoCaptions .cx-srt-cues:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-srt-cues li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1px 10px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #111a14;
+}
+#flexAutoCaptions .cx-srt-cues li:last-child {
+  border-bottom: 0;
+}
+#flexAutoCaptions .cx-srt-cues time {
+  color: #6d7f74;
+  font: 600 9.5px/1.4 Consolas, "Segoe UI", monospace;
+  white-space: nowrap;
+}
+#flexAutoCaptions .cx-srt-cues span {
+  overflow: hidden;
+  color: #d8eadc;
+  font: 500 10.5px/1.4 "Segoe UI", "Hind Siliguri", sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#flexAutoCaptions .cx-srt-cues em {
+  grid-column: 2;
+  color: #ffc14d;
+  font: 600 9px/1.3 "Segoe UI", sans-serif;
+  font-style: normal;
+}
+#flexAutoCaptions .cx-srt-cues li.has-warn time {
+  color: #ffc14d;
+}
+#flexAutoCaptions .cx-simple-timing-base {
+  margin-top: 4px;
+}
+
+/* Step 3: "None" is a real choice now */
+#flexAutoCaptions #btnSimpleTemplateClear {
+  min-width: 52px;
+}
+
+/* Step 4: numbered fields and a recap of every choice */
+#flexAutoCaptions [data-simple-stage-panel="text"] .cx-quickstyle-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+#flexAutoCaptions [data-simple-stage-panel="text"] .cx-cap-field > span {
+  color: #cfe9d6 !important;
+  font-weight: 700 !important;
+}
+#flexAutoCaptions .cx-simple-recap {
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border: 1px dashed #2a382f;
+  border-radius: 7px;
+  color: #9fb4a6;
+  font: 500 10px/1.45 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-recap:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-simple-replace-note {
+  display: block;
+  margin-top: 6px;
+  color: #6d7f74;
+  font: 500 9px/1.35 "Segoe UI", sans-serif;
+}
+
+/* Source: model advice for Bangla */
+#flexAutoCaptions .cx-simple-lang-hint {
+  margin: 6px 0 8px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 193, 77, 0.35);
+  border-radius: 7px;
+  background: rgba(255, 193, 77, 0.07);
+  color: #ffd98a;
+  font: 500 10px/1.45 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-lang-hint[hidden] {
+  display: none;
+}
+#flexAutoCaptions .cx-simple-lang-hint b {
+  color: #fff1cc;
+}
+
+/* Guide Grid modal: the close button sat right against the title */
+#guideGridModal .modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+#guideGridModal #btnGuideGridClose {
+  margin-left: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+/* ============================================================
+   Colors tab: same visual language as the rest of the panel
+   (line icons in the theme green, one primary-button style)
+   ============================================================ */
+#panel-colors .cx-color-card-icon {
+  background: #0d150f !important;
+  border: 1px solid #22322a !important;
+  color: #3cff5f !important;
+}
+#panel-colors .cx-color-card-icon svg,
+#panel-colors .cx-eyedropper-btn svg,
+#panel-colors .cx-stop-eyedropper svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#panel-colors .cx-color-card-icon svg circle[r=".9"] {
+  fill: currentColor;
+  stroke: none;
+}
+#panel-colors .cx-eyedropper-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #0b120d !important;
+  border: 1px solid #2a382f !important;
+  color: #79f0a2 !important;
+}
+#panel-colors .cx-eyedropper-btn:hover,
+#panel-colors .cx-eyedropper-btn.is-active {
+  border-color: #3cff5f !important;
+  color: #eafff0 !important;
+}
+#panel-colors .cx-stop-eyedropper {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #79f0a2 !important;
+}
+#panel-colors .cx-stop-eyedropper svg {
+  width: 12px;
+  height: 12px;
+}
+/* The one primary action matches the other tabs' primary buttons
+   instead of a bright gradient block. */
+#panel-colors .cx-btn.cx-btn-primary {
+  background: linear-gradient(180deg, #16301f, #0e1f14) !important;
+  border: 1px solid #3cff5f !important;
+  color: #dfffe6 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.14) !important;
+  text-shadow: none !important;
+}
+#panel-colors .cx-btn.cx-btn-primary:hover {
+  background: linear-gradient(180deg, #1c3d27, #12281a) !important;
+  color: #ffffff !important;
+}
+#panel-colors .cx-stop-eyedropper {
+  gap: 5px !important;
+}
+#panel-colors .cx-stop-eyedropper span {
+  font: 700 8.5px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+/* ============================================================
+   Caption Studio: fit narrow panels
+   The simple-caption grid sized its column from content, so the
+   step bar and source cards ran past the right edge below ~450px.
+   ============================================================ */
+#flexAutoCaptions .cx-simple-srt { grid-template-columns: minmax(0, 1fr) !important; }
+#flexAutoCaptions .cx-simple-srt > * { min-width: 0; }
+#flexAutoCaptions .cx-cap-stepbar-step { min-width: 0 !important; }
+#flexAutoCaptions .cx-cap-stepbar-step small { font-size: 7.5px !important; }
+#flexAutoCaptions .cx-cap-sources { margin-bottom: 10px; }
+#flexAutoCaptions .cx-cap-source-card { min-width: 0; }
+#flexAutoCaptions .cx-cap-source-icon svg { width: 15px; height: 15px; }
+@media (max-width: 460px) {
+  #flexAutoCaptions .cx-cap-stepbar { gap: 2px !important; padding: 5px !important; }
+  #flexAutoCaptions .cx-cap-stepbar-arrow { display: none; }
+  #flexAutoCaptions .cx-cap-stepbar-step { padding: 5px 1px !important; }
+  #flexAutoCaptions .cx-cap-stepbar-step small { display: none; }
+  #flexAutoCaptions .cx-cap-stepbar-step b { font-size: 7.5px !important; letter-spacing: 0.06em !important; }
+  #flexAutoCaptions .cx-cap-sources { grid-template-columns: minmax(0, 1fr) !important; }
+  #flexAutoCaptions .cx-cap-source-or { justify-self: center; }
+  #flexAutoCaptions .cx-cap-source-card {
+    display: grid !important;
+    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-areas: "icon title" "icon sub" "btn btn" "file file";
+    column-gap: 9px !important; row-gap: 3px !important;
+    align-items: center !important;
+    text-align: left !important;
+  }
+  #flexAutoCaptions .cx-cap-source-icon { grid-area: icon; margin: 0 !important; }
+  #flexAutoCaptions .cx-cap-source-card strong { grid-area: title; }
+  #flexAutoCaptions .cx-cap-source-card > span { grid-area: sub; }
+  #flexAutoCaptions .cx-cap-source-card .tool-btn { grid-area: btn; margin-top: 4px; }
+  #flexAutoCaptions .cx-cap-source-card .cx-simple-srt-file { grid-area: file; text-align: center; }
+  #flexAutoCaptions .cx-simple-srt-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* MOGRT library toolbar: line icons instead of letters */
+#sfxMogrtView [data-orbit-lib-ico] { font-size: 0 !important; }
+#sfxMogrtView [data-orbit-lib-ico] svg.orbit-lib-ico {
+  width: 14px; height: 14px;
+  display: block;
+  pointer-events: none;
+}
+#sfxMogrtView .lib-view-btn[data-orbit-lib-ico] svg.orbit-lib-ico,
+#sfxMogrtView #btnRefreshView svg.orbit-lib-ico { width: 13px; height: 13px; }
+
+/* Orbit 3D: button captions were 5.5–6.5px, below readable size */
+#panel-advanced small { font-size: 7.5px !important; line-height: 1.25 !important; }
+#panel-advanced button b,
+#panel-advanced :is(.cx3d-rig-select, .cx3d-lens-control, .cx3d-shot-row) > span { font-size: 7.5px !important; }
+#panel-advanced button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+#panel-advanced .cx3d-footer-status { font-size: 8px !important; }

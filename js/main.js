@@ -4012,6 +4012,15 @@
       var jsonPath = outputPrefix + ".json";
       var subtitleMaxLength = language === "bn" ? 42 : 64;
       var whisperArgs = ["-m", runtime.model, "-f", wavPath, "-osrt", "-ojf", "-of", outputPrefix, "-l", language || "auto", "-pp", "-ml", String(subtitleMaxLength), "-sow", "-sns"];
+      // Whisper (Tiny/Base especially) often writes Bangla speech in Latin
+      // letters ("Banglish") even with -l bn. A short prompt in the target
+      // script steers the decoder to that script.
+      var SCRIPT_PROMPTS = {
+        bn: "আমি বাংলায় কথা বলছি। এই ভিডিওর সব কথা বাংলা অক্ষরে লেখা হবে।",
+        hi: "मैं हिंदी में बात कर रहा हूँ। सब कुछ देवनागरी में लिखा जाएगा।",
+        ur: "میں اردو میں بات کر رہا ہوں۔ سب کچھ اردو رسم الخط میں لکھا جائے گا۔"
+      };
+      if (SCRIPT_PROMPTS[language]) whisperArgs.push("--prompt", SCRIPT_PROMPTS[language]);
       setStatus("Preparing audio locally with FFmpeg...", "busy");
       var ffmpegArgs = ["-y", "-loglevel", "error", "-i", mediaPath, "-vn", "-ac", "1", "-ar", "16000"];
       var enhanceChain = enhance ? buildVoiceEnhanceChain(enhance) : null;
@@ -4054,7 +4063,15 @@
         var count = refreshImportState().length;
         renderCueList();
         if (count) setCaptionStage("edit");
-        setStatus("Transcription complete: " + count + " cue(s). Review the text and timing, then continue to Style.", "ok");
+        // Still mostly Latin letters after asking for Bangla: the model is too
+        // small for this audio. Say so instead of handing over Banglish.
+        var scriptHint = "";
+        if (language === "bn") {
+          var bnChars = (text.match(/[\u0980-\u09FF]/g) || []).length;
+          var latinChars = (text.match(/[A-Za-z]/g) || []).length;
+          if (latinChars > bnChars) scriptHint = " Most of it came out in English letters — try Whisper Small or Medium for Bangla script.";
+        }
+        setStatus("Transcription complete: " + count + " cue(s). Review the text and timing, then continue to Style." + scriptHint, scriptHint ? "error" : "ok");
         try {
           document.dispatchEvent(new CustomEvent("compx:srt-ready", {
             detail: { srt:text, count:count, wordTimings:lastWordTimings }
@@ -4758,6 +4775,7 @@
     }
     function applyCaptionTemplate(template, button, persist) {
       selectedCaptionTemplate = template;
+      if (typeof paintRecap === "function") paintRecap();
       if (templateGrid) Array.prototype.forEach.call(templateGrid.querySelectorAll(".tanim-card"), function (card) { card.classList.toggle("active", card === button); card.setAttribute("aria-pressed", String(card === button)); });
       if (templateSelected) {
         templateSelected.querySelector("strong").textContent = template.name;
@@ -4772,10 +4790,11 @@
     }
     function clearCaptionTemplate(persist) {
       selectedCaptionTemplate = null;
+      if (typeof paintRecap === "function") paintRecap();
       if (templateGrid) Array.prototype.forEach.call(templateGrid.querySelectorAll(".tanim-card"), function (card) { card.classList.remove("active"); card.setAttribute("aria-pressed", "false"); });
       if (templateSelected) {
-        templateSelected.querySelector("strong").textContent = "Select Animation";
-        templateSelected.querySelector("span").textContent = "Preview and select one animation. It will be applied to every caption.";
+        templateSelected.querySelector("strong").textContent = "No animation";
+        templateSelected.querySelector("span").textContent = "Captions appear as plain text. Pick a style above to animate them.";
       }
       if (persist !== false) {
         try {
@@ -4955,6 +4974,21 @@
         if (step.getAttribute("data-simple-caption-stage") !== "source") step.disabled = !hasCues;
       });
     }
+    Array.prototype.forEach.call(root.querySelectorAll("[data-simple-go]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var stepBtn = root.querySelector('[data-simple-caption-stage="' + btn.getAttribute("data-simple-go") + '"]');
+        if (stepBtn && !stepBtn.disabled) stepBtn.click();
+      });
+    });
+    var langHint = document.getElementById("simpleLangHint");
+    function paintLangHint() {
+      if (!langHint) return;
+      var small = !simpleModel || simpleModel.value === "tiny" || simpleModel.value === "base";
+      langHint.hidden = !(simpleLanguage && simpleLanguage.value === "bn" && small);
+    }
+    simpleLanguage?.addEventListener("change", paintLangHint);
+    simpleModel?.addEventListener("change", paintLangHint);
+    paintLangHint();
     simpleStages.forEach(function (step) {
       step.addEventListener("click", function () {
         if (step.disabled) return;
@@ -4991,8 +5025,67 @@
       }
       if (generate) generate.disabled = parsed.cues.length === 0;
       unlockSimpleStages(parsed.cues.length > 0);
+      paintTimingReport(parsed);
+      paintRecap();
       return parsed;
     }
+
+    // What the SRT will actually do on the timeline: overlaps are trimmed to
+    // the next cue, very short cues flash, very long ones sit on screen.
+    function srtClock(seconds) {
+      var ms = Math.max(0, Math.round((Number(seconds) || 0) * 1000));
+      var m = Math.floor(ms / 60000), sec = Math.floor(ms / 1000) % 60, cs = Math.floor(ms % 1000 / 10);
+      return m + ":" + (sec < 10 ? "0" : "") + sec + "." + (cs < 10 ? "0" : "") + cs;
+    }
+    function paintTimingReport(parsed) {
+      var box = document.getElementById("simpleSrtTiming");
+      var list = document.getElementById("simpleSrtCueList");
+      var cues = parsed.cues, overlaps = 0, short = 0, long = 0, i;
+      var flags = [];
+      for (i = 0; i < cues.length; i++) {
+        var f = [];
+        if (i + 1 < cues.length && cues[i + 1].start < cues[i].end - 0.001) { overlaps++; f.push("overlaps next"); }
+        var d = cues[i].end - cues[i].start;
+        if (d < 0.3) { short++; f.push("very short"); }
+        else if (d > 7) { long++; f.push("long"); }
+        flags.push(f);
+      }
+      if (box) {
+        if (!cues.length) { box.innerHTML = ""; }
+        else {
+          var bits = [];
+          if (overlaps) bits.push(overlaps + " overlap" + (overlaps === 1 ? "" : "s") + " (each is trimmed to the next cue)");
+          if (short) bits.push(short + " under 0.3s");
+          if (long) bits.push(long + " over 7s");
+          if (parsed.invalid) bits.push(parsed.invalid + " invalid block" + (parsed.invalid === 1 ? "" : "s") + " skipped");
+          box.className = "cx-srt-timing " + (bits.length ? "has-warn" : "is-ok");
+          box.textContent = bits.length ? "Timing: " + bits.join(" · ") + "." : "Timing looks good: no overlaps, nothing too short or too long.";
+        }
+      }
+      if (list) {
+        var html = "", show = Math.min(cues.length, 200);
+        for (i = 0; i < show; i++) {
+          html += '<li class="' + (flags[i].length ? "has-warn" : "") + '"><time>' + srtClock(cues[i].start) + " → " + srtClock(cues[i].end) + "</time><span>" +
+            escapeHtml(cues[i].text) + "</span>" + (flags[i].length ? "<em>" + flags[i].join(", ") + "</em>" : "") + "</li>";
+        }
+        if (cues.length > show) html += "<li><span>… " + (cues.length - show) + " more</span></li>";
+        list.innerHTML = html;
+      }
+    }
+    function paintRecap() {
+      var recap = document.getElementById("simpleSrtRecap");
+      if (!recap) return;
+      var pos = document.getElementById("simpleSrtPosition");
+      var size = document.getElementById("simpleSrtFontSize");
+      var font = (simpleFontInput && simpleFontInput.value) || "System default";
+      recap.textContent = "Animation: " + (selectedCaptionTemplate ? selectedCaptionTemplate.name : "None (plain captions)") +
+        " · Font: " + font + " · " + ((size && size.value) || 72) + " px · " +
+        (pos && pos.options[pos.selectedIndex] ? pos.options[pos.selectedIndex].text : "Bottom");
+    }
+    ["simpleSrtPosition", "simpleSrtFontSize", "simpleSrtFont"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.addEventListener("change", paintRecap); el.addEventListener("input", paintRecap); }
+    });
     function readFile(file) {
       if (!file) return;
       if (!/\.srt$/i.test(String(file.name || ""))) { setStatus("Choose a standard .srt file.", "error"); return; }
@@ -5004,8 +5097,8 @@
         editor.value = String(text || "");
         if (fileName) fileName.textContent = file.name || file.path || "SRT loaded";
         var parsed = refresh();
-        if (parsed.cues.length) setSimpleStage("style");
-        setStatus(parsed.cues.length ? "SRT ready. Review the text, choose basic style, then Create Captions." : "No valid SRT cues were found.", parsed.cues.length ? "ok" : "error");
+        if (parsed.cues.length) setSimpleStage("review");
+        setStatus(parsed.cues.length ? "SRT ready. Check the timing, then pick an animation and font." : "No valid SRT cues were found.", parsed.cues.length ? "ok" : "error");
       }).catch(function (error) { setStatus("Could not read SRT: " + error.message, "error"); });
     }
 
@@ -5084,8 +5177,8 @@
       var parsed = refresh();
       if (transcribe) transcribe.disabled = !mediaReady;
       updateSimpleTranscriptionProgress("complete", "Transcription complete: " + parsed.cues.length + " cue(s).");
-      if (parsed.cues.length) setSimpleStage("style");
-      setStatus("Transcription complete: " + parsed.cues.length + " cue(s). Review the SRT, then Create Captions.", parsed.cues.length ? "ok" : "error");
+      if (parsed.cues.length) setSimpleStage("review");
+      setStatus("Transcription complete: " + parsed.cues.length + " cue(s). Check the timing, then pick an animation and font.", parsed.cues.length ? "ok" : "error");
     });
     if (legacyStatus && typeof MutationObserver !== "undefined") {
       new MutationObserver(function () {
@@ -5112,19 +5205,21 @@
     generate?.addEventListener("click", function () {
       var parsed = refresh();
       if (!parsed.cues.length) { setStatus("Load a valid SRT first.", "error"); return; }
-      var activeTemplate = selectedCaptionTemplate;
-      if (!activeTemplate || !activeTemplate.file) { setStatus("Select one Text Animation before creating captions.", "error"); return; }
+      // The animation is optional: without one the captions are plain text.
+      var activeTemplate = selectedCaptionTemplate && selectedCaptionTemplate.file ? selectedCaptionTemplate : null;
+      var timingBase = document.getElementById("simpleSrtTimingBase");
       var payload = {
         cues: parsed.cues.map(function (cue) { return { start:cue.start, end:cue.end, text:cue.text }; }),
         position: document.getElementById("simpleSrtPosition").value,
-        textAnimationPreset: activeTemplate.file,
-        textAnimationName: activeTemplate.name,
+        textAnimationPreset: activeTemplate ? activeTemplate.file : "",
+        textAnimationName: activeTemplate ? activeTemplate.name : "",
+        timingBase: timingBase ? timingBase.value : "comp",
         font: resolveSimpleCaptionFont(),
         fontSize: Number(document.getElementById("simpleSrtFontSize").value) || 72,
         shadow: document.getElementById("simpleSrtShadow").checked
       };
       generate.disabled = true;
-      setStatus("Creating " + parsed.cues.length + " captions with " + activeTemplate.name + "…", "busy");
+      setStatus("Creating " + parsed.cues.length + " captions" + (activeTemplate ? " with " + activeTemplate.name : "") + "…", "busy");
       callHost("ae_createSimpleSrtCaptions(" + hostArg(JSON.stringify(payload)) + ")", function (result) {
         generate.disabled = false;
         if (result && result.success) {
