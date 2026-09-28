@@ -1,0 +1,249 @@
+/* Orbit dashboard — one responsive layout for Tools and the shared shell.
+   Desktop reference stays two-column down to 480px; compact dock below that. */
+:root{--od-green:#3cff5f;--od-cyan:#52e2ec;--od-violet:#d16be9;--od-muted:#89948e;--od-line:#26332d;--od-bg:#050a08}
+#app{background:var(--od-bg)!important;color:#e7eee9!important}
+#app .cx-title-bar{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 46px!important;min-height:46px!important;max-height:46px!important;height:46px!important;padding:0 14px!important;gap:12px;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 70% 140%,#235031 0%,#07140b 35%,#060b08 66%)!important;border-bottom:1px solid var(--od-line)!important}
+#app .cx-header-brand{display:flex!important;flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;gap:10px!important}
+#app .cx-header-logo{width:36px!important;height:36px!important;flex:0 0 36px!important;padding:0!important;border-color:#334538!important;border-radius:9px!important;box-shadow:none!important}
+#app .orbit-header-copy{min-width:0!important;max-width:none!important;flex:1!important}
+#app .orbit-header-copy strong{display:block!important;font:600 21px/1.2 "Segoe UI",sans-serif!important;letter-spacing:-.03em!important;text-transform:none!important;color:#ecf1ee!important;white-space:nowrap!important}
+#app .orbit-header-copy strong span{display:inline!important;font:inherit!important;letter-spacing:inherit!important;color:var(--od-green)!important}
+#app .orbit-header-copy small{display:block;margin-top:5px;font:500 7px/1.2 "Segoe UI",sans-serif;letter-spacing:.28em;color:#849289;text-transform:uppercase}
+#app .cx-brand-bar{flex:0 0 auto!important;gap:7px!important;margin:0!important}
+#app .cx-brand-spacer{display:none!important}
+#app .orbit-host-status{display:flex!important;gap:6px!important;padding:6px 8px!important;background:none!important;border:0!important;box-shadow:none!important}
+#app .orbit-host-status span{display:inline!important;font:600 9px/1.2 "Segoe UI",sans-serif!important;letter-spacing:.1em!important;color:var(--od-green)!important}
+#app .orbit-host-status span::after{content:none!important}
+#app .cx-icon-btn{height:29px!important;width:29px!important;border-color:#2b3830!important;background:#0a110d!important;box-shadow:none!important}
+#app .cx-app-main{min-width:0;min-height:0}
+#app #appTabsRow{flex:0 0 52px!important;width:52px!important;padding:8px 5px!important;gap:4px!important;background:linear-gradient(#080e0b,#050a07)!important;border-right:1px solid #243129!important}
+#app #appTabsRow .app-tab{width:100%!important;height:40px!important;min-height:40px!important;padding:5px 2px!important;gap:5px!important;border:1px solid transparent!important;background:none!important;box-shadow:none!important;animation:none!important;color:#a8b5ad!important}
+#app #appTabsRow .app-tab .orbit-tab-icon{width:23px!important;height:23px!important}
+#app #appTabsRow .app-tab .orbit-tab-icon svg{width:23px!important;height:23px!important;stroke:currentColor!important;stroke-width:1.4!important}
+#app #appTabsRow .app-tab .orbit-tab-label{display:block!important;position:static!important;opacity:1!important;visibility:visible!important;transform:none!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;font:500 10px/1.2 "Segoe UI",sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important}
+#app #appTabsRow .app-tab.active{color:var(--od-green)!important;background:linear-gradient(90deg,#102a16,#0b170d)!important;border-color:#1c3c23!important;box-shadow:inset 3px 0 var(--od-green)!important}
+#app #appTabsRow .app-tab:hover{border-color:#31583c!important}
+#app #appTabsRow .app-tab.rail-purge{margin-top:auto!important}
+#app #panel-tools{background:var(--od-bg)!important;min-width:0!important}
+#app #panel-tools .tools-scroll{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ grid-template-areas:"modify transform" "native project" "actions effects" "timeline timeline" "text text";
+ grid-auto-rows:max-content!important;gap:6px!important;padding:6px!important;margin:0!important;
+ align-content:start!important;align-items:stretch!important;justify-items:stretch!important;min-width:0!important;min-height:0!important;height:100%!important;
+ overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important;
+ background:radial-gradient(ellipse at 75% 0%,#0b180e 0%,#050907 45%)!important
+}
+#app #panel-tools .tools-primary-row,#app #panel-tools .tools-workflow-row,#app #panel-tools .creation-tools-section{display:contents!important}
+#app #panel-tools .creation-tools-section>.tool-section-head{display:none!important}
+#app #panel-tools .matrix-transform{grid-area:transform}
+#app #panel-tools .subgroup-effects{grid-area:effects}
+#app #panel-tools .subgroup-layers{grid-area:actions}
+#app #panel-tools .subgroup-timeline{grid-area:timeline}
+#app #panel-tools .subgroup-textmask{grid-area:text}
+#app #panel-tools .tools-project-section{grid-area:project}
+#app #panel-tools .matrix-trim{grid-area:modify}
+#app #panel-tools .tools-native-section{grid-area:native}
+#app #panel-tools .tool-section,#app #panel-tools .tool-subgroup{
+ --action-color:var(--od-green);display:flex;flex-direction:column;gap:5px!important;min-width:0!important;min-height:0!important;
+ height:auto!important;margin:0!important;padding:7px!important;box-sizing:border-box!important;border:1px solid #29392f!important;border-radius:8px!important;
+ background:linear-gradient(130deg,#101813,#080e0b 70%)!important;box-shadow:inset 0 1px #ffffff03!important;overflow:hidden
+}
+#app #panel-tools .tool-section-head,#app #panel-tools .tool-subgroup-title{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;
+ gap:6px!important;min-height:22px!important;height:auto!important;padding:0 0 4px!important;margin:0!important;border:0!important;border-bottom:1px solid #25332b!important;
+ border-radius:0!important;background:none!important;font:600 11px/1.15 "Segoe UI",sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#edf3ee!important
+}
+#app #panel-tools .tool-section-title{display:flex!important;align-items:center!important;gap:7px!important;padding:0!important;margin:0!important;font:600 11px/1.15 "Segoe UI",sans-serif!important;letter-spacing:.08em!important;color:#edf3ee!important}
+#app #panel-tools .tool-section-title::before,#app #panel-tools .tool-subgroup-title::before{content:""!important;display:block!important;position:static!important;opacity:1!important;visibility:visible!important;flex:0 0 20px;width:20px!important;height:20px!important;background:var(--section-icon) center/contain no-repeat!important;transform:none!important;box-shadow:none!important;border:0!important}
+#app #panel-tools .tool-help{margin-left:auto!important;flex:none;font:500 9px/1 "Segoe UI",sans-serif!important;color:#8da195!important}
+#app #panel-tools .tool-section-action{margin-left:auto!important;font:500 8px/1 "Segoe UI",sans-serif!important;color:#9aa99e!important}
+#app #panel-tools .tool-grid{display:grid!important;gap:5px!important;min-width:0!important;margin:0!important;padding:0!important}
+#app #panel-tools .tool-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#app #panel-tools .tool-grid-3,#app #panel-tools .tool-grid-6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#app #panel-tools .tool-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#app #panel-tools .tool-btn{
+ display:flex!important;position:relative!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ gap:3px!important;width:100%!important;max-width:none!important;min-width:0!important;min-height:36px!important;height:auto!important;
+ margin:0!important;padding:4px 3px!important;grid-column:auto!important;box-sizing:border-box!important;
+ background:linear-gradient(135deg,#141d17,#0a100c)!important;border:1px solid #2a382f!important;border-radius:6px!important;
+ color:#e0e9e2!important;box-shadow:inset 0 1px #ffffff03!important;transform:none!important;animation:none!important;
+ font:500 11px/1.15 "Segoe UI",sans-serif!important;letter-spacing:0!important;text-transform:none!important;white-space:normal!important;text-align:center!important
+}
+#app #panel-tools .tool-btn::before,#app #panel-tools .tool-btn::after{content:none!important;display:none!important}
+#app #panel-tools .tool-btn[data-orbit-icon]::before{
+ content:""!important;display:block!important;position:static!important;flex:0 0 16px;width:16px!important;height:16px!important;
+ opacity:1!important;visibility:visible!important;transform:none!important;border:0!important;box-shadow:none!important;
+ background:var(--orbit-icon) center/contain no-repeat!important;-webkit-mask:none!important;mask:none!important;pointer-events:none
+}
+#app #panel-tools .tool-btn:hover{border-color:#43844f!important;background:#122017!important;color:#fff!important}
+#app #panel-tools .tool-btn:focus-visible{outline:2px solid var(--od-green);outline-offset:1px}
+#app #panel-tools .tool-btn.active{background:#142d19!important;border-color:#35c64b!important;color:#d5ffdb!important}
+#app #panel-tools .tool-btn.danger:hover{border-color:#c75c64!important}
+#app #panel-tools .tool-btn.wide{grid-column:auto!important}
+#app #panel-tools .pasta-shape-toggle{display:flex!important;align-items:center!important;gap:4px!important;margin:0!important;font:500 9px/1 "Segoe UI",sans-serif!important;letter-spacing:0;text-transform:none;color:#94a89a!important}
+#app #panel-tools .pasta-shape-toggle input{margin:0!important;width:12px;height:12px}
+#app #panel-tools .matrix-transform-body{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(80px,1fr);grid-template-areas:"align anchor" "flip flip";gap:5px 6px;align-items:start;flex:1}
+#app #panel-tools .matrix-align-block{grid-area:align;min-width:0;margin:0;padding:0;background:none;border:0}
+#app #panel-tools .matrix-anchor-block{grid-area:anchor;min-width:0;margin:0;padding:0;background:none;border:0}
+#app #panel-tools .matrix-flip-block{grid-area:flip;min-width:0;margin:0;padding:0;background:none;border:0}
+#app #panel-tools .matrix-mini-title{font:500 9px/1.2 "Segoe UI",sans-serif!important;letter-spacing:0;color:#a3b4a8;margin:0 0 4px}
+#app #panel-tools .matrix-flip-block .matrix-mini-title{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:14px}
+#app #panel-tools .matrix-flip-block .qa-switch{gap:5px;flex:0 0 auto}
+#app #panel-tools .matrix-flip-block .qa-switch-label{font-size:8px}
+#app #panel-tools .matrix-flip-block .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#app #panel-tools .matrix-align-block .tool-grid{height:66px}
+#app #panel-tools .tool-btn[data-tool="align"]{min-height:30px!important;padding:2px!important;font-size:0!important;gap:0!important}
+#app #panel-tools .tool-btn[data-tool="align"]::before{flex-basis:19px;width:19px!important;height:19px!important}
+#app #panel-tools .cx-anchor-grid{width:100%!important;max-width:98px!important;margin:0 auto!important;padding:4px 0!important;border:1px solid #25372b;border-radius:6px;gap:3px!important}
+#app #panel-tools .cx-anchor-grid .tool-btn{width:100%!important;min-width:0!important;min-height:18px!important;height:18px!important;padding:2px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important}
+#app #panel-tools .anchor-dot{width:7px!important;height:7px!important;border:1px solid #9baa9f!important;border-radius:50%!important;background:#4f5f53!important;box-shadow:none!important}
+#app #panel-tools .anchor-dot-btn.active .anchor-dot{width:11px!important;height:11px!important;border:1px solid #72ff89!important;background:#36f85c!important;box-shadow:0 0 0 3px #195426,0 0 8px #36f85c77!important}
+#app #panel-tools .layer-match-toggle{display:flex!important;align-items:center!important;gap:5px;font:500 9px/1.2 "Segoe UI",sans-serif!important;color:#91a297!important;text-transform:none;letter-spacing:0;margin:0!important;cursor:pointer}
+#app #panel-tools .layer-match-toggle input{width:12px;height:12px}
+#app #panel-tools .subgroup-layers .tool-btn{min-height:40px!important}
+#app #panel-tools .subgroup-effects .tool-grid{display:flex!important;flex-direction:column!important;gap:0!important;border:1px solid #26372b;border-radius:6px;overflow:hidden;flex:1}
+#app #panel-tools .subgroup-effects .tool-btn{flex:1 1 auto!important;flex-direction:row!important;justify-content:flex-start!important;min-height:24px!important;padding:4px 7px!important;gap:9px!important;border:0!important;border-bottom:1px solid #24372a!important;border-radius:0!important;background:linear-gradient(110deg,#111b14,#09110c)!important;transition:background .15s ease,color .15s ease,box-shadow .15s ease!important}
+#app #panel-tools .subgroup-effects .tool-btn:last-child{border-bottom:0!important}
+#app #panel-tools .subgroup-effects .tool-btn::after{content:"+"!important;display:block!important;position:static!important;margin-left:auto!important;opacity:.7!important;transform:none!important;font:400 15px/1 "Segoe UI",sans-serif!important;color:#99aea0!important;transition:color .15s ease,opacity .15s ease}
+/* Colored hover glow per-effect using icon accent color */
+#app #panel-tools .subgroup-effects .tool-btn[data-orbit-icon="gradient"]:hover{background:linear-gradient(90deg,rgba(82,226,236,.14),rgba(82,226,236,.03) 60%)!important;color:#a5f2f7!important;box-shadow:inset 3px 0 #52e2ec!important}
+#app #panel-tools .subgroup-effects .tool-btn[data-orbit-icon="glow"]:hover{background:linear-gradient(90deg,rgba(60,255,95,.16),rgba(60,255,95,.03) 60%)!important;color:#c8ffd0!important;box-shadow:inset 3px 0 #3cff5f!important}
+#app #panel-tools .subgroup-effects .tool-btn[data-orbit-icon="fill"]:hover{background:linear-gradient(90deg,rgba(82,226,236,.14),rgba(82,226,236,.03) 60%)!important;color:#a5f2f7!important;box-shadow:inset 3px 0 #52e2ec!important}
+#app #panel-tools .subgroup-effects .tool-btn[data-orbit-icon="tint"]:hover{background:linear-gradient(90deg,rgba(82,226,236,.14),rgba(82,226,236,.03) 60%)!important;color:#a5f2f7!important;box-shadow:inset 3px 0 #52e2ec!important}
+#app #panel-tools .subgroup-effects .tool-btn[data-orbit-icon="blur"]:hover{background:linear-gradient(90deg,rgba(82,226,236,.14),rgba(82,226,236,.03) 60%)!important;color:#a5f2f7!important;box-shadow:inset 3px 0 #52e2ec!important}
+#app #panel-tools .subgroup-effects .tool-btn:hover::after{opacity:1!important;color:inherit!important}
+#app #panel-tools .subgroup-effects .tool-btn:hover{border-color:transparent!important}
+#app #panel-tools .subgroup-timeline .tool-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#app #panel-tools .subgroup-timeline .tool-btn{min-height:38px!important;font-size:9px!important;padding:3px 2px!important;gap:2px!important}
+#app #panel-tools .subgroup-timeline .tool-btn::before{width:17px!important;height:17px!important;flex-basis:17px!important}
+#app #panel-tools .subgroup-textmask .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#app #panel-tools .subgroup-textmask .tool-btn{min-height:38px!important;font-size:10px!important}
+#app #panel-tools .subgroup-textmask .tool-btn::before{width:17px!important;height:17px!important;flex-basis:17px!important}
+#app #panel-tools .tools-project-section .tool-btn,#app #panel-tools .matrix-trim .tool-btn,#app #panel-tools .tools-native-section .tool-btn{min-height:36px!important;font-size:10px!important}
+#app #panel-tools .tools-project-section .tool-btn::before,#app #panel-tools .matrix-trim .tool-btn::before,#app #panel-tools .tools-native-section .tool-btn::before{width:16px!important;height:16px!important;flex-basis:16px!important}
+@media(max-width:760px){
+ #app .cx-title-bar{flex-basis:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;padding:0 10px!important;gap:8px!important}
+ #app .orbit-header-copy strong{font-size:18px!important}
+ #app .orbit-header-copy small{font-size:6px!important;letter-spacing:.18em!important}
+ #app .cx-header-logo{width:30px!important;height:30px!important;flex-basis:30px!important}
+ #app #appTabsRow{width:48px!important;flex-basis:48px!important;padding:7px 3px!important}
+ #app #appTabsRow .app-tab{min-height:38px!important;height:38px!important}
+ #app #appTabsRow .app-tab .orbit-tab-label{font-size:8px!important}
+ #app #appTabsRow .app-tab .orbit-tab-icon,#app #appTabsRow .app-tab .orbit-tab-icon svg{width:19px!important;height:19px!important}
+ #app #panel-tools .tools-scroll{gap:5px!important;padding:5px!important}
+ #app #panel-tools .tool-section,#app #panel-tools .tool-subgroup{padding:6px!important}
+ #app #panel-tools .tool-section-title,#app #panel-tools .tool-subgroup-title{font-size:10px!important;letter-spacing:.05em!important}
+ #app #panel-tools .tool-section-title::before,#app #panel-tools .tool-subgroup-title::before{width:18px!important;height:18px!important;flex-basis:18px}
+ #app #panel-tools .subgroup-layers .tool-btn{min-height:36px!important}
+}
+@media(max-width:479px){
+ #app #panel-tools .tools-scroll{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"modify" "transform" "native" "project" "actions" "effects" "timeline" "text"}
+ #app #panel-tools .subgroup-effects .tool-btn{flex:none!important;min-height:24px!important}
+ #app #panel-tools .subgroup-layers .tool-grid{grid-template-columns:repeat(3,minmax(0,110px))!important;justify-content:center!important}
+ #app #panel-tools .subgroup-textmask .tool-grid{grid-template-columns:repeat(2,minmax(0,90px))!important;justify-content:center!important}
+ #app #panel-tools .matrix-align-block .tool-grid{max-width:225px}
+ #app .orbit-header-copy small{display:none!important}
+ #app .orbit-host-status span{display:none!important}
+ #app .cx-header-brand{gap:6px!important}
+ #app .orbit-header-copy strong{font-size:15px!important}
+}
+@media(max-width:360px){
+ #app #appTabsRow{width:40px!important;flex-basis:40px!important}
+ #app #appTabsRow .app-tab .orbit-tab-label{display:none!important}
+ #app #appTabsRow .app-tab{height:34px!important;min-height:34px!important}
+ #app .cx-title-bar{padding:0 7px!important;gap:5px!important}
+ #app .cx-header-logo{width:24px!important;height:24px!important;flex-basis:24px!important}
+ #app .orbit-header-copy strong{font-size:13px!important}
+ #app .cx-icon-btn{width:24px!important;height:24px!important}
+ #app .cx-brand-bar{gap:4px!important}
+ #app .orbit-host-status{display:none!important}
+ #app #panel-tools .tool-btn{font-size:10px!important}
+ #app #panel-tools .matrix-transform-body{grid-template-columns:minmax(0,1fr) 79px}
+ #app #panel-tools .subgroup-textmask .tool-grid{grid-template-columns:repeat(2,minmax(0,105px))!important}
+ #app #panel-tools .tool-section-title{font-size:10px!important}
+}
+@media(prefers-reduced-motion:reduce){#app #panel-tools .tool-btn{transition:none!important}}
+
+/* Shared header carries the orbit artwork; no separate welcome card. */
+#app .cx-title-bar::before{content:"";position:absolute;z-index:-1;pointer-events:none;right:17%;bottom:-62px;width:190px;height:105px;border:1px solid #4afb63;border-radius:50%;transform:rotate(-20deg);box-shadow:0 -2px 15px #219437}
+#app .cx-title-bar::after{content:"";position:absolute;z-index:-1;pointer-events:none;right:20%;bottom:-105px;width:150px;height:140px;background:radial-gradient(circle at 38% 10%,#25382c,#030805 55%);border-top:2px solid #a7ffa8;border-radius:50%;box-shadow:0 -6px 16px #3dff6655}
+#app #appTabsRow{overflow-y:auto}
+#app #appTabsRow .rail-account{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 32px;width:100%!important;height:32px!important;gap:3px;color:#a8b5ad}
+#app #appTabsRow .rail-account svg{width:17px;height:17px}
+#app #appTabsRow .rail-account-label{font:500 8px/1.2 "Segoe UI",sans-serif}
+/* Flip row now holds H Flip / V Flip / Pasta at the same size. */
+
+/* Right-side card auto-fill (matches the old 2.4.15 filled look) */
+#app #panel-tools .tools-project-section .tool-grid,#app #panel-tools .tools-native-section .tool-grid{flex:1;grid-auto-rows:1fr}
+#app #panel-tools .matrix-trim{gap:5px!important}
+#app #panel-tools .matrix-trim>.tool-grid{flex:1;grid-auto-rows:1fr}
+
+/* QUICK ACTIONS header: title left + Match Duration switch right */
+#app #panel-tools .subgroup-layers .tool-subgroup-title{justify-content:space-between!important;gap:8px!important}
+#app #panel-tools .subgroup-layers .tool-subgroup-title>span:first-child{flex:0 1 auto;min-width:0}
+#app #panel-tools .qa-switch{display:inline-flex;align-items:center;gap:6px;margin:0;padding:0;cursor:pointer;font:500 8.5px/1 "Segoe UI",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#94a89a;user-select:none;flex:0 0 auto}
+#app #panel-tools .qa-switch input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important}
+#app #panel-tools .qa-switch .qa-switch-track{position:relative;display:inline-block;width:26px;height:14px;background:#1a2a20;border:1px solid #2f4636;border-radius:8px;transition:background .18s ease,border-color .18s ease}
+#app #panel-tools .qa-switch .qa-switch-dot{position:absolute;top:1px;left:1px;width:10px;height:10px;background:#6b7d70;border-radius:50%;transition:transform .18s ease,background .18s ease}
+#app #panel-tools .qa-switch:hover .qa-switch-track{border-color:#4a9c5f}
+#app #panel-tools .qa-switch input:checked~.qa-switch-track{background:linear-gradient(90deg,#153a1e,#1c5028);border-color:#3cff5f;box-shadow:0 0 6px rgba(60,255,95,.35)}
+#app #panel-tools .qa-switch input:checked~.qa-switch-track .qa-switch-dot{transform:translateX(12px);background:#3cff5f;box-shadow:0 0 6px rgba(60,255,95,.6)}
+#app #panel-tools .qa-switch input:checked~.qa-switch-label{color:#c8ffd0}
+#app #panel-tools .qa-switch .qa-switch-label{transition:color .18s ease}
+
+/* SVGs have distinct semantic shapes, shared stroke weight and a restrained accent palette. */
+#app #panel-tools [data-orbit-icon="clipboard"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%2214%22%20height%3D%2217%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M9%205V2h6v3%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="move"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202v20M2%2012h20M8%206l4-4%204%204M8%2018l4%204%204-4M6%208l-4%204%204%204M18%208l4%204-4%204%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="layers"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m12%203%209%205-9%205-9-5%209-5ZM3%2012l9%205%209-5M3%2016l9%205%209-5%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="database"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%225%22%20rx%3D%228%22%20ry%3D%223%22%2F%3E%3Cpath%20d%3D%22M4%205v14c0%204%2016%204%2016%200V5M4%2012c0%204%2016%204%2016%200%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="bolt"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m14%202-9%2012h7l-2%208%209-12h-7l2-8Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="audio"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%208v8M8%204v16M12%202v20M16%205v14M20%209v6%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="text"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%206V3h16v3M12%203v18M8%2021h8%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="solid"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m12%202%209%205v10l-9%205-9-5V7l9-5ZM3%207l9%205%209-5M12%2012v10%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="null"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="camera"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%222%22%20y%3D%226%22%20width%3D%2214%22%20height%3D%2212%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22m16%2010%206-4v12l-6-4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="adjustment"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%203a9%209%200%200%201%200%2018Z%22%20fill%3D%22currentColor%22%20stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="shape"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m12%202%208%205v10l-8%205-8-5V7l8-5Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="gradient"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M6%206h12M6%209h9M6%2012h6M6%2015h3M6%2018h1%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="glow"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%224%22%2F%3E%3Cpath%20d%3D%22M12%201v3M12%2020v3M1%2012h3M20%2012h3M4%204l2%202M18%2018l2%202M4%2020l2-2M18%206l2-2%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="fill"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m9%203%2010%2010-7%207-10-10%207-7ZM4%2012h13M19%2015c0%200-2%203-2%204a2%202%200%200%200%204%200c0-1-2-4-2-4Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="tint"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202C8%207%205%2010%205%2014a7%207%200%200%200%2014%200c0-4-3-7-7-12Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="blur"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%225%22%20cy%3D%225%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%225%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%225%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2212%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%2212%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2219%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2219%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%2219%22%20r%3D%221%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="left"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%203v18M8%206h12v4H8zM8%2014h8v4H8z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="right"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%203v18M4%206h12v4H4zM8%2014h8v4H8z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="hcenter"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202v20M5%206h14v4H5zM8%2014h8v4H8z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="top"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%204h18M6%208h4v12H6zM14%208h4v8h-4z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="bottom"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2020h18M6%204h4v12H6zM14%208h4v8h-4z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="vcenter"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%2012h20M6%205h4v14H6zM14%208h4v8h-4z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="counter"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M9%203%206%2021M18%203l-3%2018M3%209h18M2%2016h18%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="folder"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%206h8l3%203h9v11H2V6ZM2%206V3h8l3%203h7%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="precomp"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%203H3v4M17%203h4v4M3%2017v4h4M21%2017v4h-4%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%2210%22%20height%3D%2210%22%20rx%3D%221%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="unprecomp"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M8%202H2v6M2%202l7%207M16%2022h6v-6M22%2022l-7-7%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%228%22%20height%3D%228%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="resize"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%2218%22%20height%3D%2214%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22m8%2010%208%204M8%2010v5M8%2010h5M16%2014v-5M16%2014h-5%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="trim"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M8%203H4v18h4M16%203h4v18h-4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="split"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202v20M8%205H3v14h5M16%205h5v14h-5%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="down"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%203h16M4%209h16M12%2012v9M8%2017l4%204%204-4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="duplicate"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%2214%22%20height%3D%2214%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M17%207V3H3v14h4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="crop"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%202v15h15M2%207h15v15%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="xpert"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%202v17h17M2%205h17v17M10%2012l3-5-1%205h4l-3%205%201-5%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="xcrop"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%208V3h5M16%203h5v5M21%2016v5h-5M8%2021H3v-5%22%2F%3E%3Cpath%20d%3D%22M9%209h6v6H9z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="uppercase"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m3%2020%206-16%206%2016M5%2014h8M17%2011c5-3%205%201%205%204v5M22%2015c-8-2-8%206%200%204%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="explode"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%203v7M4%203h6M17%2014v7M14%2014h6M13%204h7v7M20%204l-7%207M4%2013v7h7M4%2020l7-7%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="masks"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%222%22%20y%3D%224%22%20width%3D%2212%22%20height%3D%2212%22%2F%3E%3Cpath%20d%3D%22M10%208h12v12H10z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="path"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%2352e2ec%22%20stroke%3D%22%2352e2ec%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%2019c0-15%2016%2016%2016-14%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%2217%22%20width%3D%224%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2218%22%20y%3D%223%22%20width%3D%224%22%20height%3D%224%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="lock"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%224%22%20y%3D%2210%22%20width%3D%2216%22%20height%3D%2212%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M8%2010V6a4%204%200%200%201%208%200v4M12%2014v4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="remove"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m5%205%2014%2014M19%205%205%2019%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="bounce"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%2020h20M3%2017C6-5%209-5%2012%2017c2-9%204-9%206%200l3-3%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="before"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202v20M10%205h11M10%2019h11M17%209l-3%203%203%203%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="after"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%202v20M3%205h11M3%2019h11M7%209l3%203-3%203%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="flip-h"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%204v16M20%204v16M7%208h4v8H7zM13%208h4v8h-4z%22%2F%3E%3Cpath%20d%3D%22m6%2012%204%204M18%2012l-4%204%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="flip-v"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%204h16M4%2020h16M7%207h10v4H7zM7%2013h10v4H7z%22%2F%3E%3Cpath%20d%3D%22m12%206%204%204M12%2018l4-4%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .matrix-transform{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202v20M2%2012h20M8%206l4-4%204%204M8%2018l4%204%204-4M6%208l-4%204%204%204M18%208l4%204-4%204%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .subgroup-effects{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%225%22%20rx%3D%228%22%20ry%3D%223%22%2F%3E%3Cpath%20d%3D%22M4%205v14c0%204%2016%204%2016%200V5M4%2012c0%204%2016%204%2016%200%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .subgroup-layers{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m14%202-9%2012h7l-2%208%209-12h-7l2-8Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .subgroup-timeline{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%208v8M8%204v16M12%202v20M16%205v14M20%209v6%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .subgroup-textmask{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%206V3h16v3M12%203v18M8%2021h8%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .tools-project-section{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%206h8l3%203h9v11H2V6ZM2%206V3h8l3%203h7%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .matrix-trim{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m14%202-9%2012h7l-2%208%209-12h-7l2-8Z%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools .tools-native-section{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%223%22%2F%3E%3Cpath%20d%3D%22M12%203v3M12%2018v3M3%2012h3M18%2012h3M6.2%206.2l2.1%202.1M15.7%2015.7l2.1%202.1M17.8%206.2l-2.1%202.1M8.3%2015.7l-2.1%202.1%22%2F%3E%3C%2Fsvg%3E")}
+#app #panel-tools [data-orbit-icon="shadow"]{--orbit-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%23d16be9%22%20stroke%3D%22%23d16be9%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2011%22%20height%3D%2011%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22M15%209h4v11H8v-4%22%2F%3E%3C%2Fsvg%3E")}

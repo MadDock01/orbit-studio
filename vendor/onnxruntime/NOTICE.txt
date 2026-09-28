@@ -1,0 +1,10 @@
+ONNX Runtime Web 1.21.0
+Copyright (c) Microsoft Corporation
+Licensed under the MIT License.
+
+U2Net model
+Copyright (c) Xuebin Qin
+Licensed under the Apache License 2.0.
+
+The U2Net model is downloaded only after explicit user permission. Source and
+license metadata are recorded in scripts/background-removal-runtime.json.

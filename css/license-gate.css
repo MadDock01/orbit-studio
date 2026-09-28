@@ -1,0 +1,379 @@
+/* ============================================================
+   License gate styling.
+   Every colour resolves from orbit-foundation.css tokens, with a
+   hard fallback so the gate still renders if it loads first.
+   Change the accent in ONE place: --orbit-blue in orbit-foundation.css.
+   ============================================================ */
+.cx-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: var(--orbit-canvas, #07080c);
+  font-family: var(--sans, Inter, "Segoe UI", system-ui, sans-serif);
+  color: var(--orbit-text, #f3f5fa);
+}
+.cx-gate[hidden] { display: none; }
+
+.cx-gate__card {
+  width: 100%;
+  max-width: 300px;
+  padding: 20px 18px;
+  border: 1px solid var(--orbit-line, #283143);
+  border-radius: var(--radius, 9px);
+  background: var(--orbit-panel, #111620);
+}
+
+.cx-gate__brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.cx-gate__mark {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--orbit-blue-soft, #102c4d);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue, #4da3ff) 55%, #2f679c);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 0 0 1px rgba(12,15,22,0.35);
+  overflow: hidden;
+}
+.cx-gate__mark::after { content: none; }
+.cx-gate__mark img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  display: block;
+}
+.cx-gate__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--orbit-text, #f3f5fa);
+}
+.cx-gate__sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--orbit-muted, #9aa4b7);
+  letter-spacing: .02em;
+}
+
+.cx-gate__label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--orbit-faint, #657086);
+  margin-bottom: 6px;
+}
+
+.cx-gate__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--orbit-text, #f3f5fa);
+  background: var(--orbit-shell, #0c0f16);
+  border: 1px solid var(--orbit-line, #283143);
+  border-radius: var(--radius-sm, 7px);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.cx-gate__input::placeholder { color: var(--orbit-faint, #657086); letter-spacing: .04em; }
+.cx-gate__input:focus-visible {
+  border-color: var(--orbit-blue, #4da3ff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--orbit-blue, #4da3ff) 22%, transparent);
+}
+.cx-gate__input.is-error { border-color: var(--orbit-danger, #ff7180); }
+
+.cx-gate__msg {
+  min-height: 15px;
+  margin: 7px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--orbit-danger, #ff7180);
+}
+.cx-gate__msg.is-ok   { color: var(--orbit-success, #57d7a0); }
+.cx-gate__msg.is-info { color: var(--orbit-muted, #9aa4b7); }
+
+.cx-gate__btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--orbit-canvas, #07080c);
+  background: var(--orbit-blue, #4da3ff);
+  border: none;
+  border-radius: var(--radius-sm, 7px);
+  cursor: pointer;
+  transition: filter .15s, opacity .15s;
+}
+.cx-gate__btn:hover:not(:disabled) { filter: brightness(1.08); }
+.cx-gate__btn:focus-visible {
+  outline: 2px solid var(--orbit-blue, #4da3ff);
+  outline-offset: 2px;
+}
+.cx-gate__btn:disabled { opacity: .55; cursor: default; }
+
+.cx-gate__device {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--orbit-line, #283143);
+  font-size: 10.5px;
+  color: var(--orbit-muted, #9aa4b7);
+}
+.cx-gate__device-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--orbit-success, #57d7a0);
+  flex: 0 0 5px;
+}
+
+.cx-gate__note {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--orbit-faint, #657086);
+}
+
+.cx-gate__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 10.5px;
+  color: var(--orbit-faint, #657086);
+}
+.cx-gate__links a { color: var(--orbit-blue, #4da3ff); text-decoration: none; }
+.cx-gate__links a:hover { text-decoration: underline; }
+.cx-gate__links a:focus-visible { outline: 2px solid var(--orbit-blue, #4da3ff); outline-offset: 2px; }
+
+/* ---------------- offline grace banner ---------------- */
+.cx-grace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  font-size: 10.5px;
+  color: var(--orbit-warning, #f2bb62);
+  background: color-mix(in srgb, var(--orbit-warning, #f2bb62) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--orbit-warning, #f2bb62) 30%, transparent);
+}
+.cx-grace[hidden] { display: none; }
+.cx-grace__retry {
+  font: inherit;
+  color: var(--orbit-warning, #f2bb62);
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-gate *, .cx-grace * { transition: none !important; animation: none !important; }
+}
+
+/* Minimal Sign Out Icon Button in Header */
+.orbit-shell-header {
+  /* Keep the shell header out of normal flex flow. #app already reserves its height. */
+  position: absolute !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.cx-signout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: var(--orbit-faint, #657086);
+  font-family: ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.cx-signout-btn:hover {
+  background: rgba(234, 67, 53, 0.15);
+  border-color: rgba(234, 67, 53, 0.4);
+  color: #ff7180;
+  box-shadow: 0 0 8px rgba(234, 67, 53, 0.2);
+}
+
+.cx-signout-btn svg {
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+}
+
+
+/* Branded release confirmation — replaces CEP's native confirm dialog. */
+.cx-release-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(3, 6, 5, 0.76);
+  font-family: var(--sans, Inter, "Segoe UI", system-ui, sans-serif);
+}
+.cx-release-dialog[hidden] { display: none; }
+.cx-release-dialog__card {
+  width: min(100%, 330px);
+  padding: 20px;
+  color: #eaf4ed;
+  background: linear-gradient(145deg, #101812 0%, #0a0f0c 100%);
+  border: 1px solid #294534;
+  border-radius: 10px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.56), 0 0 0 1px rgba(69, 198, 109, 0.08);
+}
+.cx-release-dialog__icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 13px;
+  display: grid;
+  place-items: center;
+  color: #a7efbd;
+  background: #102a19;
+  border: 1px solid #315640;
+  border-radius: 8px;
+  font: 700 19px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.cx-release-dialog__eyebrow {
+  margin-bottom: 5px;
+  color: #78c991;
+  font: 700 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .12em;
+}
+.cx-release-dialog h2 {
+  margin: 0;
+  color: #f4f8f5;
+  font-size: 16px;
+  line-height: 1.25;
+}
+.cx-release-dialog p {
+  margin: 9px 0 0;
+  color: #adbcaf;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.cx-release-dialog__notice {
+  margin-top: 14px;
+  padding: 8px 9px;
+  color: #bed1c3;
+  background: rgba(69, 198, 109, 0.08);
+  border: 1px solid rgba(69, 198, 109, 0.2);
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.cx-release-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+.cx-release-dialog__actions button {
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 6px;
+  font: 700 10px var(--sans, Inter, "Segoe UI", system-ui, sans-serif);
+  cursor: pointer;
+}
+.cx-release-dialog__cancel { color: #c8d7cc; background: #101711; border: 1px solid #2c3d30; }
+.cx-release-dialog__confirm { color: #061009; background: #62d886; border: 1px solid #7eeb9d; }
+.cx-release-dialog__actions button:hover { filter: brightness(1.08); }
+.cx-release-dialog__actions button:focus-visible { outline: 2px solid #a7efbd; outline-offset: 2px; }
+@media (max-width: 360px) {
+  .cx-release-dialog__card { padding: 17px; }
+  .cx-release-dialog__actions { flex-direction: column-reverse; }
+  .cx-release-dialog__actions button { width: 100%; }
+}
+
+
+/* Authenticated release notification. */
+.cx-update-notice {
+  position: fixed;
+  z-index: 9998;
+  right: 14px;
+  bottom: 14px;
+  width: min(350px, calc(100vw - 28px));
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  color: #eaf4ed;
+  background: linear-gradient(145deg, #101812 0%, #0a0f0c 100%);
+  border: 1px solid #315640;
+  border-radius: 9px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), 0 0 20px rgba(69, 198, 109, 0.08);
+  font-family: var(--sans, Inter, "Segoe UI", system-ui, sans-serif);
+}
+.cx-update-notice[hidden] { display: none; }
+.cx-update-notice__icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: #a7efbd;
+  background: #102a19;
+  border: 1px solid #315640;
+  border-radius: 7px;
+  font: 700 17px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.cx-update-notice__content { min-width: 0; }
+.cx-update-notice__eyebrow {
+  margin-bottom: 3px;
+  color: #78c991;
+  font: 700 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .12em;
+}
+.cx-update-notice strong { display: block; color: #f4f8f5; font-size: 11px; line-height: 1.3; }
+.cx-update-notice__copy { display: block; margin-top: 3px; color: #a8b8ac; font-size: 9px; line-height: 1.35; }
+.cx-update-notice__actions {
+  grid-column: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 1px;
+}
+.cx-update-notice__actions button {
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font: 700 8px var(--sans, Inter, "Segoe UI", system-ui, sans-serif);
+  cursor: pointer;
+}
+.cx-update-notice__later { color: #bdcec1; background: #101711; border: 1px solid #2c3d30; }
+.cx-update-notice__now { color: #061009; background: #62d886; border: 1px solid #7eeb9d; }
+.cx-update-notice__actions button:hover { filter: brightness(1.08); }
+.cx-update-notice__actions button:focus-visible { outline: 2px solid #a7efbd; outline-offset: 2px; }
+@media (max-width: 440px) {
+  .cx-update-notice { right: 8px; bottom: 52px; width: calc(100vw - 16px); }
+}

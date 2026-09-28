@@ -1,0 +1,845 @@
+
+/* =====================================================
+   CompX Orbit Studio — ORBIT CONSOLE v6
+   FLEX-inspired dark neon console · unique Orbit identity
+   ===================================================== */
+
+:root {
+  --oc-neon: #a855f7;
+  --oc-mint: #c084fc;
+  --oc-ring: #06b6d4;
+  --oc-gold: #38bdf8;
+  --oc-violet: #a855f7;
+  --oc-violet-soft: rgba(168, 85, 247, 0.16);
+  --oc-glow: rgba(168, 85, 247, 0.35);
+  --oc-glow-soft: rgba(168, 85, 247, 0.12);
+  --oc-gborder: rgba(168, 85, 247, 0.4);
+  --oc-danger: #f43f5e;
+  --oc-warn: #fbbf24;
+  --oc-bg: #0e1014;
+  --oc-bg2: #14161c;
+  --oc-bg3: #181b22;
+  --oc-bg4: #1f232c;
+  --oc-panel: #14161c;
+  --oc-glass: rgba(255, 255, 255, 0.035);
+  --oc-glass-strong: rgba(255, 255, 255, 0.06);
+  --oc-line: rgba(255, 255, 255, 0.08);
+  --oc-line2: rgba(255, 255, 255, 0.14);
+  --oc-text: #f3f4f6;
+  --oc-dim: #848a98;
+  --oc-faint: #505664;
+  --oc-radius: 8px;
+  --oc-radius-sm: 6px;
+  --oc-font: "Segoe UI", Inter, system-ui, sans-serif;
+  --oc-mono: "Cascadia Code", "SF Mono", Consolas, monospace;
+
+  --lg-violet: var(--oc-violet);
+  --lg-cyan: var(--oc-ring);
+  --lg-accent: var(--oc-neon);
+  --lg-accent-2: var(--oc-ring);
+  --lg-glow: var(--oc-glow);
+  --lg-glow-soft: var(--oc-glow-soft);
+  --lg-gborder: var(--oc-gborder);
+  --lg-success: #22ff88;
+  --lg-danger: var(--oc-danger);
+  --lg-bg: var(--oc-bg);
+  --lg-bg2: var(--oc-bg2);
+  --lg-bg3: var(--oc-bg3);
+  --lg-bg4: var(--oc-bg4);
+  --lg-glass: var(--oc-glass);
+  --lg-glass-strong: var(--oc-glass-strong);
+  --lg-line: var(--oc-line);
+  --lg-line2: var(--oc-line2);
+  --lg-text: var(--oc-text);
+  --lg-dim: var(--oc-dim);
+  --lg-faint: var(--oc-faint);
+  --lg-radius: var(--oc-radius);
+  --lg-radius-sm: var(--oc-radius-sm);
+  --lg-blur: blur(12px);
+  --lg-font: var(--oc-font);
+  --lg-mono: var(--oc-mono);
+
+  --cx-green: #22ff88;
+  --cx-gdim: var(--oc-glow-soft);
+  --cx-gglow: var(--oc-glow);
+  --cx-gborder: var(--oc-gborder);
+  --cx-gdark: #7c3aed;
+  --cx-bg: var(--oc-bg);
+  --cx-bg2: var(--oc-bg2);
+  --cx-bg3: var(--oc-bg3);
+  --cx-bg4: var(--oc-bg4);
+  --cx-line: var(--oc-line);
+  --cx-line2: var(--oc-line2);
+  --cx-text: var(--oc-text);
+  --cx-dim: var(--oc-dim);
+  --cx-faint: var(--oc-faint);
+
+  --orbit-canvas: var(--oc-bg);
+  --orbit-shell: var(--oc-bg);
+  --orbit-panel: var(--oc-panel);
+  --orbit-raised: var(--oc-bg3);
+  --orbit-hover: var(--oc-bg4);
+  --orbit-line: var(--oc-line);
+  --orbit-line-strong: var(--oc-line2);
+  --orbit-text: var(--oc-text);
+  --orbit-muted: var(--oc-dim);
+  --orbit-faint: var(--oc-faint);
+  --orbit-blue: var(--oc-neon);
+  --orbit-blue-soft: var(--oc-glow-soft);
+  --orbit-success: #22ff88;
+  --bg: var(--oc-bg);
+  --surface: var(--oc-bg2);
+  --surface-2: var(--oc-bg3);
+  --line: var(--oc-line);
+  --text: var(--oc-text);
+  --text-dim: var(--oc-dim);
+  --amber: #fbbf24;
+  --amber-dim: rgba(251, 191, 36, 0.15);
+  --signal: var(--oc-ring);
+  --radius: var(--oc-radius);
+  --radius-sm: var(--oc-radius-sm);
+}
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--oc-bg) !important;
+  color: var(--oc-text) !important;
+  font-family: var(--oc-font) !important;
+  overflow: hidden !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+
+.orbit-shell-header,
+.orbit-brand,
+.orbit-rail-version,
+.orbit-utility-tabs {
+  display: none !important;
+}
+
+/* ---- Title + brand chrome ---- */
+.cx-title-bar {
+  flex: 0 0 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: var(--oc-bg2) !important;
+  border-bottom: 1px solid var(--oc-line) !important;
+  z-index: 30 !important;
+}
+
+.cx-header-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+/* Header logo — boxed + zoomed like the Orbit Premiere build's
+   orbit-header-logo. The source asset (compx-mark.png) is a 1024px JPEG
+   with baked-in black margins, so object-fit: cover crops the dead space
+   and centers the mark. Same !important count as before (net zero). */
+.cx-header-logo {
+  width: 26px !important;
+  height: 22px !important;
+  flex: 0 0 26px !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center;
+  border-radius: 4px !important;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: #181a22;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.15);
+}
+
+/* Header brand copy — same typography as the Orbit Premiere build's
+   orbit-header-copy (title case, 13px, tight tracking + muted tag line).
+   Higher specificity than orbit-console-theme / orbit-compact, so the
+   console theme's uppercase + Arial Narrow overrides do not win here.
+   Only the properties that fight !important rules carry !important, to
+   keep the validator's !important baseline flat. */
+.cx-header-brand .orbit-header-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.cx-header-brand .orbit-header-copy strong {
+  display: block;
+  font: 700 11px/1.2 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  letter-spacing: -0.015em !important;
+  text-transform: none;
+  color: #f3f4f6 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cx-header-brand .orbit-header-copy em {
+  display: block !important;
+  margin-top: 1px !important;
+  color: #848a98 !important;
+  font: 600 5.5px/1 "SF Mono", Monaco, "Cascadia Code", Consolas, monospace !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cx-hamburger {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding: 5px !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  opacity: 0.6 !important;
+}
+
+.cx-hamburger:hover { opacity: 1 !important; }
+
+.cx-hamburger span {
+  display: block !important;
+  width: 14px !important;
+  height: 1.5px !important;
+  background: var(--lg-text) !important;
+  border-radius: 2px !important;
+}
+
+.cx-brand-bar {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-left: auto;
+  background: transparent !important;
+  border-bottom: 0 !important;
+  z-index: 29 !important;
+}
+
+.cx-brand-spacer { flex: 1 !important; }
+
+.cx-brand-bar .orbit-host-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 10px !important;
+  background: var(--lg-glass) !important;
+  border: 1px solid var(--lg-line) !important;
+  border-radius: 99px !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  color: var(--lg-dim) !important;
+  letter-spacing: 0.08em !important;
+  white-space: nowrap !important;
+}
+
+.cx-brand-bar .orbit-host-status i {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--lg-success) !important;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6) !important;
+}
+
+.cx-icon-btn {
+  width: 24px !important;
+  height: 24px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: var(--lg-glass) !important;
+  border: 1px solid var(--lg-line) !important;
+  border-radius: 6px !important;
+  color: var(--lg-dim) !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  transition: border-color 0.15s, color 0.15s, background 0.15s !important;
+}
+
+.cx-icon-btn:hover {
+  border-color: var(--lg-gborder) !important;
+  color: var(--lg-text) !important;
+  background: var(--lg-glass-strong) !important;
+}
+
+/* ---- Main area: left icon rail + panel content ---- */
+.cx-app-main {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- Left icon rail (always visible, every width) ---- */
+.app-tabs-row,
+nav.app-tabs-row,
+#appTabsRow {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 48px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 6px 3px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 3px !important;
+  background: var(--oc-bg2) !important;
+  border-right: 1px solid var(--oc-line) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  flex: 0 0 48px !important;
+  z-index: 28 !important;
+}
+
+.app-tabs-row::-webkit-scrollbar,
+#appTabsRow::-webkit-scrollbar { display: none !important; }
+
+.app-tabs-row .app-tab,
+#appTabsRow .app-tab {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: 32px !important;
+  padding: 2px 2px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1px !important;
+  border-radius: 6px !important;
+  color: var(--oc-dim) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: color 0.12s, background 0.12s, border-color 0.12s, box-shadow 0.12s !important;
+}
+
+.app-tabs-row .app-tab::before,
+.app-tabs-row .app-tab::after,
+#appTabsRow .app-tab::before,
+#appTabsRow .app-tab::after { display: none !important; }
+
+#app .app-tabs-row .app-tab.active,
+#app #appTabsRow .app-tab.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.28) 0%, rgba(124, 58, 237, 0.2) 100%) !important;
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.app-tabs-row .app-tab.active .orbit-tab-icon svg,
+#appTabsRow .app-tab.active .orbit-tab-icon svg {
+  stroke: #ffffff !important;
+}
+
+.app-tabs-row .app-tab:hover:not(.active),
+#appTabsRow .app-tab:hover:not(.active) {
+  color: #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.orbit-tab-icon {
+  width: 16px !important;
+  height: 15px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.orbit-tab-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.6 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.orbit-tab-label {
+  font-size: 6.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  line-height: 1 !important;
+}
+
+/* RAM Purge pinned to the bottom of the left rail (deck removed from Orbit 3D).
+   The memory monitor (Node os.freemem + ae_memoryStatus workload) adds
+   .needs-purge / .critical classes — the glow only runs when a purge is needed. */
+@keyframes rail-purge-pulse {
+  0%, 100% { box-shadow: 0 0 3px rgba(245, 202, 101, 0.12); }
+  50% { box-shadow: 0 0 13px rgba(245, 202, 101, 0.55); }
+}
+@keyframes rail-purge-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+#app #appTabsRow .app-tab.rail-purge {
+  margin-top: auto !important;
+  color: var(--oc-faint) !important;
+}
+#app #appTabsRow .app-tab.rail-purge:hover:not(.active) {
+  color: #ffca65 !important;
+  background: #1c1e1e !important;
+  border-color: rgba(245, 202, 101, 0.4) !important;
+}
+#app #appTabsRow .app-tab.rail-purge.needs-purge {
+  color: #ffca65 !important;
+  border-color: rgba(245, 202, 101, 0.45) !important;
+  animation: rail-purge-pulse 2.6s ease-in-out infinite !important;
+}
+#app #appTabsRow .app-tab.rail-purge.critical {
+  color: #ff7b7b !important;
+  animation: rail-purge-pulse 1.1s ease-in-out infinite !important;
+}
+#app #appTabsRow .app-tab.rail-purge.purging .orbit-tab-icon {
+  animation: rail-purge-spin 0.7s linear infinite !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #app #appTabsRow .app-tab.rail-purge.needs-purge,
+  #app #appTabsRow .app-tab.rail-purge.critical,
+  #app #appTabsRow .app-tab.rail-purge.purging .orbit-tab-icon {
+    animation: none !important;
+  }
+}
+
+/* Narrow: icon-only rail — labels hidden, native title tooltip on hover. */
+@media (max-width: 560px) {
+  .app-tabs-row .orbit-tab-label,
+  #appTabsRow .orbit-tab-label { display: none !important; }
+}
+
+/* Wide: icon + label visible inline (overrides the console hover-tooltip style). */
+@media (min-width: 561px) {
+  .app-tabs-row .orbit-tab-label,
+  #appTabsRow .orbit-tab-label {
+    position: static;
+    left: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    width: auto;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+/* ---- Panels ---- */
+.app-panel {
+  display: none !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+.app-panel.active {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+/* ---- Tools panel scroll (active tab only) ---- */
+
+
+/* Align + Anchor + Project: compact three-card top deck */
+
+
+
+
+.tool-section:hover {
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 8px 20px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+.tool-dash-row:not(.tools-primary-row):not(.tools-workflow-row),
+.tool-dash-row-2:not(.tools-workflow-row) {
+  display: block !important;
+  width: 100% !important;
+}
+
+.tool-section-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 5px !important;
+  padding-bottom: 4px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.06), transparent 60%);
+  border-radius: 5px 5px 0 0;
+  margin-left: -7px;
+  margin-right: -7px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+.tool-section-title {
+  color: #eef3f5 !important;
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  text-shadow: none !important;
+}
+
+.tool-section-title::before,
+.tool-section-head .tool-section-title::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 1.5px !important;
+  background: linear-gradient(135deg, #a855f7, #06b6d4) !important;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.45) !important;
+  flex-shrink: 0 !important;
+  transform: rotate(45deg) !important;
+}
+
+/* ---- Buttons (console grid style) ---- */
+.tool-btn, .btn {
+  background: linear-gradient(180deg, rgba(34, 38, 48, 0.95), rgba(24, 27, 35, 0.95)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  border-radius: 6px !important;
+  min-height: 24px !important;
+  padding: 3px 6px !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  transition: border-color 0.12s, color 0.12s, background 0.12s, box-shadow 0.12s, transform 0.12s !important;
+}
+
+.tool-btn:hover, .btn:hover {
+  background: linear-gradient(180deg, rgba(42, 48, 62, 0.95), rgba(28, 32, 42, 0.95)) !important;
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25), 0 1px 0 rgba(255, 255, 255, 0.08) inset !important;
+  transform: translateY(-0.5px) !important;
+}
+
+.tool-btn:active, .btn:active { transform: translateY(0) !important; }
+
+.tool-btn.primary, .btn.primary {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
+  border-color: #c084fc !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.4), 0 1px 0 rgba(255, 255, 255, 0.25) inset !important;
+}
+
+.tool-btn.primary:hover, .btn.primary:hover {
+  background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%) !important;
+  border-color: #e9d5ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.6), 0 1px 0 rgba(255, 255, 255, 0.35) inset !important;
+  transform: translateY(-0.5px) !important;
+}
+
+.tool-btn.danger, .btn.danger {
+  background: linear-gradient(180deg, rgba(255, 59, 92, 0.14), rgba(255, 59, 92, 0.06)) !important;
+  border-color: rgba(255, 59, 92, 0.4) !important;
+  color: #ff7b92 !important;
+  box-shadow: 0 0 10px rgba(255, 59, 92, 0.12);
+}
+
+.tool-grid { gap: 3.5px !important; }
+.tool-grid-6 { grid-template-columns: repeat(6, 1fr) !important; gap: 3px !important; }
+.tool-grid-4 { grid-template-columns: repeat(4, 1fr) !important; gap: 3.5px !important; }
+
+.cx-anchor-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  max-width: 108px !important;
+  margin: 0 auto !important;
+  gap: 3px !important;
+}
+
+.anchor-dot-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  min-height: 23px !important;
+  height: 23px !important;
+  background: linear-gradient(180deg, rgba(30, 34, 44, 0.95), rgba(20, 23, 30, 0.95)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 5px !important;
+}
+
+.anchor-dot-btn:hover {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  background: rgba(168, 85, 247, 0.15) !important;
+}
+
+.anchor-dot-btn.active {
+  border-color: #a855f7 !important;
+  background: rgba(168, 85, 247, 0.22) !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4) !important;
+}
+
+.anchor-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #717d96;
+  transition: all 0.15s ease;
+}
+
+.anchor-dot.center-dot {
+  background: #a855f7;
+  box-shadow: 0 0 6px #a855f7;
+  width: 6px;
+  height: 6px;
+}
+
+.anchor-dot-btn:hover .anchor-dot {
+  background: #c084fc;
+  box-shadow: 0 0 6px #c084fc;
+  transform: scale(1.3);
+}
+
+.anchor-dot-btn.active .anchor-dot {
+  background: #ffffff;
+  box-shadow: 0 0 8px #c084fc;
+  transform: scale(1.3);
+}
+
+/* ---- Inputs ---- */
+input, select, textarea,
+.counter-input, .counter-select,
+.search-row input[type="text"], .modal-input {
+  background: rgba(6, 9, 13, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--lg-text) !important;
+  border-radius: 7px !important;
+  padding: 6px 9px !important;
+  font-size: 9.5px !important;
+  font-family: inherit !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+input:focus, select:focus, textarea:focus,
+.counter-input:focus, .counter-select:focus {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2), 0 0 12px rgba(168, 85, 247, 0.2) !important;
+  outline: none !important;
+}
+
+.hint { color: var(--lg-faint) !important; font-size: 8.5px !important; }
+
+.tool-help {
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 12px !important;
+  font-size: 7px !important;
+  border: 1px solid var(--lg-line) !important;
+  color: var(--lg-faint) !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+}
+
+.tool-help:hover {
+  border-color: rgba(123, 97, 255, 0.45) !important;
+  color: var(--oc-violet) !important;
+}
+
+.shelf.active, .tab.active, .tool-subtab.active, .chip.active, .clip-slot.active {
+  background: var(--lg-glow-soft) !important;
+  border-color: var(--lg-gborder) !important;
+  color: var(--lg-accent) !important;
+}
+
+/* ---- Compact website footer ---- */
+.cx-bottom-nav {
+  flex: 0 0 23px !important;
+  min-height: 23px !important;
+  max-height: 23px !important;
+  padding: 0 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(180deg, rgba(8, 22, 18, 0.96), rgba(3, 10, 8, 0.99)) !important;
+  border-top: 1px solid rgba(38, 255, 124, 0.2) !important;
+  z-index: 30 !important;
+  box-shadow: inset 0 1px 0 rgba(114, 255, 166, 0.025), 0 -4px 16px rgba(14, 255, 104, 0.035);
+}
+
+.cx-orbit-site-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 10px;
+  color: #6dff9c;
+  font-family: var(--mono, "Arial Narrow", sans-serif);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 0 7px rgba(37, 255, 112, 0.48);
+  opacity: 0.82;
+  transition: color 140ms ease, opacity 140ms ease, text-shadow 140ms ease;
+}
+
+.cx-orbit-site-link:hover,
+.cx-orbit-site-link:focus-visible {
+  color: #b4ffca;
+  opacity: 1;
+  outline: none;
+  text-shadow: 0 0 5px rgba(80, 255, 137, 0.75), 0 0 13px rgba(25, 255, 104, 0.38);
+}
+
+.cx-orbit-site-pulse {
+  width: 4px;
+  height: 4px;
+  flex: 0 0 4px;
+  border-radius: 50%;
+  background: #22ff73;
+  box-shadow: 0 0 7px rgba(34, 255, 115, 0.9);
+  animation: cxOrbitSitePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes cxOrbitSitePulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-orbit-site-pulse { animation: none; }
+}
+/* ---- Scrollbars ---- */
+*::-webkit-scrollbar { width: 4px !important; height: 4px !important; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 4px !important;
+}
+
+.toast {
+  background: var(--lg-bg3) !important;
+  border-color: var(--lg-gborder) !important;
+  color: var(--lg-text) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-box {
+  background: var(--lg-bg2) !important;
+  border: 1px solid var(--lg-line2) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6) !important;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--lg-accent) !important;
+  outline-offset: 2px !important;
+}
+
+.orbit-shell-header .orbit-host-status { display: none !important; }
+
+/* Pro panel: plain (non-workflow) cards must never flex-shrink below content height,
+   otherwise the flex-column scroll container squashes them to min-height and clips content. */
+#panel-pro.active .tools-scroll > .tool-section {
+  flex-shrink: 0;
+}
+
+.app-panel.active .tools-scroll,
+.app-panel.active .advanced-scroll {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 6px !important;
+  background: transparent !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* ---- Tools tab layout lock: Align + Anchor + Project share one top row ---- */
+
+
+
+
+
+@media (min-width: 561px) {
+
+}
+
+
+@media (max-width: 820px) {
+
+}
+
+@media (max-width: 640px) {
+
+}
+
+@media (max-width: 360px) {
+/* ALIGN | ANCHOR stay side-by-side at every width: keep the deck 2 columns
+     and let sections flow naturally (ALIGN col1, ANCHOR col2,
+     DISTRIBUTE col1, QUICK ACTIONS col2). */
+
+/* Neutralize the <=820px :last-child grid-column:2 rule so natural flow
+     wins and nothing forces an implicit column. */
+
+
+}

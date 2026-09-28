@@ -1,0 +1,853 @@
+/* CompX Orbit Studio — compact console visual system
+   Final presentation layer only; feature behavior remains in the existing modules. */
+
+:root {
+  --cx-console-bg: #0e0f10;
+  --cx-console-shell: #111213;
+  --cx-console-panel: #171919;
+  --cx-console-raised: #1c1e1e;
+  --cx-console-hover: #222424;
+  --cx-console-line: #2a2c2c;
+  --cx-console-line-strong: #3a3d3d;
+  --cx-console-green: #22ff6f;
+  --cx-console-green-dim: #0f6f30;
+  --cx-console-violet: #7b61ff;
+  --cx-console-text: #ffffff;
+  --cx-console-muted: #8c9096;
+  --cx-console-faint: #5e6266;
+  --orbit-shell: var(--cx-console-bg);
+  --orbit-panel: var(--cx-console-panel);
+  --orbit-raised: var(--cx-console-raised);
+  --orbit-hover: var(--cx-console-hover);
+  --orbit-line: var(--cx-console-line);
+  --orbit-line-strong: var(--cx-console-line-strong);
+  --orbit-text: var(--cx-console-text);
+  --orbit-muted: var(--cx-console-muted);
+  --orbit-faint: var(--cx-console-faint);
+  --orbit-blue: var(--cx-console-green);
+  --orbit-success: var(--cx-console-green);
+  --radius: 5px;
+  --radius-sm: 4px;
+}
+
+html, body, #app, .app-panel {
+  background: var(--cx-console-bg) !important;
+}
+
+body {
+  color: var(--cx-console-text);
+  font-family: "Arial Narrow", "Segoe UI", Arial, sans-serif;
+}
+
+/* Compact shell */
+@media (min-width: 441px) {
+  #app { padding: 44px 0 0 58px !important; }
+  .orbit-shell-header { left: 0 !important; height: 44px !important; padding: 0 10px !important; }
+  .app-tabs-row { top: 44px !important; width: 58px !important; padding: 7px 5px !important; gap: 4px !important; }
+}
+
+.orbit-shell-header {
+  gap: 8px !important;
+  background: #0e0f10 !important;
+  border-bottom: 1px solid var(--cx-console-line) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.orbit-shell-header::before {
+  right: auto !important;
+  left: 0 !important;
+  width: 2px !important;
+  height: 100% !important;
+  background: var(--cx-console-green) !important;
+  opacity: 1 !important;
+}
+
+.orbit-header-logo {
+  width: 25px !important;
+  height: 25px !important;
+  border: 1px solid #334039 !important;
+  border-radius: 3px !important;
+  background: #1c1e1e !important;
+  box-shadow: none !important;
+}
+
+.orbit-header-copy strong {
+  color: var(--cx-console-text) !important;
+  font: 800 11px/1 "Arial Narrow", "Segoe UI", sans-serif !important;
+  letter-spacing: .055em !important;
+  text-transform: uppercase;
+}
+
+.orbit-header-copy em {
+  margin-top: 2px !important;
+  color: var(--cx-console-faint) !important;
+  font: 700 6px/1 var(--mono) !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase;
+}
+
+.orbit-host-status {
+  min-height: 24px !important;
+  padding: 0 7px !important;
+  color: #b8c4bc !important;
+  background: #090d0a !important;
+  border-color: #2b3f31 !important;
+  border-radius: 3px !important;
+  font-size: 7px !important;
+}
+
+.orbit-host-status i {
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 1px !important;
+  background: var(--cx-console-green) !important;
+  box-shadow: 0 0 5px rgba(34,255,111,.45) !important;
+}
+
+.cx-signout-btn { min-height: 24px !important; border-radius: 3px !important; }
+
+.app-tabs-row {
+  background: #050705 !important;
+  border-right: 1px solid var(--cx-console-line) !important;
+}
+
+.app-tabs-row .app-tab {
+  min-height: 38px !important;
+  padding: 5px 2px !important;
+  gap: 3px !important;
+  color: #6a7074 !important;
+  border: 1px solid transparent !important;
+  border-radius: 3px !important;
+  animation: none !important;
+}
+
+.app-tabs-row .app-tab:hover {
+  color: #d6dade !important;
+  background: #1c1e1e !important;
+  border-color: #2b352e !important;
+  box-shadow: none !important;
+}
+
+.app-tabs-row .app-tab.active {
+  color: var(--cx-console-green) !important;
+  background: #1c1e1e !important;
+  border-color: #294733 !important;
+  box-shadow: inset 2px 0 0 var(--cx-console-green) !important;
+  animation: none !important;
+}
+
+.app-tabs-row .app-tab.active::before { display: none !important; }
+.orbit-tab-icon { font-size: 9px !important; }
+.orbit-tab-label { max-width: 48px !important; color: inherit !important; font: 700 7px/1 var(--mono) !important; text-transform: uppercase; }
+.orbit-rail-version { color: #4a4e52 !important; letter-spacing: .1em; }
+
+/* Workspace density */
+.tools-scroll, .tracker-scroll, .content-view {
+  padding: 6px !important;
+  background: var(--cx-console-bg) !important;
+  scrollbar-color: var(--cx-console-green-dim) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #174927; border-radius: 0; }
+
+.tool-dash-row { gap: 6px !important; margin-bottom: 6px !important; }
+
+.tool-section, .studio-card, .advanced-card, .tracker-card, .library-card, .sfx-card,
+.tracker-status-card, .tracker-ring-card, .color-card, .cx-camera-card, .cx-showcase-card {
+  padding: 7px !important;
+  background: var(--cx-console-panel) !important;
+  border: 1px solid var(--cx-console-line) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.tool-section:hover, .studio-card:hover, .advanced-card:hover, .sfx-card:hover {
+  background: var(--cx-console-panel) !important;
+  border-color: #354039 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.tool-section-head {
+  min-height: 20px !important;
+  margin: -1px 0 6px !important;
+  padding: 0 0 5px !important;
+  border-bottom: 1px solid #202622 !important;
+}
+
+.tool-section-title, .tool-section-head .tool-section-title, .section-title, .panel-title {
+  color: #dce4de !important;
+  font: 800 8px/1 var(--mono) !important;
+  letter-spacing: .09em !important;
+  text-transform: uppercase;
+}
+
+.tool-section-title::before, .tool-section-head .tool-section-title::before {
+  width: 2px !important;
+  height: 9px !important;
+  border-radius: 0 !important;
+  background: #7b61ff !important;
+}
+
+.tool-section-action, .tool-help { color: #6f7a72 !important; }
+.tool-subgroup { margin-top: 6px !important; padding-top: 6px !important; border-top-color: #202622 !important; }
+.tool-subgroup-title, .cx-caption-block-label { color: #6d786f !important; font: 800 7px/1 var(--mono) !important; letter-spacing: .11em !important; }
+.tool-grid, .counter-row { gap: 4px !important; }
+
+#app button:not(.cp-pcolor):not(.cp-sw):not([data-obs]), #app .btn, #app .tool-btn, #app .counter-btn,
+#app .toggle-btn, #app .shelf, #app .dock-icon {
+  min-height: 27px;
+  padding: 4px 7px;
+  color: #aeb8b1 !important;
+  background: #171919 !important;
+  border: 1px solid #262d28 !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  font-size: 8px;
+  letter-spacing: .035em;
+  transition: color 100ms ease, border-color 100ms ease, background-color 100ms ease;
+}
+
+#app button:not(.cp-pcolor):not(.cp-sw):not([data-obs]):hover, #app .btn:hover, #app .tool-btn:hover,
+#app .counter-btn:hover, #app .toggle-btn:hover, #app .shelf:hover, #app .dock-icon:hover {
+  color: #e9f0eb !important;
+  background: #1c1e1e !important;
+  border-color: #526057 !important;
+  box-shadow: none !important;
+}
+
+#app button.primary:not(.cp-pcolor):not(.cp-sw), #app .btn.primary, #app .tool-btn.primary {
+  color: #061008 !important;
+  background: var(--cx-console-green) !important;
+  border-color: var(--cx-console-green) !important;
+  box-shadow: none !important;
+  font-weight: 900;
+}
+
+#app button.primary:not(.cp-pcolor):not(.cp-sw):hover, #app .btn.primary:hover, #app .tool-btn.primary:hover {
+  color: #020603 !important;
+  background: #55ff81 !important;
+  border-color: #83ffa3 !important;
+  box-shadow: 0 0 8px rgba(34,255,111,.22) !important;
+}
+
+input, select, textarea, .counter-input, .counter-select, .fxlib-search {
+  min-height: 27px !important;
+  color: #d6ded8 !important;
+  background: #060806 !important;
+  border: 1px solid #272f29 !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  font-size: 8px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #526057 !important;
+  box-shadow: inset 2px 0 0 var(--cx-console-green) !important;
+}
+
+.hint { color: #69746c !important; font-size: 7.5px !important; line-height: 1.45 !important; }
+.caption-toggle { color: #8c978f !important; font-size: 8px !important; }
+
+/* Sticky Studio switcher keeps the second workflow discoverable below AutoCaptions. */
+.cx-studio-quicknav {
+  position: sticky;
+  z-index: 8;
+  top: -6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: -6px -1px 6px;
+  padding: 6px 1px 5px;
+  background: rgba(3,5,4,.96);
+  border-bottom: 1px solid #202722;
+}
+
+#app .cx-studio-quicknav button {
+  min-height: 29px;
+  color: #7e8981 !important;
+  font: 800 8px/1 var(--mono);
+  letter-spacing: .07em;
+}
+
+#app .cx-studio-quicknav button span {
+  margin-right: 5px;
+  color: #4f5a52;
+}
+
+#app .cx-studio-quicknav button.active {
+  color: #081009 !important;
+  background: var(--cx-console-green) !important;
+  border-color: var(--cx-console-green) !important;
+}
+
+#app .cx-studio-quicknav button.active span { color: #0a5a25; }
+#flexAutoCaptions, #studioAiBgRemover, #ssToAeCard { scroll-margin-top: 40px; }
+
+/* Studio hero workflow: local background removal */
+#studioAiBgRemover {
+  position: relative;
+  padding-left: 12px !important;
+  overflow: hidden;
+  background: #090d0a !important;
+  border-color: #36423a !important;
+}
+
+#studioAiBgRemover::before {
+  content: "02";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  padding-top: 10px;
+  color: transparent;
+  background: var(--cx-console-green) !important;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+#studioAiBgRemover .tool-section-title { color: var(--cx-console-green) !important; }
+#studioAiBgRemover .tool-section-title::before { display: none !important; }
+
+.cx-ai-bg-hero {
+  margin: 1px 0 6px !important;
+  padding: 6px !important;
+  gap: 7px !important;
+  background: #1c1e1e !important;
+  border: 1px solid #263129 !important;
+  border-radius: 3px !important;
+}
+
+.cx-ai-bg-icon {
+  flex-basis: 30px !important;
+  width: 30px !important;
+  height: 28px !important;
+  border-color: #395143 !important;
+  border-radius: 2px !important;
+  background-size: 6px 6px !important;
+}
+
+.cx-ai-bg-hero strong { color: #dbe5dd !important; font: 800 8px/1.2 var(--mono) !important; }
+.cx-ai-bg-hero span { color: #66716a !important; font-size: 7px !important; }
+.cx-ai-bg-preview { min-height: 112px !important; margin-bottom: 6px !important; border-color: #303934 !important; border-radius: 3px !important; }
+.cx-ai-bg-preview-empty b { color: #aab6ae !important; font: 800 8px/1.2 var(--mono) !important; }
+.cx-ai-bg-original-toggle { margin: 6px 0 !important; }
+#btnAiRemoveBackground { min-height: 34px !important; letter-spacing: .09em !important; }
+.cx-runtime-consent { border-radius: 3px !important; background: #0d120e !important; border-color: #334039 !important; }
+.cx-ai-bg-status { margin-top: 5px !important; padding-left: 7px; border-left: 2px solid #334039; }
+
+@media (max-width: 440px) {
+  #app { padding: 44px 0 54px !important; }
+  .orbit-shell-header { height: 44px !important; padding: 0 7px !important; }
+  .app-tabs-row { height: 54px !important; padding: 4px !important; }
+  .app-tabs-row .app-tab { min-height: 42px !important; }
+  .orbit-header-copy em, .orbit-host-status span, #cx-signout-btn span { display: none !important; }
+}
+
+/* ========================================================================== 
+   Approved concept structure: top module bar + command center + utility dock
+   ========================================================================== */
+@media (min-width: 441px) {
+  #app { padding: 90px 0 48px !important; }
+  .orbit-shell-header { left: 0 !important; }
+  .app-tabs-row {
+    top: 44px !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+    width: auto !important;
+    height: 46px !important;
+    padding: 4px 7px !important;
+    flex-direction: row !important;
+    gap: 3px !important;
+    overflow: hidden !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--cx-console-line) !important;
+  }
+}
+
+.app-tabs-row .app-tab,
+.orbit-utility-tabs .app-tab {
+  min-width: 0 !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 4px 5px !important;
+  flex: 1 1 0 !important;
+  flex-direction: row !important;
+  gap: 6px !important;
+  color: #777f79 !important;
+  background: #171919 !important;
+  border: 1px solid #252b27 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.app-tabs-row .app-tab.active,
+.orbit-utility-tabs .app-tab.active {
+  color: var(--cx-console-green) !important;
+  background: #1c1e1e !important;
+  border-color: #3d4c42 !important;
+  box-shadow: inset 0 -2px 0 var(--cx-console-green) !important;
+}
+
+.app-tabs-row .app-tab.active::before,
+.orbit-utility-tabs .app-tab::before,
+.orbit-utility-tabs .app-tab::after { display: none !important; }
+.app-tabs-row .orbit-tab-label, .orbit-utility-tabs .orbit-tab-label { max-width: none !important; font-size: 8px !important; }
+.app-tabs-row .orbit-tab-icon, .orbit-utility-tabs .orbit-tab-icon { min-width: 16px !important; font-size: 8px !important; }
+
+.orbit-utility-tabs {
+  position: absolute;
+  z-index: 14;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 48px;
+  padding: 5px 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #050705;
+  border-top: 1px solid var(--cx-console-line);
+}
+
+.orbit-utility-tabs .orbit-rail-version { display: none !important; }
+
+/* Studio command center mirrors the approved asymmetric action matrix. */
+.cx-studio-command {
+  margin-bottom: 6px;
+  padding: 7px;
+  background: #171919;
+  border: 1px solid #292f2b;
+  border-radius: 3px;
+}
+
+.cx-studio-context {
+  min-height: 34px;
+  margin-bottom: 6px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #818983;
+  background: #0d100e;
+  border: 1px solid #242a26;
+  border-radius: 2px;
+  font: 700 8px/1 var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cx-studio-context .cx-context-icon { color: #a1aaa4; font-size: 14px; }
+.cx-studio-context b { color: #b7c0ba; font-size: 8px; }
+.cx-studio-context i { width: 1px; height: 18px; background: #343b36; }
+.cx-studio-context > span:not(.cx-context-icon) { min-width: 0; overflow: hidden; flex: 1; text-overflow: ellipsis; white-space: nowrap; }
+#app .cx-studio-context button { width: 26px; min-height: 24px; padding: 0; flex: 0 0 26px; }
+.cx-bg-target-context { margin: 0 0 8px; }
+
+.cx-command-grid {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(2, minmax(0, .75fr));
+  grid-template-rows: repeat(2, 48px);
+  gap: 5px;
+}
+
+#app .cx-command-grid button {
+  min-height: 0;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #9da69f !important;
+  background: linear-gradient(145deg,#111412,#0b0d0c) !important;
+  border: 1px solid #3a403c !important;
+  border-radius: 3px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025) !important;
+}
+
+#app .cx-command-grid button span { color: #818983; font: 700 14px/1 var(--mono); }
+#app .cx-command-grid button b { font: 800 8px/1 var(--mono); letter-spacing: .11em; }
+#app .cx-command-grid .cx-command-primary {
+  grid-row: 1 / 3;
+  color: var(--cx-console-green) !important;
+  border-color: #4c554f !important;
+}
+#app .cx-command-grid .cx-command-primary span { color: #7dff55; font-size: 23px; }
+#app .cx-command-grid button:hover { color: #eff5f0 !important; border-color: #69746d !important; }
+
+:is(#panel-studio, #panel-toolkit) .cx-studio-quicknav {
+  position: relative;
+  top: auto;
+  margin: 0 0 6px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #292f2b;
+}
+
+#app .cx-studio-quicknav button { min-height: 36px; border: 0 !important; border-radius: 0 !important; }
+#app .cx-studio-quicknav button.active {
+  color: var(--cx-console-green) !important;
+  background: #1c1e1e !important;
+  box-shadow: inset 0 -2px 0 var(--cx-console-green) !important;
+}
+
+#studioAiBgRemover { padding: 10px 10px 10px 15px !important; }
+#studioAiBgRemover .tool-section-head { min-height: 30px !important; }
+#studioAiBgRemover .tool-section-title { font-size: 10px !important; letter-spacing: .12em !important; }
+.cx-ai-bg-preview { min-height: 220px !important; }
+.cx-ai-bg-preview img { width: 100%; max-height: 300px !important; object-fit: contain; }
+#studioAiBgRemover .cx-ai-bg-hero { display: none !important; }
+#studioAiBgRemover .counter-row { min-height: 34px; }
+#btnAiRemoveBackground { min-height: 38px !important; font-size: 9px !important; }
+
+@media (max-width: 560px) {
+  .cx-command-grid { grid-template-columns: 1.25fr repeat(2,minmax(0,.75fr)); grid-template-rows: repeat(2,42px); }
+  .cx-ai-bg-preview { min-height: 150px !important; }
+  .app-tabs-row .orbit-tab-icon, .orbit-utility-tabs .orbit-tab-icon { display: none !important; }
+}
+
+@media (max-width: 440px) {
+  #app { padding: 86px 0 47px !important; }
+  .app-tabs-row {
+    top: 44px !important;
+    bottom: auto !important;
+    height: 42px !important;
+    padding: 3px !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--cx-console-line) !important;
+  }
+  .app-tabs-row .app-tab, .orbit-utility-tabs .app-tab { min-height: 34px !important; height: 34px !important; }
+  .orbit-utility-tabs { height: 47px; padding: 5px 3px; }
+  .cx-studio-context { gap: 6px; padding: 0 6px; }
+  .cx-command-grid { grid-template-columns: 1.15fr 1fr; grid-template-rows: repeat(4,40px); }
+  #app .cx-command-grid .cx-command-primary { grid-row: 1 / 3; }
+  .cx-command-grid button:nth-child(4), .cx-command-grid button:nth-child(5) { grid-row: auto; }
+}
+
+/* Premium motion pass: layered surfaces, restrained light and instant modes. */
+:is(#panel-studio, #panel-toolkit) .tools-scroll {
+  background:
+    radial-gradient(circle at 82% 2%, rgba(40,255,102,.065), transparent 28%),
+    linear-gradient(180deg,#050806 0%,#0e0f10 100%) !important;
+}
+
+.cx-studio-hidden { display: none !important; }
+
+.orbit-shell-header {
+  background:
+    linear-gradient(90deg,rgba(34,255,111,.06),transparent 22%),
+    linear-gradient(180deg,#0c0f0d,#060806) !important;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.025) !important;
+}
+
+.orbit-header-logo {
+  background: linear-gradient(145deg,#152019,#080c09) !important;
+  box-shadow: inset 0 0 0 1px rgba(34,255,111,.13),0 0 18px rgba(34,255,111,.07) !important;
+}
+
+.app-tabs-row, .orbit-utility-tabs {
+  background: linear-gradient(180deg,#171919,#0e0f10) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22) !important;
+}
+
+.app-tabs-row .app-tab, .orbit-utility-tabs .app-tab {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg,#0d100e,#070907) !important;
+}
+
+.app-tabs-row .app-tab::after, .orbit-utility-tabs .app-tab::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  bottom: -1px;
+  left: 18%;
+  height: 1px;
+  display: block !important;
+  background: transparent;
+  transition: right .22s ease,left .22s ease,background-color .22s ease,box-shadow .22s ease;
+}
+
+.app-tabs-row .app-tab.active::after, .orbit-utility-tabs .app-tab.active::after {
+  right: 6%;
+  left: 6%;
+  background: var(--cx-console-green);
+  box-shadow: 0 0 9px var(--cx-console-green);
+}
+
+.cx-studio-command {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 10%,rgba(34,255,111,.08),transparent 32%),
+    linear-gradient(145deg,#0d110e,#060806) !important;
+  border-color: #353d37 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035),0 12px 28px rgba(0,0,0,.26) !important;
+}
+
+.cx-studio-command::after {
+  content: "";
+  position: absolute;
+  top: -55%;
+  left: -22%;
+  width: 28%;
+  height: 210%;
+  pointer-events: none;
+  background: linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent);
+  transform: rotate(18deg);
+  animation: cxConsoleSheen 7s ease-in-out infinite;
+}
+
+@keyframes cxConsoleSheen {
+  0%,72% { left:-32%; opacity:0; }
+  78% { opacity:1; }
+  96%,100% { left:112%; opacity:0; }
+}
+
+.cx-studio-context {
+  background: linear-gradient(90deg,#101512,#171919) !important;
+  border-color: #303832 !important;
+  box-shadow: inset 2px 0 0 rgba(34,255,111,.72) !important;
+}
+
+.cx-studio-context .cx-context-icon {
+  color: var(--cx-console-green);
+  filter: drop-shadow(0 0 5px rgba(34,255,111,.45));
+  animation: cxContextPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes cxContextPulse { 50% { opacity:.45; transform:scale(.9); } }
+
+#app .cx-command-grid button {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.028),transparent 45%),
+    linear-gradient(145deg,#141815,#090b0a) !important;
+  border-color: #404842 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045),inset 0 -12px 28px rgba(0,0,0,.18) !important;
+  transition: transform .16s ease,border-color .16s ease,box-shadow .16s ease !important;
+}
+
+#app .cx-command-grid button:hover {
+  transform: translateY(-1px) !important;
+  border-color: #748078 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07),0 7px 16px rgba(0,0,0,.28) !important;
+}
+
+#app .cx-command-grid .cx-command-primary {
+  background:
+    radial-gradient(circle at 50% 28%,rgba(68,255,117,.12),transparent 34%),
+    linear-gradient(145deg,#121813,#171919) !important;
+  box-shadow: inset 0 0 0 1px rgba(34,255,111,.08),0 0 22px rgba(34,255,111,.035) !important;
+}
+
+#app .cx-studio-quicknav button.active {
+  background: linear-gradient(180deg,#111812,#171919) !important;
+  text-shadow: 0 0 9px rgba(34,255,111,.38);
+}
+
+#studioAiBgRemover {
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.018),transparent 32%),
+    linear-gradient(160deg,#0d110e,#060806) !important;
+  border-color: #39423c !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035),0 14px 32px rgba(0,0,0,.28) !important;
+}
+
+.cx-ai-bg-preview {
+  isolation: isolate;
+  background-color:#050806 !important;
+  border-color:#3b453e !important;
+  box-shadow: inset 0 0 28px rgba(0,0,0,.72),0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+.cx-ai-bg-preview::after {
+  content:"";
+  position:absolute;
+  z-index:3;
+  top:-20%;
+  right:0;
+  left:0;
+  height:18%;
+  pointer-events:none;
+  opacity:.42;
+  background:linear-gradient(180deg,transparent,rgba(34,255,111,.32),transparent);
+  animation:cxPreviewScan 4.8s ease-in-out infinite;
+}
+
+@keyframes cxPreviewScan { 0%,15%{top:-20%;opacity:0} 28%{opacity:.38} 68%{top:102%;opacity:.12} 100%{top:102%;opacity:0} }
+
+#studioAiBgRemover input[type="range"] {
+  height:3px !important;
+  accent-color:var(--cx-console-green) !important;
+  filter:drop-shadow(0 0 4px rgba(34,255,111,.2));
+}
+
+#btnAiRemoveBackground {
+  color:#031007 !important;
+  background:linear-gradient(90deg,#0be748,#3cff72,#0be748) !important;
+  background-size:200% 100% !important;
+  border-color:#65ff8d !important;
+  box-shadow:0 0 18px rgba(34,255,111,.13),inset 0 1px 0 rgba(255,255,255,.38) !important;
+  animation:cxPrimaryFlow 4s linear infinite;
+}
+
+@keyframes cxPrimaryFlow { to { background-position:200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-studio-command::after,.cx-studio-context .cx-context-icon,.cx-ai-bg-preview::after,#btnAiRemoveBackground { animation:none !important; }
+}
+
+/* Premium vector icon system */
+.orbit-tab-icon svg,
+.cx-line-icon,
+.cx-anchor-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.orbit-tab-icon svg { width: 16px; height: 16px; }
+.cx-anchor-icon circle { fill: currentColor; stroke: none; }
+.cx-anchor-icon rect { opacity:.62; }
+/* Compact top deck: Align, Anchor and Project share one row. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 500px) {
+
+
+
+  .cx-line-icon,.cx-anchor-icon { width:13px;height:13px; }
+}
+/* Narrow dock correction: legacy rules forced both cards into column one. */
+
+
+
+@media (max-width: 560px) {
+  .app-tabs-row .orbit-tab-icon,
+  .orbit-utility-tabs .orbit-tab-icon {
+    min-width:18px !important;
+    display:grid !important;
+    place-items:center;
+  }
+  .app-tabs-row .orbit-tab-icon svg,
+  .orbit-utility-tabs .orbit-tab-icon svg { width:15px;height:15px; }
+  .app-tabs-row .orbit-tab-label,
+  .orbit-utility-tabs .orbit-tab-label { display:none !important; }
+  .app-tabs-row .app-tab,
+  .orbit-utility-tabs .app-tab { justify-content:center !important; gap:0 !important; }
+}
+
+@media (max-width: 440px) {
+
+
+
+
+
+
+
+
+
+}
+
+@media (max-width: 330px) {
+
+
+}
+
+/* Clean icon-only navigation with contextual labels on demand. */
+.app-tabs-row,
+.orbit-utility-tabs { overflow:visible !important; }
+
+.app-tabs-row .app-tab,
+.orbit-utility-tabs .app-tab {
+  overflow:visible !important;
+  justify-content:center !important;
+  gap:0 !important;
+}
+
+.app-tabs-row .orbit-tab-icon,
+.orbit-utility-tabs .orbit-tab-icon {
+  min-width:20px !important;
+  display:grid !important;
+  place-items:center;
+}
+
+.app-tabs-row .orbit-tab-icon svg,
+.orbit-utility-tabs .orbit-tab-icon svg { width:17px;height:17px; }
+
+.app-tabs-row .orbit-tab-label,
+.orbit-utility-tabs .orbit-tab-label {
+  position:absolute;
+  z-index:80;
+  left:50%;
+  width:max-content;
+  max-width:150px !important;
+  padding:5px 7px;
+  display:block !important;
+  color:#dce5de !important;
+  background:#101512;
+  border:1px solid #3d4840;
+  border-radius:3px;
+  box-shadow:0 8px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
+  font:800 7px/1 var(--mono) !important;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translate(-50%,4px) scale(.96);
+  transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
+}
+
+.app-tabs-row .orbit-tab-label { top:calc(100% + 7px); }
+.orbit-utility-tabs .orbit-tab-label { bottom:calc(100% + 7px); }
+
+.app-tabs-row .app-tab:hover .orbit-tab-label,
+.app-tabs-row .app-tab:focus-visible .orbit-tab-label,
+.orbit-utility-tabs .app-tab:hover .orbit-tab-label,
+.orbit-utility-tabs .app-tab:focus-visible .orbit-tab-label {
+  opacity:1;
+  visibility:visible;
+  transform:translate(-50%,0) scale(1);
+}
+
+.app-tabs-row .app-tab:hover .orbit-tab-icon,
+.orbit-utility-tabs .app-tab:hover .orbit-tab-icon {
+  color:var(--cx-console-green);
+  filter:drop-shadow(0 0 5px rgba(34,255,111,.28));
+}
+
+#cx-signout-btn span { display:none !important; }
+#cx-signout-btn { width:28px !important;padding:0 !important;justify-content:center !important; }
+/* Align/Anchor remain icon-only; their existing title becomes a fast custom tooltip. */
+
+
+
+/* Reduce nested outlines so the icon deck reads as one premium instrument. */
+
+

@@ -1,0 +1,425 @@
+/* Orbit Library redesign — mockup-matched layout for the Library tab.
+   Loaded last so plain rules win over earlier non-important styles. */
+
+/* ---------- Top bar: search + view pills + sort ---------- */
+#sfxMogrtView .library-filter-strip {
+  min-height: 44px;
+  padding: 7px 10px;
+  gap: 8px;
+  background: var(--orbit-shell, #121214);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+#sfxMogrtView .library-filter-strip .tabs-row {
+  justify-content: center;
+}
+#sfxMogrtView .library-filter-strip .tab {
+  color: var(--orbit-muted, #9aa3b2);
+  border-radius: 6px;
+  letter-spacing: .04em;
+  font-weight: 700;
+}
+#sfxMogrtView .library-filter-strip .tab:hover {
+  color: var(--orbit-text, #eef4ff);
+  border-color: rgba(34, 255, 111, .25);
+  background: rgba(34, 255, 111, .06);
+}
+#sfxMogrtView .library-filter-strip .tab.active {
+  color: #22ff6f;
+  border-color: rgba(34, 255, 111, .45);
+  background: rgba(34, 255, 111, .1);
+  box-shadow: 0 0 12px rgba(34, 255, 111, .12);
+}
+#sfxMogrtView .library-filter-strip .controls-group .select-control {
+  color: var(--orbit-text, #eef4ff);
+  background: var(--orbit-panel, #0d1118);
+  border-color: var(--orbit-line, #20242b);
+}
+
+/* ---------- View-mode toggle (lives in the status bar) ---------- */
+.lib-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+.lib-view-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orbit-faint, #6b7686);
+  background: #14161a;
+  border: 1px solid var(--orbit-line, #20242b);
+  border-radius: 5px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.lib-view-btn:hover {
+  color: var(--orbit-text, #eef4ff);
+}
+.lib-view-btn.active {
+  color: #22ff6f;
+  border-color: rgba(34, 255, 111, .5);
+  background: rgba(34, 255, 111, .1);
+}
+
+/* ---------- Status bar ---------- */
+.lib-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 10px;
+  flex: 0 0 auto;
+  background: var(--orbit-shell, #121214);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+.lib-item-count {
+  color: var(--orbit-faint, #6b7686);
+  font: 700 8px/1 var(--mono, Consolas, monospace);
+  letter-spacing: .08em;
+}
+.lib-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lib-status-btn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orbit-faint, #6b7686);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.lib-status-btn:hover {
+  color: var(--orbit-text, #eef4ff);
+  background: var(--orbit-panel, #0d1118);
+  border-color: var(--orbit-line, #20242b);
+}
+
+/* ---------- Unified toolbar: status bar + small action icons on one row ---------- */
+#sfxMogrtView .lib-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 8px;
+  padding: 3px 10px;
+  background: var(--orbit-shell, #121214);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+/* Flatten the two wrapper rows so every group flows inline on the toolbar row */
+#sfxMogrtView .lib-toolbar .lib-status-bar,
+#sfxMogrtView .lib-toolbar .library-action-strip {
+  display: contents !important;
+}
+#sfxMogrtView .lib-toolbar #libItemCount {
+  order: 1;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+#sfxMogrtView .lib-toolbar .actions-row {
+  order: 2;
+  flex: 0 0 auto;
+}
+#sfxMogrtView .lib-toolbar .library-data-row {
+  order: 3;
+  flex: 0 0 auto;
+}
+#sfxMogrtView .lib-toolbar .lib-status-actions {
+  order: 4;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+#sfxMogrtView .lib-toolbar .card-size-row {
+  order: 5;
+  flex: 0 0 auto;
+  min-width: 64px;
+  margin-left: auto;
+  padding-right: 0;
+}
+#sfxMogrtView .lib-toolbar #cardSizeSlider {
+  width: 52px;
+}
+
+/* The toolbar wrapped onto a second row at every panel width: the four
+   groups plus the size slider came to roughly ten pixels more than one row
+   could hold. That second row cost 34px of the card grid to show a single
+   slider, so the group is trimmed to the slider itself and the column gap
+   comes down. Below about 575px it still wraps, which is correct — there
+   genuinely is not room. */
+/* The toolbar wrapped onto a second row at every panel width, and that row
+   cost 34px of the card grid to carry one slider. The item count was the
+   cheapest thing to drop: the sidebar footer already prints the same number,
+   and losing it leaves about 40px of slack, so the row stays on one line
+   whether the library holds 8 files or 8,000. */
+#sfxMogrtView .lib-toolbar {
+  column-gap: 5px;
+}
+
+#sfxMogrtView .lib-toolbar #libItemCount {
+  display: none;
+}
+
+#sfxMogrtView .lib-toolbar .card-size-row {
+  min-width: 0;
+  gap: 2px;
+}
+/* The faint debug texts (Cache: / A·S·F) just crowd the icon row — keep the
+   elements (main.js still writes to them) but hide them from view. */
+#sfxMogrtView .lib-toolbar .library-data-status {
+  display: none;
+}
+
+
+/* The base .sfx-card height is now auto (style.css) so the Apply button sits
+   fully inside the card — no more clipped bottom edge. Match the library
+   Apply button text to the EXP/TEXT apply buttons exactly. */
+#sfxMogrtView .fxlib-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 0 5px 5px;
+}
+#sfxMogrtView .fxlib-card-actions > button {
+  width: 100%;
+  height: 23px;
+  min-height: 23px;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid #294b36;
+  border-radius: 5px;
+  background: #0b1711;
+  color: #dff8e8;
+  font: 800 6.5px/21px Arial, sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+#sfxMogrtView .fxlib-card-actions > .fxlib-preview:hover {
+  border-color: #57c77f;
+  color: #8dffb4;
+}
+#sfxMogrtView .fxlib-card-actions > .fxlib-insert {
+  border-color: #1f7a42;
+  background: linear-gradient(135deg, rgba(34,255,111,.18), rgba(34,255,111,.07));
+  color: #5cf09a;
+}
+#sfxMogrtView .fxlib-card-actions > .fxlib-insert:hover {
+  color: #06120a;
+  background: #22ff6f;
+}
+
+/* ---------- Action strip: keep slim ---------- */
+#sfxMogrtView .library-action-strip {
+  padding: 3px 10px;
+  background: var(--orbit-shell, #121214);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+
+/* ---------- SFX mixer (Volume / Pitch) in the action strip ----------
+   The mixer sits inside .actions-row (not .library-data-row / .transport),
+   so the earlier mixer rules never reached it — the SVG icons rendered with
+   the default black fill and were invisible. Style the actual context. */
+#sfxMogrtView .actions-row .mixer-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+#sfxMogrtView .actions-row .mixer-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  min-width: 26px;
+  height: 25px;
+  min-height: 25px;
+  padding: 0;
+  border: 1px solid #356b9e;
+  border-radius: 5px;
+  background: var(--orbit-blue-soft, #102a45);
+  color: var(--orbit-blue, #4da3ff);
+  cursor: pointer;
+}
+#sfxMogrtView .actions-row .mixer-toggle svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#sfxMogrtView .actions-row .mixer-toggle.active {
+  background: var(--orbit-blue, #4da3ff);
+  color: #07101a;
+}
+#sfxMogrtView .actions-row .mixer-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  bottom: auto;
+  z-index: 120;
+  width: 210px;
+  min-width: 210px;
+  padding: 9px 11px;
+  background: var(--orbit-panel, #0d1118);
+  border: 1px solid var(--orbit-line-strong, #356b9e);
+  border-radius: 7px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.65);
+}
+#sfxMogrtView .actions-row .mixer-popover .slider-block {
+  margin-bottom: 10px;
+}
+#sfxMogrtView .actions-row .mixer-popover .slider-block:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Sidebar ---------- */
+#sfxMogrtView .sidebar {
+  background: var(--orbit-shell, #121214);
+  border-right: 1px solid var(--orbit-line, #20242b);
+}
+#sfxMogrtView .sidebar-header {
+  justify-content: flex-start;
+  background: var(--orbit-panel, #0d1118);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+#sfxMogrtView .sidebar-header .title {
+  color: var(--orbit-muted, #9aa3b2);
+  font: 800 9px/1 var(--mono, Consolas, monospace);
+  letter-spacing: .18em;
+}
+.lib-sidebar-subhead {
+  flex: 0 0 auto;
+  padding: 6px 14px 4px;
+  color: var(--orbit-faint, #6b7686);
+  font: 800 8px/1 var(--mono, Consolas, monospace);
+  letter-spacing: .18em;
+}
+#sfxMogrtView .folder-tree {
+  padding: 2px 6px 6px;
+}
+#sfxMogrtView .folder-row {
+  min-height: 25px;
+  padding: 3px 8px;
+  color: var(--orbit-muted, #9aa3b2);
+  border-radius: 6px;
+  gap: 6px;
+}
+#sfxMogrtView .folder-row:hover {
+  color: var(--orbit-text, #eef4ff);
+  background: var(--orbit-panel, #0d1118);
+}
+#sfxMogrtView .folder-row.active {
+  color: #22ff6f;
+  background: rgba(34, 255, 111, .08);
+}
+#sfxMogrtView .folder-icon {
+  font-size: 10px;
+}
+#sfxMogrtView .folder-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#sfxMogrtView .folder-count {
+  flex: 0 0 auto;
+  color: var(--orbit-faint, #6b7686);
+  font: 700 7.5px/1 var(--mono, Consolas, monospace);
+}
+
+.lib-sidebar-footer {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  color: var(--orbit-faint, #6b7686);
+  background: var(--orbit-panel, #0d1118);
+  border-top: 1px solid var(--orbit-line, #20242b);
+  font: 700 8px/1 var(--mono, Consolas, monospace);
+  letter-spacing: .08em;
+}
+
+/* ---------- Content toolbar ---------- */
+#sfxMogrtView .toolbar {
+  background: var(--orbit-panel, #0d1118);
+  border-bottom: 1px solid var(--orbit-line, #20242b);
+}
+#sfxMogrtView .breadcrumb {
+  color: var(--orbit-text, #eef4ff);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+#sfxMogrtView .btn-collapse {
+  background: var(--orbit-panel, #0d1118);
+  border-color: var(--orbit-line, #20242b);
+}
+
+/* ---------- Cards: badges + polish ---------- */
+#sfxMogrtView .sfx-card {
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+#sfxMogrtView .sfx-card:hover {
+  transform: translateY(-1px);
+}
+.card-badge {
+  position: absolute;
+  z-index: 6;
+  top: 6px;
+  left: 6px;
+  padding: 2px 5px;
+  color: #cfe6d8;
+  background: rgba(5, 10, 8, .78);
+  border: 1px solid rgba(34, 255, 111, .28);
+  border-radius: 4px;
+  font: 800 7px/1 var(--mono, Consolas, monospace);
+  letter-spacing: .08em;
+  pointer-events: none;
+}
+.card-badge-fmt {
+  top: 24px;
+  color: #22ff6f;
+  border-color: rgba(34, 255, 111, .45);
+  background: rgba(6, 24, 14, .85);
+}
+#sfxMogrtView .sfx-card .meta-area {
+  padding: 8px 10px 4px;
+}
+#sfxMogrtView .sfx-card .meta-sub {
+  margin-top: 3px;
+}
+
+/* Bottom transport bar removed from view per request. The markup stays in
+   index.html because main.js writes to #nowPlaying / #playHint / #hostHint /
+   #tagEditorRow — hiding it visually keeps those references safe. */
+#sfxMogrtView .transport {
+  display: none;
+}
+
+/* ---------- Empty state ---------- */
+#sfxMogrtView .empty-state {
+  margin: 10px;
+  color: var(--orbit-muted, #9aa3b2);
+  background: var(--orbit-panel, #0d1118);
+  border: 1px dashed var(--orbit-line, #20242b);
+  border-radius: 10px;
+}
+
+/* ---------- Narrow panel adjustments ---------- */
+@media (max-width: 560px) {
+  #sfxMogrtView .library-filter-strip { padding: 6px 8px; }
+  .lib-status-bar { padding: 2px 8px; }
+}

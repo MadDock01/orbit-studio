@@ -1,0 +1,413 @@
+/* ============================================================
+   ORBIT CAROUSEL — Carousel tab
+
+   Same vocabulary as the rest of the shell: #3cff5f accent,
+   #22382c hairlines, 7px radii, 0.15s easing.
+
+   Panel selectors in this project are scoped with #app plus the
+   panel id and carry !important, so these match that weight or
+   they lose to the shared .tool-section skin. That shared skin is
+   also why every section below is given its height back explicitly:
+   it pins cards to height:100% with overflow:hidden, which at a
+   short panel height crushes them and hides their controls instead
+   of letting the tab scroll.
+   ============================================================ */
+
+#app #panel-carousel .car-scroll {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-rows: min-content !important;
+  gap: 8px !important;
+  align-content: start !important;
+  overflow-y: auto !important;
+}
+
+#app #panel-carousel .car-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 7px !important;
+  height: auto !important;
+  min-height: min-content !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+/* ---- The four looks ---- */
+#app #panel-carousel .car-styles {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+@media (max-width: 300px) {
+  #app #panel-carousel .car-styles {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+#app #panel-carousel .car-style {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto auto !important;
+  justify-items: start !important;
+  gap: 3px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 7px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #e0e9e2 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease !important;
+}
+
+#app #panel-carousel .car-style svg {
+  width: 100% !important;
+  max-width: 62px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  color: #57a86b !important;
+}
+
+#app #panel-carousel .car-style b {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 700 9px/1.2 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+}
+
+#app #panel-carousel .car-style small {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 500 7.5px/1.2 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+}
+
+#app #panel-carousel .car-style:hover {
+  border-color: #3a5a44 !important;
+  background: linear-gradient(150deg, #1a271d, #0c130e) !important;
+}
+
+#app #panel-carousel .car-style.active {
+  border-color: #3cff5f !important;
+  background: linear-gradient(150deg, #16301d, #0b170f) !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-carousel .car-style.active svg { color: #3cff5f !important; }
+#app #panel-carousel .car-style.active small { color: #9ec4a8 !important; }
+
+/* ---- Numbers ---- */
+#app #panel-carousel .car-fields {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+@media (max-width: 340px) {
+  #app #panel-carousel .car-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 300px) {
+  #app #panel-carousel .car-fields,
+  #app #panel-carousel .car-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+#app #panel-carousel .car-field {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  padding: 4px 6px !important;
+  border: 1px solid #22382c !important;
+  border-radius: 7px !important;
+  background: rgba(6, 12, 8, 0.56) !important;
+}
+
+#app #panel-carousel .car-field[hidden] { display: none !important; }
+
+#app #panel-carousel .car-field > span {
+  flex: 0 0 auto !important;
+  font: 600 7px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.1em !important;
+  color: #7f9488 !important;
+}
+
+#app #panel-carousel .car-field > input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 5px !important;
+  background: #0a110d !important;
+  color: #eafff0 !important;
+  font: 700 10px/1 "Segoe UI", sans-serif !important;
+  text-align: center !important;
+}
+
+#app #panel-carousel .car-field > input:focus {
+  border-color: #3cff5f !important;
+  box-shadow: 0 0 8px rgba(60, 255, 95, 0.2) !important;
+  outline: none !important;
+}
+
+#app #panel-carousel .car-field > em {
+  flex: 0 0 auto !important;
+  font: 500 7px/1 "Segoe UI", sans-serif !important;
+  font-style: normal !important;
+  color: #64786c !important;
+}
+
+/* ---- Checkboxes ---- */
+#app #panel-carousel .car-toggles {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px 10px !important;
+}
+
+#app #panel-carousel .car-check {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  cursor: pointer !important;
+  font: 500 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: #a8bcae !important;
+}
+
+#app #panel-carousel .car-check[hidden] { display: none !important; }
+
+#app #panel-carousel .car-check input {
+  flex: 0 0 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  min-height: 12px !important;
+  margin: 0 !important;
+  accent-color: #3cff5f !important;
+  cursor: pointer !important;
+}
+
+#app #panel-carousel .car-check:hover { color: #eafff0 !important; }
+
+/* ---- Build, and the two smaller actions ---- */
+#app #panel-carousel .car-go,
+#app #panel-carousel .car-btn {
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  gap: 0 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 7px 9px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 7px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #e0e9e2 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease !important;
+}
+
+#app #panel-carousel .car-go {
+  border-color: #2f5c3c !important;
+  background: linear-gradient(150deg, #16301d, #0b170f) !important;
+}
+
+#app #panel-carousel .car-go svg,
+#app #panel-carousel .car-btn svg {
+  grid-row: 1 / 3 !important;
+  width: 18px !important;
+  height: 18px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.6 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  color: #57a86b !important;
+}
+
+#app #panel-carousel .car-go svg { color: #3cff5f !important; }
+
+#app #panel-carousel .car-go b,
+#app #panel-carousel .car-btn b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 700 9px/1.2 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.07em !important;
+}
+
+#app #panel-carousel .car-go small,
+#app #panel-carousel .car-btn small {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 500 7.5px/1.2 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+}
+
+#app #panel-carousel .car-go:hover,
+#app #panel-carousel .car-btn:hover {
+  border-color: #3cff5f !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-carousel .car-danger:hover {
+  border-color: #ff6a5a !important;
+}
+
+#app #panel-carousel .car-danger:hover svg { color: #ff6a5a !important; }
+
+#app #panel-carousel .car-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+/* ---- What just happened ---- */
+#app #panel-carousel .car-status {
+  min-height: 15px !important;
+  padding: 4px 7px !important;
+  border: 1px solid #1e2c23 !important;
+  border-radius: 6px !important;
+  background: rgba(6, 12, 8, 0.5) !important;
+  font: 500 8px/1.35 "Segoe UI", sans-serif !important;
+  color: #8fa596 !important;
+  word-break: break-word !important;
+}
+
+#app #panel-carousel .car-status.is-ok { color: #8ef2a6 !important; border-color: #234d31 !important; }
+#app #panel-carousel .car-status.is-error { color: #ff9c90 !important; border-color: #4d2723 !important; }
+
+/* Remove only means something once something has been built. */
+#app #panel-carousel #carRemove { opacity: 0.45 !important; }
+#app #panel-carousel.has-rig #carRemove { opacity: 1 !important; }
+
+#app #panel-carousel.is-busy .car-go,
+#app #panel-carousel.is-busy .car-btn {
+  pointer-events: none !important;
+  opacity: 0.55 !important;
+}
+
+/* ---- Grid: shape picker ------------------------------------------------
+   Three icons that draw the layout they produce, so the shape reads without
+   a caption. Moved here with the GRID card itself — a grid is the same job
+   as a carousel, one layer laid out many times, so both live in this tab. */
+#app #panel-carousel .grid-modes {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+#app #panel-carousel .grid-mode {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  padding: 4px 2px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 7px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #cfe0d5 !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease !important;
+}
+
+#app #panel-carousel .grid-mode svg {
+  width: 17px !important;
+  height: 17px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.5 !important;
+  stroke-linejoin: round !important;
+  opacity: 0.82 !important;
+}
+
+#app #panel-carousel .grid-mode b {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 700 7px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+  color: #8ba295 !important;
+}
+
+#app #panel-carousel .grid-mode:hover {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-carousel .grid-mode.is-on {
+  border-color: #3cff5f !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: #3cff5f !important;
+}
+
+#app #panel-carousel .grid-mode.is-on svg { opacity: 1 !important; }
+#app #panel-carousel .grid-mode.is-on b { color: #eafff0 !important; }
+
+#app #panel-carousel .grid-mode:focus-visible {
+  outline: 2px solid #3cff5f !important;
+  outline-offset: 1px !important;
+}
+
+/* A hidden field row has to leave the grid, not just turn invisible. */
+#app #panel-carousel .car-fields[hidden] { display: none !important; }
+
+/* DRIVES carries a select rather than a number, so it needs the room. */
+#app #panel-carousel .car-field-wide { grid-column: span 2 !important; }
+
+#app #panel-carousel .car-field > select {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 5px !important;
+  background: #0a110d !important;
+  color: #eafff0 !important;
+  font: 600 9px/1 "Segoe UI", sans-serif !important;
+}
+
+#app #panel-carousel .car-field > select:focus {
+  border-color: #3cff5f !important;
+  box-shadow: 0 0 8px rgba(60, 255, 95, 0.2) !important;
+  outline: none !important;
+}

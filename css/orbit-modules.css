@@ -1,0 +1,149 @@
+/* Shared module surfaces. Preserve preview media, color samples and graph geometry. */
+#app #appTabsRow .rail-purge .orbit-tab-icon svg{stroke:#ffca62!important;stroke-width:1.8!important;opacity:1!important}
+#app #panel-pro #cxFlow20 .fx20-topbar{align-items:flex-start;gap:8px}
+#app #panel-pro #cxFlow20 .fx20-meta{display:flex;flex-wrap:wrap;gap:4px}
+#app #panel-pro #cxFlow20 .fx20-chip,#app #panel-pro #cxFlow20 .fx20-savechip{min-height:27px;min-width:34px}
+@media(max-width:799px){
+ #app #panel-pro #cxFlow20{display:flex;flex-direction:column;gap:8px}
+ #app #panel-pro #cxFlow20 .fx20-topbar{flex-direction:column;align-items:stretch}
+ #app #panel-pro #cxFlow20 .fx20-canvas-wrap{height:220px!important}
+ #app #panel-pro #cxFlow20 .fx20-params{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #app #panel-pro #cxFlow20 .fx20-lib{grid-template-columns:repeat(5,minmax(0,1fr));max-height:164px;grid-auto-rows:48px}
+ #app #panel-pro #cxFlow20 .fx20-preset{height:48px}
+}
+@media(max-width:420px){#app #panel-pro #cxFlow20 .fx20-lib{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#app .app-panel:not(#panel-tools){
+ --accent:#3cff5f;--accent-color:#3cff5f;--panel-bg:#080e0b;--card-bg:#101813;
+ background:var(--od-bg)!important;color:#e0e9e2;
+}
+#app .app-panel:not(#panel-tools) :is(.tool-section,.tool-subgroup,.tracker-status-card,.tracker-ring-card,.cx3d-panel,.compx-comp-toolbar,.compx-comp-filter,.compx-comp-bulk,.library-filter-strip,.lib-toolbar,.cx-cap-source-card,.cx-cap-source-icon,.cx-cap-source-or){
+ background:linear-gradient(130deg,#101813,#080e0b 70%)!important;
+ border:1px solid #29392f!important;border-radius:8px!important;
+ box-shadow:none!important;min-width:0;
+}
+#app .app-panel:not(#panel-tools) :is(.tool-section-head,.tool-subgroup-title){
+ background:none!important;border-bottom:1px solid #25332b!important;
+ color:#edf3ee!important;font:600 11px/1.25 "Segoe UI",sans-serif!important;
+ letter-spacing:.04em;padding:7px 0;margin-bottom:7px;
+}
+#app .app-panel:not(#panel-tools) .tool-section-title{
+ color:#edf3ee!important;font:600 11px/1.25 "Segoe UI",sans-serif!important;letter-spacing:.04em;
+}
+#app .app-panel:not(#panel-tools) .tool-section-title::before{display:none!important}
+#app .app-panel:not(#panel-tools) :is(.tool-btn,.btn,.shelf,.compx-comp-toolbar button,.compx-comp-bulk button,.lib-status-btn,.cx3d-btn,.cx3d-feature){
+ background:linear-gradient(135deg,#141d17,#0a100c)!important;
+ border:1px solid #2a382f!important;border-radius:6px!important;
+ color:#e0e9e2!important;box-shadow:none!important;
+ font-family:"Segoe UI",sans-serif;font-size:11px;letter-spacing:0;
+}
+#app .app-panel:not(#panel-tools) :is(.tool-btn,.btn,.shelf,.cx3d-feature):hover{border-color:#43844f!important;background:#122017!important}
+#app .app-panel:not(#panel-tools) :is(button.primary,button.active,button.is-selected,.cx-bg-pipeline-step.is-active,.cx-cap-source-card.active){
+ background:#142d19!important;border-color:#35c64b!important;color:#d5ffdb!important;box-shadow:none!important;
+}
+#app .app-panel:not(#panel-tools) :is(input:not([type="range"]):not([type="checkbox"]):not([type="color"]),select,textarea){
+ background:#090f0c!important;border-color:#2a382f!important;color:#e0e9e2!important;border-radius:6px;
+}
+#app .app-panel:not(#panel-tools) :is(.hint,.tool-help){color:#9bac9f!important;line-height:1.5}
+#app #panel-toolkit>.tools-scroll{display:block!important;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#app #panel-toolkit .tools-project-row{display:block!important;height:auto;min-height:0}
+#app #panel-toolkit #toolkitRoundProSection,#app #panel-toolkit #toolkitShapeSourceSection,#app #panel-toolkit #toolkitFlexGridSection{padding:10px;margin:0;flex:none}
+#app #panel-toolkit #toolkitShapeSourceSection,#app #panel-toolkit #toolkitFlexGridSection{margin-top:8px}
+#app #panel-toolkit .cx-roundpro-modes{margin:0 0 8px}
+#app #panel-toolkit .cx-roundpro-toggles{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 8px}
+#app #panel-toolkit #btnRoundProFit{width:100%;margin-top:6px}
+#app #panel-toolkit .cx-flexgrid-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px}
+#app #panel-toolkit .cx-flexgrid-field{display:flex;flex-direction:column;gap:3px;min-width:0}
+#app #panel-toolkit .cx-flexgrid-field span{font:600 8px/1.2 "Segoe UI",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8da195}
+#app #panel-studio #ssToAeCard{margin:8px 0 0;padding:10px}
+#app #panel-toolkit .cx-flexgrid-field .counter-input,#app #panel-toolkit .cx-flexgrid-field .counter-select{width:100%;min-width:0;height:26px;box-sizing:border-box}
+#app #panel-toolkit #btnFlexGridApply,#app #panel-toolkit #btnLayoutGridCreate{width:100%}
+#app #panel-toolkit #layoutGridModeRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 8px}
+#app #panel-toolkit .cx-layout-grid-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 34px 34px 34px;gap:5px;margin:8px 0 6px}
+#app #panel-toolkit .cx-layout-grid-toolbar .tool-btn,#app #panel-toolkit .cx-layout-grid-change .tool-btn{min-height:32px!important}
+#app #panel-toolkit .cx-layout-grid-change{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:5px;margin:0 0 8px}
+#app #panel-toolkit .cx-layout-grid-layers{list-style:none;margin:0 0 8px;padding:0;max-height:140px;overflow:auto;border:1px solid #29392f;border-radius:6px;background:#0a110d}
+#app #panel-toolkit .cx-layout-grid-layers li{display:flex;align-items:center;gap:6px;min-height:28px;padding:4px 8px;border-bottom:1px solid #1d2a22;color:#d5e0d8;font-size:11px;cursor:pointer}
+#app #panel-toolkit .cx-layout-grid-layers li:last-child{border-bottom:0}
+#app #panel-toolkit .cx-layout-grid-layers li.is-selected{background:#122017;color:#b9ffcf}
+#app #panel-toolkit .cx-layout-grid-layers b{flex:0 0 18px;color:#6f8a78;font-size:9px}
+#app #panel-toolkit .cx-layout-grid-layers span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app #panel-toolkit .cx-flexgrid-help{margin-top:8px}
+#app #panel-toolkit #shapeToolkit{display:flex;flex-direction:column;gap:8px}
+#app #panel-toolkit .shape-subgroup{padding:8px;margin:0;flex:none}
+#app #panel-toolkit .tool-grid{gap:5px}
+#app #panel-toolkit .tool-btn{min-height:44px!important;padding:7px 5px!important;font:500 11px/1.2 "Segoe UI",sans-serif!important;text-transform:none}
+#app #panel-toolkit .tool-btn::before{color:#3cff5f}
+#app #panel-toolkit .counter-row{display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:5px}
+#app #panel-toolkit .counter-row>*{width:100%;min-width:0;box-sizing:border-box}
+#app #panel-toolkit .hint{font-size:10px;margin:7px 0 0}
+#app .app-panel:not(#panel-tools) button:focus-visible{outline:2px solid #3cff5f;outline-offset:1px}
+#app #panel-pro #cxSuperMorphCard{padding:10px;margin:0 0 10px}
+#app #panel-pro #cxSuperMorphCard .cx-smorph-modes .tool-btn{min-height:34px}
+@media(max-width:380px){#app #panel-toolkit .counter-row{grid-template-columns:minmax(0,1fr) 48px}#app #panel-toolkit #shapeEaseMode{grid-column:1/-1}}
+#app #panel-advanced .cx3d-panel{display:grid;gap:8px}
+#app #panel-advanced .cx3d-feature-tiles{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#app #panel-advanced .cx3d-quick-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#app #panel-advanced .cx3d-move-fields{margin:0;gap:6px}
+#app #panel-advanced .cx3d-super-hint{margin:0 0 7px;font-size:10px;line-height:1.4;color:#8aa094}
+#app #panel-advanced .cx3d-quick-tools h3{margin:0 0 7px;font:700 10px/1 "Segoe UI",sans-serif;letter-spacing:.08em;color:#b7c4bc}
+
+/* ---- Orbit 3D: narrow-panel repair -------------------------------------
+   The panel's manifest MinSize is 260px wide, which leaves ~220px of content
+   once the 48px rail is subtracted. Three rows used plain `fr` tracks, whose
+   minimum is `auto` (= min-content), so they could not shrink below the
+   longest word in their own labels and forced a 19px horizontal scroll.
+   minmax(0,·) lets the tracks collapse; ellipsis keeps the labels legible. */
+#app #panel-advanced .cx3d-primary-row{grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr) minmax(0,.9fr)!important}
+#app #panel-advanced .cx3d-primary-row button{min-width:0}
+#app #panel-advanced .cx3d-primary-row button>b,
+#app #panel-advanced .cx3d-primary-row button>small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app #panel-advanced .cx3d-lens-chips button{min-width:0}
+/* The SHOT row was the single widest thing in the card: its `1fr` tracks plus
+   the shared 11px button font gave it a 239px min-content, which every other
+   row in the workflow grid then stretched to match. */
+#app #panel-advanced .cx3d-shot-row{grid-template-columns:44px minmax(0,1fr)!important;gap:6px}
+#app #panel-advanced .cx3d-segmented{grid-template-columns:repeat(3,minmax(0,1fr))!important;min-width:0}
+#app #panel-advanced .cx3d-segmented button{min-width:0;padding:0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px!important}
+#app #panel-advanced .cx3d-rig-select,
+#app #panel-advanced .cx3d-lens-control{min-width:0}
+#app #panel-advanced .cx3d-utility-row button{min-width:0;flex:1 1 96px;max-width:150px}
+
+/* Under ~310px the three targeting tiles cannot hold icon + label + caption.
+   Dropping the caption keeps them three across and readable rather than
+   three columns of clipped text. */
+@media(max-width:310px){
+  #app #panel-advanced .cx3d-feature-tile small{display:none}
+  #app #panel-advanced .cx3d-feature-tile{min-height:52px}
+}
+/* Lens presets: the shared 11px button font made five chips wider than the
+   row they sit in. Shrink the type, and below ~330px let them drop to their
+   own line instead of pushing the card sideways. */
+#app #panel-advanced .cx3d-lens-chips button{font-size:9px!important;padding:0 2px}
+#app #panel-advanced .cx-camera-number-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#app #panel-advanced .cx-camera-number-grid-2 input{min-width:0;width:100%}
+@media(max-width:330px){
+  #app #panel-advanced .cx3d-lens-control{flex-wrap:wrap;row-gap:4px}
+  #app #panel-advanced .cx3d-lens-chips{flex:1 0 100%}
+}
+/* SETUP / ANIMATE / DOF carry an icon, a title and a caption. Three across
+   leaves ~13px for the text at the 260px minimum, so below 380px they stack
+   full width and stay readable. */
+@media(max-width:380px){
+  #app #panel-advanced .cx3d-primary-row{grid-template-columns:minmax(0,1fr)!important}
+  #app #panel-advanced .cx3d-primary-row button{min-height:38px}
+}
+/* The small numeric fields inherit 9px side padding from the shared input
+   skin, which left ~20px of text box on a 38px control — a three digit lens
+   or depth value was cut in half. */
+#app #panel-advanced .cx3d-lens-control>input,
+#app #panel-advanced .cx3d-mesh-depth input,
+#app #panel-advanced .cx-camera-number-grid input{padding:0 4px!important;text-align:center}
+#app #panel-advanced .cx3d-lens-control>input{width:46px}
+#app #panel-advanced .cx3d-mesh-depth input{width:46px}
+
+/* "NOT SET" was wrapping to three lines and doubling the header height. */
+#app #panel-advanced .cx3d-header #cxCameraStateBadge{white-space:nowrap;flex:0 0 auto}
+#app #panel-advanced .cx3d-brand{min-width:0}
+#app #panel-advanced .cx3d-brand>div{min-width:0}
+#app #panel-advanced .cx3d-brand strong,
+#app #panel-advanced .cx3d-brand small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -1,0 +1,253 @@
+/* ============================================================
+   ORBIT RAIL — left module rail, retuned to the green theme
+   Loaded last, after orbit-global-dock.css.
+
+   Fixes it inherited from older layers:
+     · orbit-premium-v2 `cxNeonRailPulse` painted a PURPLE drop-shadow
+       on the active tab while the whole plugin is green
+     · orbit-compact styled .app-tab.active for a horizontal strip
+       (purple fill, bottom bar) — wrong for a vertical rail
+     · the ::after underline sat at `inset auto 6% -1px`, a bottom bar
+     · Purge's label was #505664, a blue grey that belongs to no palette
+     · Settings / Logout were boxed while the tabs above were not
+
+   Everything below speaks the same language as the global rails:
+   #3cff5f accent, #22322a hairlines, 6–7px radii, 0.16s easing.
+   ============================================================ */
+
+:root {
+  --rail-accent: #3cff5f;
+  --rail-line: #22322a;
+  --rail-line-soft: #2a382f;
+  --rail-idle: #8ba295;
+  --rail-hot: #eafff0;
+}
+
+/* ---- Rail shell: same surface as the docks ---- */
+#app #appTabsRow {
+  width: 48px !important;
+  flex: 0 0 48px !important;
+  padding: 6px 4px !important;
+  gap: 3px !important;
+  background: linear-gradient(180deg, #0d140f 0%, #080d0a 100%) !important;
+  border-right: 1px solid var(--rail-line) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+}
+
+#app #appTabsRow::-webkit-scrollbar {
+  width: 0;
+}
+
+/* ---- Tab: one calm resting state ---- */
+#app #appTabsRow .app-tab {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  gap: 3px !important;
+  padding: 4px 1px !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: var(--rail-idle) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  overflow: hidden !important;
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease !important;
+}
+
+/* the old horizontal-strip decorations have no place on a vertical rail */
+#app #appTabsRow .app-tab::before,
+#app #appTabsRow .app-tab::after {
+  content: none !important;
+  display: none !important;
+}
+
+#app #appTabsRow .app-tab .orbit-tab-icon,
+#app #appTabsRow .app-tab .orbit-tab-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+#app #appTabsRow .app-tab .orbit-tab-icon svg {
+  stroke: currentColor !important;
+  stroke-width: 1.5 !important;
+  fill: none !important;
+  filter: none !important;
+  animation: none !important;
+  transition: filter 0.16s ease !important;
+}
+
+/* 7px keeps "Motion Lab" — the longest label — off both edges at 48px */
+#app #appTabsRow .app-tab .orbit-tab-label {
+  display: block !important;
+  max-width: 100% !important;
+  font: 500 7px/1.15 "Segoe UI", sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  color: inherit !important;
+}
+
+/* ---- Hover: a step towards the accent, never the full state ---- */
+#app #appTabsRow .app-tab:hover:not(.active) {
+  color: #d6ecdc !important;
+  background: #101a13 !important;
+  border-color: var(--rail-line-soft) !important;
+  box-shadow: none !important;
+}
+
+/* ---- Active: left accent bar, tinted bed, lit icon ---- */
+#app #appTabsRow .app-tab.active {
+  color: var(--rail-hot) !important;
+  background: linear-gradient(90deg, rgba(60, 255, 95, 0.14) 0%, rgba(60, 255, 95, 0.035) 100%) !important;
+  border-color: #2f5a3a !important;
+  box-shadow: inset 3px 0 0 var(--rail-accent), 0 0 12px rgba(60, 255, 95, 0.13) !important;
+  filter: none !important;
+  animation: cxRailBreathe 3.2s ease-in-out infinite !important;
+}
+
+#app #appTabsRow .app-tab.active .orbit-tab-icon svg {
+  stroke: var(--rail-accent) !important;
+  filter: drop-shadow(0 0 4px rgba(60, 255, 95, 0.45)) !important;
+}
+
+#app #appTabsRow .app-tab:focus-visible {
+  outline: 2px solid var(--rail-accent) !important;
+  outline-offset: -2px !important;
+}
+
+/* A slow green breath, not the old 2.4s purple strobe. */
+@keyframes cxRailBreathe {
+  0%, 100% { box-shadow: inset 3px 0 0 #3cff5f, 0 0 10px rgba(60, 255, 95, 0.10); }
+  50%      { box-shadow: inset 3px 0 0 #3cff5f, 0 0 16px rgba(60, 255, 95, 0.20); }
+}
+
+/* ---- Utility group: Purge / Settings / Logout ---- */
+#app #appTabsRow .rail-purge {
+  margin-top: auto !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* hairline that separates modules from utilities */
+#app #appTabsRow .rail-purge::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  top: -3px !important;
+  left: 5px !important;
+  right: 5px !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, #35503f, transparent) !important;
+  pointer-events: none !important;
+}
+
+/* Purge stays deliberately faint — orbit-redesign lights it amber on
+   .needs-purge and red on .critical from JS, and spins it while purging.
+   Those states are left untouched; only the idle blue grey (#505664,
+   from --oc-faint) is swapped for a hue that belongs to this palette.
+   Selectors mirror orbit-redesign's `.app-tab.rail-purge` specificity and
+   win on load order. */
+#app #appTabsRow .app-tab.rail-purge {
+  color: #5c6b62 !important;
+}
+
+#app #appTabsRow .app-tab.rail-purge .orbit-tab-icon svg {
+  stroke: #ffca62 !important;
+  stroke-width: 1.8 !important;
+}
+
+#app #appTabsRow .app-tab.rail-purge:hover:not(.active) {
+  color: #ffca65 !important;
+  background: #171208 !important;
+  border-color: rgba(245, 202, 101, 0.4) !important;
+}
+
+#app #appTabsRow .app-tab.rail-purge:hover .orbit-tab-icon svg {
+  filter: drop-shadow(0 0 4px rgba(255, 202, 101, 0.45)) !important;
+}
+
+/* Settings and Logout get the tab skin, one notch quieter — no boxes. */
+#app #appTabsRow .rail-account {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 34px !important;
+  width: 100% !important;
+  height: 34px !important;
+  gap: 3px !important;
+  padding: 3px 2px !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #74897d !important;
+  box-shadow: none !important;
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease !important;
+}
+
+#app #appTabsRow .rail-account svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: currentColor !important;
+}
+
+#app #appTabsRow .rail-account-label {
+  font: 500 7px/1.15 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.015em !important;
+  color: inherit !important;
+}
+
+#app #appTabsRow .rail-account:hover {
+  color: #d6ecdc !important;
+  background: #101a13 !important;
+  border-color: var(--rail-line-soft) !important;
+}
+
+#app #appTabsRow #cx-signout-btn:hover {
+  color: #ffc4c4 !important;
+  background: #1c0f0f !important;
+  border-color: #6d2a2a !important;
+}
+
+/* ---- Narrow panels: the rail sheds labels, keeps the accent ---- */
+@media (max-width: 360px) {
+  #app #appTabsRow {
+    width: 40px !important;
+    flex: 0 0 40px !important;
+    padding: 5px 3px !important;
+  }
+  #app #appTabsRow .app-tab {
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+  #app #appTabsRow .app-tab .orbit-tab-label,
+  #app #appTabsRow .rail-account-label {
+    display: none !important;
+  }
+  #app #appTabsRow .rail-account {
+    flex-basis: 28px !important;
+    height: 28px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #appTabsRow .app-tab.active {
+    animation: none !important;
+    box-shadow: inset 3px 0 0 var(--rail-accent), 0 0 12px rgba(60, 255, 95, 0.13) !important;
+  }
+  #app #appTabsRow .app-tab,
+  #app #appTabsRow .rail-account {
+    transition: none !important;
+  }
+}

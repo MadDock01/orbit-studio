@@ -1,0 +1,98 @@
+/* ============================================================
+   ORBIT GRADIENT TEXT — the script-built style cards
+
+   These sit in the same TEXT ANIMATION STYLES grid as the bundled .ffx
+   presets, so the card frame, the preview stage and the Apply button all
+   come from orbit-text-fx.css. This sheet only says which ones are the
+   gradient ones and makes their preview actually look like a gradient —
+   a card promising gradient text should not preview in flat green.
+
+   Weight: #app plus #tanimList, matching the two-ID-plus-!important the
+   existing card rules already use.
+   ============================================================ */
+
+#app #tanimList .tanim-card.is-gradient {
+  border-color: rgba(120, 140, 255, 0.34) !important;
+}
+
+#app #tanimList .tanim-card.is-gradient:hover {
+  border-color: rgba(150, 170, 255, 0.6) !important;
+}
+
+/* The badge says TEXT on every other card; on these it says where the
+   animation comes from, because there is no .ffx behind them. */
+#app #tanimList .tanim-card.is-gradient .tanim-card-badge {
+  background: linear-gradient(100deg, #ff5ac8, #9a6bff 48%, #5ad8ff) !important;
+  color: #080c10 !important;
+  font-weight: 800 !important;
+}
+
+#app #tanimList .tanim-card.is-gradient .tanim-card-badge::after {
+  content: " · LIVE" !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* The preview letters carry the gradient itself, sweeping the way the
+   real thing does in the comp. background-clip is the only way to put a
+   moving gradient inside glyphs in the panel. */
+#app #tanimList .tanim-card.is-gradient .tanim-pchar {
+  background: linear-gradient(100deg, #ff5ac8, #9a6bff 42%, #5ad8ff 72%, #ff5ac8) !important;
+  background-size: 260% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: cxGradTextSweep 2.6s linear infinite !important;
+}
+
+#app #tanimList .tanim-card.is-gradient .tanim-card-glow {
+  background: radial-gradient(60% 120% at 50% 100%, rgba(154, 107, 255, 0.3), transparent 70%) !important;
+}
+
+@keyframes cxGradTextSweep {
+  from { background-position: 0% 50%; }
+  to { background-position: 260% 50%; }
+}
+
+/* The way back out lives in the toolbar beside the search and the
+   category filter, so it reads as a library action, not a style. */
+#app #panel-sfx #btnTanimGradClean {
+  flex: 0 0 auto !important;
+  height: 27px !important;
+  min-height: 27px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 9px !important;
+  border: 1px solid rgba(120, 140, 255, 0.3) !important;
+  border-radius: 5px !important;
+  background: rgba(120, 140, 255, 0.07) !important;
+  color: #b9c2e8 !important;
+  font: 700 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.06em !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfx #btnTanimGradClean:hover {
+  border-color: rgba(150, 170, 255, 0.65) !important;
+  background: rgba(120, 140, 255, 0.14) !important;
+  color: #eef1ff !important;
+}
+
+#app #panel-sfx #btnTanimGradClean:focus-visible {
+  outline: 2px solid #9a6bff !important;
+  outline-offset: 1px !important;
+}
+
+@media (max-width: 380px) {
+  #app #panel-sfx #btnTanimGradClean {
+    padding: 0 6px !important;
+    font-size: 7px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #tanimList .tanim-card.is-gradient .tanim-pchar {
+    animation: none !important;
+  }
+}

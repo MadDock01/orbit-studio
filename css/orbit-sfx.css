@@ -1,0 +1,1412 @@
+/* ============================================================
+   ORBIT SFX — Sound Designer workspace (SFX rail tab)
+
+   A full-height workspace rather than a stack of cards: a source
+   column on the left, results in the middle, the spectrum preview
+   and the transport pinned underneath. The panel is the viewport,
+   so the whole thing is laid out in fr units and clamp() ramps and
+   works from a 340px strip up to a wide docked panel.
+
+   Weight: every selector carries #app plus #panel-sfxdesign, which
+   is the two-ID-plus-!important weight orbit-console-theme.css and
+   style.css already use on buttons and inputs. A plain declaration
+   loses to them, so the !important here is forced by the cascade
+   that is already in the project, not by preference.
+   ============================================================ */
+
+#app #panel-sfxdesign {
+  --sx-accent: #3cff5f;
+  --sx-line: #22322a;
+  --sx-line-soft: #1b2720;
+  --sx-bg: #070c08;
+  --sx-card: #0d150f;
+  --sx-text: #eafff0;
+  --sx-dim: #8ba295;
+  --sx-faint: #6d7f74;
+  --sx-row: clamp(40px, calc(28px + 2.2vw), 54px);
+  padding: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 7px !important;
+  box-sizing: border-box !important;
+}
+
+/* ---- Workspace head ---- */
+#app #panel-sfxdesign .sfxd-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  padding: 0 2px !important;
+}
+
+#app #panel-sfxdesign .sfxd-mark {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(150deg, #16301f, #0a120c) !important;
+  color: var(--sx-accent) !important;
+}
+
+#app #panel-sfxdesign .sfxd-mark svg {
+  width: 15px !important;
+  height: 15px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-title {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-title strong {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 800 10px/1.1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-title small {
+  font: 500 8px/1.1 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-host {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  height: 20px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 999px !important;
+  background: #0b120d !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-dim) !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-host i {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #4a5a50 !important;
+}
+
+#app #panel-sfxdesign .sfxd-host.is-live i {
+  background: var(--sx-accent) !important;
+  box-shadow: 0 0 6px rgba(60, 255, 95, 0.8) !important;
+}
+
+/* ---- Icon buttons ----
+   orbit-console-theme.css pins min-height: 27px on every #app button, so
+   each size here restates min-height or it silently wins. */
+#app #panel-sfxdesign .sfxd-hicon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: var(--sx-dim) !important;
+  cursor: pointer !important;
+  transition: color 0.14s ease, border-color 0.14s ease, background 0.14s ease !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon.sm {
+  width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon svg {
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon.sm svg {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon:hover {
+  color: var(--sx-text) !important;
+  border-color: #47935a !important;
+  background: #12231a !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon[aria-pressed="true"] {
+  color: var(--sx-text) !important;
+  border-color: var(--sx-accent) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+}
+
+#app #panel-sfxdesign .sfxd-hicon:focus-visible,
+#app #panel-sfxdesign .sfxd-chip:focus-visible,
+#app #panel-sfxdesign .sfxd-mini:focus-visible,
+#app #panel-sfxdesign .sfxd-tbtn:focus-visible,
+#app #panel-sfxdesign .sfxd-insert:focus-visible,
+#app #panel-sfxdesign .sfxd-fxbtn:focus-visible,
+#app #panel-sfxdesign .sfxd-handle:focus-visible,
+#app #panel-sfxdesign .sfxd-row:focus-visible {
+  outline: 2px solid var(--sx-accent) !important;
+  outline-offset: 1px !important;
+}
+
+/* ---- Settings drawer ---- */
+#app #panel-sfxdesign .sfxd-settings {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px 10px !important;
+  flex: 0 0 auto !important;
+  padding: 7px 8px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 8px !important;
+  background: var(--sx-card) !important;
+}
+
+#app #panel-sfxdesign .sfxd-settings[hidden] {
+  display: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-set {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.05em !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-set select {
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 4px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 5px !important;
+  background: #060806 !important;
+  color: var(--sx-text) !important;
+  font-size: 8px !important;
+}
+
+#app #panel-sfxdesign .sfxd-set-check input {
+  min-height: 0 !important;
+  width: 11px !important;
+  height: 11px !important;
+  margin: 0 !important;
+  accent-color: var(--sx-accent) !important;
+}
+
+/* ---- Body: sources + results ----
+   1fr on the results column with a 0 minimum, so a long file name can
+   never push the column wider than the panel. */
+#app #panel-sfxdesign .sfxd-body {
+  display: grid !important;
+  grid-template-columns: clamp(126px, 31%, 200px) minmax(0, 1fr) !important;
+  gap: 6px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 7px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, var(--sx-card), #080e0a) !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib-title {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib-title b {
+  font: 800 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.11em !important;
+  color: var(--sx-dim) !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib-title small {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-filterbox,
+#app #panel-sfxdesign .sfxd-searchbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  height: 26px !important;
+  padding: 0 7px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 7px !important;
+  background: #060a07 !important;
+}
+
+#app #panel-sfxdesign .sfxd-searchbar {
+  height: 28px !important;
+}
+
+#app #panel-sfxdesign .sfxd-filterbox svg,
+#app #panel-sfxdesign .sfxd-searchbar svg {
+  flex: 0 0 11px !important;
+  width: 11px !important;
+  height: 11px !important;
+  fill: none !important;
+  stroke: var(--sx-faint) !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-filterbox input,
+#app #panel-sfxdesign .sfxd-searchbar input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--sx-text) !important;
+  font: 500 9px/1 "Segoe UI", sans-serif !important;
+}
+
+#app #panel-sfxdesign .sfxd-clear {
+  flex: 0 0 auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--sx-faint) !important;
+  font-size: 9px !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-clear:hover {
+  color: var(--sx-text) !important;
+  background: #12231a !important;
+}
+
+/* ---- Folder list ---- */
+#app #panel-sfxdesign .sfxd-folders {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 4px 6px !important;
+  border: 1px solid transparent !important;
+  border-left: 2px solid transparent !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--sx-dim) !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: background 0.14s ease, color 0.14s ease !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder:hover {
+  background: #101a13 !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder.is-on {
+  border-left-color: var(--sx-accent) !important;
+  background: linear-gradient(90deg, rgba(60, 255, 95, 0.09), transparent) !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder svg {
+  flex: 0 0 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.6 !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fname {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fname b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fname small {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 500 7.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fcount {
+  flex: 0 0 auto !important;
+  padding: 1px 5px !important;
+  border-radius: 999px !important;
+  background: #131d16 !important;
+  font: 700 7.5px/1.4 "Segoe UI", sans-serif !important;
+  color: var(--sx-dim) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fdrop {
+  flex: 0 0 auto !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-height: 14px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--sx-faint) !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder:hover .sfxd-fdrop,
+#app #panel-sfxdesign .sfxd-folder .sfxd-fdrop:focus-visible {
+  opacity: 1 !important;
+}
+
+#app #panel-sfxdesign .sfxd-folder .sfxd-fdrop:hover {
+  color: #ff9b9b !important;
+}
+
+#app #panel-sfxdesign .sfxd-lib-foot {
+  flex: 0 0 auto !important;
+  padding-top: 5px !important;
+  border-top: 1px solid var(--sx-line-soft) !important;
+  font: 600 7.5px/1.3 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.05em !important;
+  color: var(--sx-faint) !important;
+}
+
+/* ---- Results column ---- */
+#app #panel-sfxdesign .sfxd-main {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-filters {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-chiprow {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-chiprow::-webkit-scrollbar {
+  height: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-filters-gap {
+  flex: 0 0 2px !important;
+}
+
+#app #panel-sfxdesign .sfxd-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex: 0 0 auto !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 9px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 999px !important;
+  background: #0b120d !important;
+  color: var(--sx-dim) !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: color 0.14s ease, border-color 0.14s ease, background 0.14s ease !important;
+}
+
+#app #panel-sfxdesign .sfxd-chip em {
+  padding: 0 4px !important;
+  border-radius: 999px !important;
+  background: #16211a !important;
+  font: 700 7.5px/1.5 "Segoe UI", sans-serif !important;
+  font-style: normal !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-chip:hover {
+  color: var(--sx-text) !important;
+  border-color: #47935a !important;
+}
+
+#app #panel-sfxdesign .sfxd-chip.is-on {
+  border-color: var(--sx-accent) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-resulthead {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  font: 600 8px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-dim) !important;
+}
+
+#app #panel-sfxdesign .sfxd-resulthead > span {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-sort {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex: 0 0 auto !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-sort select {
+  height: 20px !important;
+  min-height: 20px !important;
+  padding: 0 3px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 5px !important;
+  background: #060806 !important;
+  color: var(--sx-text) !important;
+  font-size: 8px !important;
+}
+
+/* ---- Result rows ---- */
+#app #panel-sfxdesign .sfxd-results {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 1px !important;
+}
+
+#app #panel-sfxdesign .sfxd-empty {
+  padding: 18px 10px !important;
+  text-align: center !important;
+  font: 500 9px/1.5 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+}
+
+/* Grid, not flex: the middle track is minmax(0,1fr) so the waveform
+   gives way before the name does, and nothing can overlap. */
+#app #panel-sfxdesign .sfxd-row {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: var(--sx-row) !important;
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, #0c130e, #080d09) !important;
+  color: var(--sx-dim) !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: border-color 0.14s ease, background 0.14s ease !important;
+}
+
+#app #panel-sfxdesign .sfxd-results.is-compact .sfxd-row {
+  min-height: 30px !important;
+  padding: 3px 7px !important;
+  gap: 6px !important;
+}
+
+#app #panel-sfxdesign .sfxd-row:hover {
+  border-color: #2f4a39 !important;
+  background: #101a13 !important;
+}
+
+#app #panel-sfxdesign .sfxd-row.is-on {
+  border-color: var(--sx-accent) !important;
+  background: linear-gradient(180deg, #12251a, #0a140d) !important;
+  box-shadow: 0 0 12px rgba(60, 255, 95, 0.12) !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowplay {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 7px !important;
+  background: #0b120d !important;
+  color: var(--sx-dim) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-row.is-on .sfxd-rowplay,
+#app #panel-sfxdesign .sfxd-rowplay:hover {
+  border-color: var(--sx-accent) !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowplay svg {
+  width: 11px !important;
+  height: 11px !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowmid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowname {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowname svg {
+  flex: 0 0 10px !important;
+  width: 10px !important;
+  height: 10px !important;
+  fill: none !important;
+  stroke: var(--sx-faint) !important;
+  stroke-width: 1.6 !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowname b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 9px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowwave {
+  display: block !important;
+  width: 100% !important;
+  height: 14px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-results.is-compact .sfxd-rowwave {
+  display: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowinfo {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 2px !important;
+  flex: 0 0 auto !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowdur {
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowdur.is-unknown {
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowmeta {
+  font: 500 7.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-rowend {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+}
+
+#app #panel-sfxdesign .sfxd-score {
+  font: 700 7.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+#app #panel-sfxdesign .sfxd-fav {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: var(--sx-faint) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-fav svg {
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-fav:hover {
+  color: var(--sx-text) !important;
+  background: #12231a !important;
+}
+
+#app #panel-sfxdesign .sfxd-fav.is-on {
+  color: var(--sx-accent) !important;
+}
+
+#app #panel-sfxdesign .sfxd-fav.is-on svg {
+  fill: currentColor !important;
+}
+
+/* ---- Spectrum preview ---- */
+#app #panel-sfxdesign .sfxd-preview {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  padding: 7px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, var(--sx-card), #080e0a) !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview[hidden] {
+  display: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview-title {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview-title b {
+  font: 800 7.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.11em !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview-title small {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 9px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-zoomval {
+  flex: 0 0 auto !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+#app #panel-sfxdesign .sfxd-preview-body {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-wavebox {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-ruler {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-width: 0 !important;
+  font: 500 7px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* The canvas paints the wave, the grid and the dimming; the handles and
+   the playhead ride above it, so a drag never forces a redraw. */
+#app #panel-sfxdesign .sfxd-wrap {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: clamp(46px, calc(30px + 5vw), 84px) !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 6px !important;
+  background: #050806 !important;
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-wave {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: crosshair !important;
+}
+
+#app #panel-sfxdesign .sfxd-handle {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 9px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  margin-left: -4px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  cursor: ew-resize !important;
+  touch-action: none !important;
+  z-index: 3 !important;
+}
+
+#app #panel-sfxdesign .sfxd-handle::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 4px !important;
+  width: 1px !important;
+  background: var(--sx-accent) !important;
+  box-shadow: 0 0 6px rgba(60, 255, 95, 0.7) !important;
+}
+
+#app #panel-sfxdesign .sfxd-handle::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 0 !important;
+  width: 9px !important;
+  height: 16px !important;
+  margin-top: -8px !important;
+  border-radius: 3px !important;
+  background: var(--sx-accent) !important;
+  opacity: 0.9 !important;
+  transition: opacity 0.14s ease, transform 0.14s ease !important;
+}
+
+#app #panel-sfxdesign .sfxd-handle:hover::after {
+  opacity: 1 !important;
+  transform: scaleY(1.2) !important;
+}
+
+#app #panel-sfxdesign .sfxd-playhead {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 1px !important;
+  background: var(--sx-text) !important;
+  box-shadow: 0 0 6px rgba(234, 255, 240, 0.8) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+#app #panel-sfxdesign .sfxd-wavebtns {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-mini {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  flex: 0 0 auto !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 7px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 5px !important;
+  background: #0b120d !important;
+  color: var(--sx-dim) !important;
+  font: 700 7.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-mini svg {
+  width: 10px !important;
+  height: 10px !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-mini:hover {
+  color: var(--sx-text) !important;
+  border-color: #47935a !important;
+}
+
+#app #panel-sfxdesign .sfxd-mini.is-on {
+  border-color: var(--sx-accent) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: var(--sx-text) !important;
+}
+
+/* ---- Meta grid ---- */
+#app #panel-sfxdesign .sfxd-meta {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  align-content: start !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-metacell {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  padding: 5px 7px !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 6px !important;
+  background: #080d09 !important;
+}
+
+#app #panel-sfxdesign .sfxd-metacell span {
+  font: 700 6.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.11em !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-metacell b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-tags {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-tag {
+  padding: 2px 6px !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 999px !important;
+  background: #0b120d !important;
+  font: 500 7.5px/1.3 "Segoe UI", sans-serif !important;
+  color: var(--sx-dim) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-tag:hover {
+  border-color: #47935a !important;
+  color: var(--sx-text) !important;
+}
+
+/* ---- Transport ---- */
+#app #panel-sfxdesign .sfxd-transport {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  padding: 6px 7px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, #0e1610, #080d09) !important;
+}
+
+#app #panel-sfxdesign .sfxd-now {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex: 1 1 60px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-now > svg {
+  flex: 0 0 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  fill: none !important;
+  stroke: var(--sx-accent) !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-now > span {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-now small {
+  font: 700 6.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.11em !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-now b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtns {
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  flex: 0 0 auto !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 6px !important;
+  background: #0b120d !important;
+  color: var(--sx-dim) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtn svg {
+  width: 12px !important;
+  height: 12px !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtn#sfxdLoop svg,
+#app #panel-sfxdesign .sfxd-tbtn#sfxdClear svg {
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtn:hover {
+  color: var(--sx-text) !important;
+  border-color: #47935a !important;
+}
+
+#app #panel-sfxdesign .sfxd-tbtn[aria-pressed="true"] {
+  border-color: var(--sx-accent) !important;
+  color: var(--sx-text) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+}
+
+#app #panel-sfxdesign .sfxd-play {
+  width: 30px !important;
+  border-color: rgba(60, 255, 95, 0.45) !important;
+  color: var(--sx-text) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxbtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 6px !important;
+  background: #0b120d !important;
+  color: var(--sx-dim) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxbtn svg {
+  flex: 0 0 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxbtn b {
+  font: 800 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.07em !important;
+  color: var(--sx-text) !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxbtn small {
+  font: 500 7.5px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxbtn[aria-expanded="true"],
+#app #panel-sfxdesign .sfxd-fxbtn.is-active {
+  border-color: var(--sx-accent) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+}
+
+#app #panel-sfxdesign .sfxd-time {
+  flex: 0 0 auto !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+}
+
+#app #panel-sfxdesign .sfxd-insert {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(60, 255, 95, 0.5) !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: var(--sx-text) !important;
+  cursor: pointer !important;
+}
+
+#app #panel-sfxdesign .sfxd-insert svg {
+  flex: 0 0 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #panel-sfxdesign .sfxd-insert b {
+  font: 800 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+}
+
+#app #panel-sfxdesign .sfxd-insert:hover {
+  border-color: var(--sx-accent) !important;
+  box-shadow: 0 0 12px rgba(60, 255, 95, 0.26) !important;
+}
+
+/* ---- FX rack ---- */
+#app #panel-sfxdesign .sfxd-fxrack {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px 10px !important;
+  flex: 0 0 auto !important;
+  padding: 7px 8px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 9px !important;
+  background: var(--sx-card) !important;
+}
+
+#app #panel-sfxdesign .sfxd-fxrack[hidden] {
+  display: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-slider {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 1 1 128px !important;
+  min-width: 0 !important;
+}
+
+#app #panel-sfxdesign .sfxd-slider span {
+  flex: 0 0 auto !important;
+  font: 800 7px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.11em !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-slider input[type="range"] {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 34px !important;
+  height: 16px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  accent-color: var(--sx-accent) !important;
+}
+
+#app #panel-sfxdesign .sfxd-slider b {
+  flex: 0 0 44px !important;
+  text-align: right !important;
+  font: 600 7.5px/1 "Segoe UI", sans-serif !important;
+  color: var(--sx-text) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* ---- Status ---- */
+#app #panel-sfxdesign .sfxd-status {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  padding: 0 2px !important;
+  font: 500 8px/1.4 "Segoe UI", sans-serif !important;
+  color: var(--sx-faint) !important;
+}
+
+#app #panel-sfxdesign .sfxd-status.is-error {
+  color: #ff9b9b !important;
+}
+
+#app #panel-sfxdesign .sfxd-status.is-ok {
+  color: var(--sx-accent) !important;
+}
+
+#app #panel-sfxdesign .sfxd-shell.is-busy {
+  opacity: 0.72 !important;
+  pointer-events: none !important;
+}
+
+/* ---- Narrow panels ----
+   Under 430px the source column and the results cannot both keep a
+   usable width, so the sources collapse to a strip the folder list
+   scrolls inside, and the preview stacks. */
+@media (max-width: 430px) {
+  /* Sources on top, results underneath, and the shell scrolls: below this
+     width the preview and the transport alone are most of the panel, and
+     fitting everything would leave the result list about two rows tall. */
+  #app #panel-sfxdesign .sfxd-shell {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  #app #panel-sfxdesign .sfxd-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+    /* auto, not 1fr: a 1fr row can be shorter than the list it holds, and
+       the list would then spill out over the preview below it. */
+    /* auto rows and no shrinking: a 1fr row can end up shorter than the
+       list it holds, and the list then spills out over the preview. Here the
+       body keeps its natural height and the shell scrolls instead. */
+    grid-template-rows: auto auto !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+  }
+  #app #panel-sfxdesign .sfxd-results {
+    min-height: 116px !important;
+  }
+  #app #panel-sfxdesign .sfxd-lib {
+    max-height: 104px !important;
+  }
+  #app #panel-sfxdesign .sfxd-wrap {
+    height: 44px !important;
+  }
+  #app #panel-sfxdesign .sfxd-preview-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  #app #panel-sfxdesign .sfxd-title small,
+  #app #panel-sfxdesign .sfxd-fxbtn small {
+    display: none !important;
+  }
+}
+
+/* The transport is the one row that cannot wrap, so below 380px it gives up
+   its words, then the two step buttons — the list itself steps with the
+   keyboard, and play / stop / loop / insert are what a narrow panel needs. */
+@media (max-width: 380px) {
+  #app #panel-sfxdesign .sfxd-host {
+    display: none !important;
+  }
+  #app #panel-sfxdesign .sfxd-time,
+  #app #panel-sfxdesign #sfxdPrev,
+  #app #panel-sfxdesign #sfxdNext {
+    display: none !important;
+  }
+  #app #panel-sfxdesign .sfxd-now {
+    flex: 1 1 30px !important;
+  }
+  #app #panel-sfxdesign .sfxd-fxbtn b,
+  #app #panel-sfxdesign .sfxd-fxbtn small,
+  #app #panel-sfxdesign .sfxd-insert b {
+    display: none !important;
+  }
+  #app #panel-sfxdesign .sfxd-fxbtn,
+  #app #panel-sfxdesign .sfxd-insert {
+    padding: 0 7px !important;
+  }
+  #app #panel-sfxdesign .sfxd-transport {
+    gap: 4px !important;
+    padding: 6px 5px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #panel-sfxdesign .sfxd-hicon,
+  #app #panel-sfxdesign .sfxd-chip,
+  #app #panel-sfxdesign .sfxd-row,
+  #app #panel-sfxdesign .sfxd-folder,
+  #app #panel-sfxdesign .sfxd-handle::after {
+    transition: none !important;
+  }
+}

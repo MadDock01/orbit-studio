@@ -1,0 +1,253 @@
+/* ============================================================
+   ORBIT GUIDE GRID — Tools tab
+
+   Same vocabulary as the rest of the shell: #3cff5f accent,
+   #22382c hairlines, 7px radii, 0.15s easing. One row of marker
+   shapes, one row of numbers, one row of actions.
+
+   This lives in a modal now rather than inline in the Tools tab,
+   which is why everything is scoped #app #guideGridModal: the
+   backdrop is a sibling of the panels, not inside #panel-tools,
+   so the old panel-scoped selectors would no longer match.
+   ============================================================ */
+
+/* NB: nothing here may set `display` on #guideGridModal itself — that is the
+   shared .modal-backdrop, and its inline display:none is what keeps the
+   dialog shut. An !important display here would pin it permanently open.
+   The column layout belongs to .guide-grid-body, further down. */
+
+/* ---- Marker shape ---- */
+#app #guideGridModal .gg-markers {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+#app #guideGridModal .gg-marker {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 28px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #cfe0d5 !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #guideGridModal .gg-marker svg {
+  width: 15px !important;
+  height: 15px !important;
+  fill: currentColor !important;
+  stroke: none !important;
+  opacity: 0.82 !important;
+}
+
+#app #guideGridModal .gg-marker:hover {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  color: #eafff0 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.16) !important;
+}
+
+/* The markers are drawn amber in the comp, so the picker says so. */
+#app #guideGridModal .gg-marker.is-on {
+  border-color: #ffa129 !important;
+  background: linear-gradient(150deg, #2a1d0c, #160f06) !important;
+  color: #ffa129 !important;
+  box-shadow: 0 0 10px rgba(255, 161, 41, 0.22) !important;
+}
+
+#app #guideGridModal .gg-marker.is-on svg {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px rgba(255, 161, 41, 0.45)) !important;
+}
+
+#app #guideGridModal .gg-marker:focus-visible,
+#app #guideGridModal .gg-btn:focus-visible {
+  outline: 2px solid #3cff5f !important;
+  outline-offset: 1px !important;
+}
+
+/* ---- Number fields ---- */
+#app #guideGridModal .gg-fields {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+#app #guideGridModal .gg-field {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  padding: 4px 6px !important;
+  border: 1px solid #22382c !important;
+  border-radius: 7px !important;
+  background: rgba(6, 12, 8, 0.56) !important;
+}
+
+#app #guideGridModal .gg-field > span {
+  flex: 0 0 auto !important;
+  font: 600 7px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.1em !important;
+  color: #7f9488 !important;
+}
+
+#app #guideGridModal .gg-field > input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 5px !important;
+  background: #0a110d !important;
+  color: #eafff0 !important;
+  font: 700 10px/1 "Segoe UI", sans-serif !important;
+  text-align: center !important;
+}
+
+#app #guideGridModal .gg-field > input:focus {
+  border-color: #3cff5f !important;
+  box-shadow: 0 0 8px rgba(60, 255, 95, 0.2) !important;
+  outline: none !important;
+}
+
+/* ---- Actions ---- */
+#app #guideGridModal .gg-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+}
+
+#app #guideGridModal .gg-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  flex: 1 1 auto !important;
+  height: 26px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #cfe0d5 !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #guideGridModal .gg-btn svg {
+  flex: 0 0 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+#app #guideGridModal .gg-btn b {
+  font: 700 8px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+  white-space: nowrap !important;
+}
+
+#app #guideGridModal .gg-btn:hover {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  color: #eafff0 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.16) !important;
+}
+
+#app #guideGridModal .gg-btn.gg-primary {
+  border-color: rgba(60, 255, 95, 0.5) !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: #eafff0 !important;
+}
+
+#app #guideGridModal .gg-btn.gg-primary:hover {
+  border-color: #3cff5f !important;
+  box-shadow: 0 0 12px rgba(60, 255, 95, 0.26) !important;
+}
+
+#app #guideGridModal .gg-btn.gg-danger {
+  flex: 0 0 auto !important;
+  border-color: #3d2626 !important;
+  background: linear-gradient(150deg, #1a1212, #110b0b) !important;
+  color: #b8807f !important;
+}
+
+#app #guideGridModal .gg-btn.gg-danger:hover {
+  border-color: #c2504f !important;
+  background: #2a1414 !important;
+  color: #ffdede !important;
+  box-shadow: 0 0 10px rgba(194, 80, 79, 0.26) !important;
+}
+
+#app #guideGridModal .gg-status {
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-align: right !important;
+  font: 500 8px/1.3 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+}
+
+#app #guideGridModal .gg-status.is-error { color: #ff9b9b !important; }
+#app #guideGridModal .gg-status.is-ok { color: #9fd6ac !important; }
+
+/* A call is one host round trip; lock the card rather than let a second
+   click stack another undo group on top of the first. */
+#app #guideGridModal.is-busy .gg-btn,
+#app #guideGridModal.is-busy .gg-marker {
+  pointer-events: none !important;
+  opacity: 0.55 !important;
+}
+
+@media (max-width: 330px) {
+  #app #guideGridModal .gg-btn b { font-size: 7px !important; }
+  #app #guideGridModal .gg-btn { padding: 0 5px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #guideGridModal .gg-btn,
+  #app #guideGridModal .gg-marker {
+    transition: none !important;
+  }
+}
+
+/* ---- Modal shell ---------------------------------------------------------
+   The backdrop is shared with the Number Counter dialog; only the box needs
+   sizing, and it stays inside the panel at the 260px minimum. */
+#app #guideGridModal .modal-box.guide-grid-box {
+  width: min(420px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+}
+
+#app #guideGridModal .guide-grid-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+#app #guideGridModal .guide-grid-description {
+  margin: 0;
+  font: 400 9px/1.45 "Segoe UI", sans-serif;
+  color: #8ba295;
+}

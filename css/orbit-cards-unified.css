@@ -1,0 +1,121 @@
+/* Exact Expression-card parity for MOGRT, SFX and Comp Saver. */
+#sfxMogrtView .library.grid,.compx-comp-grid{grid-template-columns:repeat(auto-fill,minmax(var(--card-min-w,158px),1fr))!important;gap:10px!important;padding:10px!important;align-content:start!important;align-items:start}
+#sfxMogrtView .library.grid{grid-auto-rows:132px}
+#sfxMogrtView .sfx-card,.compx-comp-card{min-height:132px!important;border-radius:9px!important;background:var(--orbit-panel,#0d1118)!important;border:1px solid var(--orbit-line,#253242)!important;box-shadow:none!important;transform:none!important;overflow:hidden!important}
+#sfxMogrtView .sfx-card{height:132px;max-height:132px;align-self:start;box-sizing:border-box}
+#sfxMogrtView .sfx-card:hover,#sfxMogrtView .sfx-card.selected,.compx-comp-card:hover,.compx-comp-card.selected{background:var(--orbit-raised,#121923)!important;border-color:#2f8f52!important;box-shadow:0 0 0 1px rgba(34,255,111,.2)!important;transform:none!important}
+#sfxMogrtView .sfx-card .fxlib-thumb{height:55px!important;min-height:55px!important;background-color:#090c12!important;border-bottom:1px solid var(--orbit-line,#253242)!important}
+#sfxMogrtView .sfx-card .fxlib-cardmeta,.compx-comp-card .fxlib-cardmeta{display:flex!important;min-height:0!important;padding:4px!important;gap:1px!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important}
+#sfxMogrtView .sfx-card .fxlib-cardmeta strong,.compx-comp-card .fxlib-cardmeta strong{display:block!important;color:var(--orbit-text,#eef4ff)!important;font:700 8px/1.2 Arial,sans-serif!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#sfxMogrtView .sfx-card .fxlib-cardmeta span,.compx-comp-card .fxlib-cardmeta span{display:block!important;color:var(--orbit-faint,#8190aa)!important;font:400 6.5px/1.3 Arial,sans-serif!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#sfxMogrtView .sfx-card>.fxlib-apply,.compx-comp-card>.fxlib-apply{display:block;width:calc(100% - 8px)!important;height:23px!important;min-height:23px!important;margin:0 4px 4px!important;padding:0!important;border:1px solid #1f7a42!important;border-radius:6px;background:linear-gradient(135deg,rgba(34,255,111,.18),rgba(34,255,111,.07))!important;color:#5cf09a!important;font:800 6.5px/21px Arial,sans-serif!important;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-sizing:border-box}
+#sfxMogrtView .sfx-card>.fxlib-apply:hover,.compx-comp-card>.fxlib-apply:hover{color:#06120a;background:#22ff6f}
+#sfxMogrtView .sfx-card .actions-area,.compx-comp-subactions{display:none!important}
+.compx-comp-preview img{z-index:2!important}.compx-comp-no-thumb{z-index:1!important}
+.compx-bulk-delete{color:#ff7b7b!important;border-color:#8a3e46!important;background:#281217!important}.compx-bulk-delete:disabled{opacity:.35!important}
+/* Narrow-panel contract: same stable two-column layout as Expression cards. */
+@media(max-width:440px){#sfxMogrtView .library.grid,.compx-comp-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.compx-comp-toolbar,.compx-comp-bulk{gap:4px!important}.compx-comp-toolbar input{flex-basis:100%!important}.compx-comp-filter label{display:none!important}}
+@media(max-width:255px){#sfxMogrtView .library.grid,.compx-comp-grid{grid-template-columns:1fr!important}}
+
+/* CEP-safe Library toolbar: ASCII labels never render as tofu/diamonds. */
+#sfxMogrtView .library-action-strip .compact-icon-btn,#sfxMogrtView #btnMixer{font-family:Arial,sans-serif!important;font-weight:800!important;letter-spacing:0!important;text-rendering:geometricPrecision!important}
+#sfxMogrtView .library-action-strip{display:flex!important;align-items:center!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important}
+#sfxMogrtView .library-action-strip .actions-row,#sfxMogrtView .library-action-strip .library-data-row{flex:0 0 auto!important;overflow:visible!important}
+#sfxMogrtView #btnMixer{width:31px!important;min-width:31px!important;font-size:7px!important}
+
+/* Comp Saver preview is intentionally original: 16:9 poster + original hover frames. */
+.compx-comp-card .compx-comp-preview{position:relative!important;width:100%!important;aspect-ratio:16/9!important;height:auto!important;min-height:0!important;overflow:hidden!important;display:grid!important;place-items:center!important;flex-shrink:0!important}
+
+/* Comp Saver only — keep Apply pinned exactly like a library/MOGRT card.
+   No host, preview, or JavaScript behavior is changed here. */
+#panel-comps .compx-comp-grid {
+  grid-auto-rows: max-content !important;
+  align-items: start !important;
+}
+#panel-comps .compx-comp-card {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+#panel-comps .compx-comp-preview {
+  flex: 0 0 auto !important;
+}
+#panel-comps .compx-comp-meta {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  min-height: 36px !important;
+}
+#panel-comps .compx-comp-apply.fxlib-apply {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  flex: 0 0 23px !important;
+  width: calc(100% - 8px) !important;
+  height: 23px !important;
+  min-height: 23px !important;
+  max-height: 23px !important;
+  box-sizing: border-box !important;
+  margin: 0 4px 4px !important;
+  padding: 2px !important;
+  overflow: visible !important;
+}
+@media (max-width: 440px) {
+  #panel-comps .compx-comp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 255px) {
+  #panel-comps .compx-comp-grid { grid-template-columns: 1fr !important; }
+}
+
+/* SFX mixer: keep both controls visible in the shared Volume/Pitch popup. */
+#sfxMogrtView .library-data-row .mixer-popover{overflow:visible!important;min-height:92px!important}
+#sfxMogrtView .library-data-row .mixer-popover #volumeBlock,
+#sfxMogrtView .library-data-row .mixer-popover #pitchBlock{width:100%!important;visibility:visible!important;opacity:1!important}
+#sfxMogrtView .library-data-row .mixer-popover input[type="range"]{display:block!important;width:100%!important}
+
+/* SFX only: explicit bottom-deck Volume + Pitch controls. */
+#sfxMogrtView>.transport .insert-row{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;overflow:visible!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex:0 0 auto!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap .mixer-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:43px!important;height:27px!important;min-height:27px!important;padding:0 8px!important;border:1px solid #356b9e!important;border-radius:5px!important;background:var(--orbit-blue-soft,#102a45)!important;color:var(--orbit-blue,#4da3ff)!important;font:800 8px/1 Arial,sans-serif!important;letter-spacing:.04em!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap .mixer-toggle.active{background:var(--orbit-blue,#4da3ff)!important;color:#07101a!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap .mixer-popover{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:34px!important;transform:translateX(-50%)!important;width:210px!important;min-width:210px!important;min-height:92px!important;box-sizing:border-box!important;overflow:visible!important;padding:9px 11px!important;z-index:1000!important;background:var(--orbit-panel,#0d1118)!important;border:1px solid var(--orbit-line-strong,#356b9e)!important;border-radius:7px!important;box-shadow:0 12px 30px rgba(0,0,0,.65)!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap #volumeBlock,#sfxMogrtView>.transport .mixer-bottom-wrap #pitchBlock{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap input[type="range"]{display:block!important;width:100%!important}
+
+/* Restore card-size sliders — these variables are set by the existing UI.
+   This intentionally overrides the earlier fixed 128px / fixed 2-column rules. */
+#sfxMogrtView .library.grid {
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-w, 105px), 1fr)) !important;
+}
+#panel-comps .compx-comp-grid {
+  grid-template-columns: repeat(auto-fill, minmax(var(--compx-comp-card-size, 120px), 1fr)) !important;
+}
+/* Do not lock either grid to two columns at narrow widths: the active size
+   slider must remain the source of truth at every panel width. */
+@media (max-width: 440px) {
+  #sfxMogrtView .library.grid {
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-w, 100px), 1fr)) !important;
+  }
+  #panel-comps .compx-comp-grid {
+    grid-template-columns: repeat(auto-fill, minmax(var(--compx-comp-card-size, 90px), 1fr)) !important;
+  }
+}
+
+/* Bottom SFX controls: centered icon toggles, hidden outside the SFX shelf. */
+#sfxMogrtView>.transport .insert-row{position:relative!important;width:100%!important;min-height:30px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap{display:none;align-items:center!important;justify-content:center!important;gap:7px!important;margin:0 auto!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap .mixer-toggle{width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;border-radius:50%!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap .mixer-toggle svg{display:block!important;width:14px!important;height:14px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#sfxMogrtView>.transport .mixer-bottom-wrap #btnMixer svg path:first-child{fill:currentColor!important;stroke:none!important}
+
+/* Mixer restored to the original top Library toolbar position. */
+#sfxMogrtView .library-data-row .mixer-top-wrap{position:relative!important;display:none;align-items:center!important;justify-content:center!important;gap:4px!important;flex:0 0 auto!important;margin-left:2px!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap .mixer-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:24px!important;min-width:24px!important;height:24px!important;min-height:24px!important;padding:0!important;border-radius:5px!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap .mixer-toggle svg{display:block!important;width:12px!important;height:12px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap #btnMixer svg path:first-child{fill:currentColor!important;stroke:none!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap .mixer-popover{position:absolute!important;top:30px!important;right:0!important;left:auto!important;bottom:auto!important;transform:none!important;width:210px!important;min-width:210px!important;min-height:92px!important;box-sizing:border-box!important;overflow:visible!important;padding:9px 11px!important;z-index:1000!important;background:var(--orbit-panel,#0d1118)!important;border:1px solid var(--orbit-line-strong,#356b9e)!important;border-radius:7px!important;box-shadow:0 12px 30px rgba(0,0,0,.65)!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap #volumeBlock,#sfxMogrtView .library-data-row .mixer-top-wrap #pitchBlock{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important}
+#sfxMogrtView .library-data-row .mixer-top-wrap input[type="range"]{display:block!important;width:100%!important}

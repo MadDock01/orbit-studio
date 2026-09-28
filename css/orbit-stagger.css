@@ -1,0 +1,87 @@
+/* ============================================================
+   ORBIT SEQUENCER — bottom global rail
+   Offsets the selected layers in time, 5 frames per layer.
+
+   The sequencer used to be a card in the Tools tab; it now lives
+   in the bottom rail as four icons. That means the rail's own
+   skin (orbit-global-dock.css) and fluid sizing
+   (orbit-dock-fluid.css) already draw the buttons — all that is
+   left here is the inline SVG the rail's other buttons do not
+   use, the lit state for the last direction run, and the divider
+   that keeps Align from reading as a fourth direction.
+
+   Rail selectors are #app :is(#orbitGlobalDock,#orbitBottomDock),
+   so anything meant to override them has to carry two IDs too.
+   ============================================================ */
+
+/* The rail's buttons carry a background-image glyph on ::before.
+   These carry a real <svg> child instead, which that skin's
+   `font-size: 0` and centring already handle — it only needs a size. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .tool-btn svg {
+  width: var(--gd-ico) !important;
+  height: var(--gd-ico) !important;
+  fill: currentColor !important;
+  stroke: none !important;
+  opacity: 0.82 !important;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .tool-btn:hover svg {
+  opacity: 1 !important;
+}
+
+/* The direction that ran last stays lit, so the rail says what it
+   will repeat. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-order.is-on {
+  border-color: #3cff5f !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: #3cff5f !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.22) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-order.is-on svg {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px rgba(60, 255, 95, 0.4)) !important;
+}
+
+/* Align is a different action, not a fourth direction — a hairline
+   sets it apart without spending a separator's worth of width. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-align {
+  position: relative !important;
+  color: #a8bcae !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-align::after {
+  content: "" !important;
+  position: absolute !important;
+  left: -4px !important;
+  top: 15% !important;
+  bottom: 15% !important;
+  width: 1px !important;
+  display: block !important;
+  background: linear-gradient(180deg, transparent, #2a3c31 30%, #2a3c31 70%, transparent) !important;
+  pointer-events: none !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-align:hover {
+  border-color: #52e2ec !important;
+  box-shadow: 0 0 10px rgba(82, 226, 236, 0.2) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .seq-align:hover svg {
+  color: #a5f2f7 !important;
+}
+
+/* A run is one host round trip; lock the group rather than let a
+   second click stack another undo group on top of the first. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid.is-busy .tool-btn {
+  pointer-events: none !important;
+  opacity: 0.55 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid .tool-btn svg {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,45 @@
+/* ============================================================
+   ORBIT MOGRT — the MOGRT library on its own rail tab
+
+   #sfxMogrtView used to be one shelf of the Library tab, sharing that
+   panel with TEXT, MOTIONS and FFX and sitting under a 32px shelf row.
+   It has its own tab now, so this sheet does two things: gives
+   #panel-mogrt the panel behaviour that was written against
+   #panel-sfx, and takes back the 32px that the shelf row used to
+   occupy.
+
+   The rest of its chrome — folder tree, toolbar, view buttons,
+   overflow menu — still comes from the Library stylesheets, whose
+   selectors were widened to :is(#panel-sfx, #panel-mogrt) when the
+   view moved. :is() takes the highest specificity of its arguments
+   and both are one id, so nothing moved in the cascade.
+
+   Loaded after orbit-library.css, orbit-library-ui.css,
+   orbit-library-redesign.css and orbit-compact.css.
+   ============================================================ */
+
+/* Same isolation the Library panel has: render it only while its tab
+   is the active one. */
+#app #panel-mogrt {
+  display: none !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: var(--orbit-shell, #121214) !important;
+}
+
+#app #panel-mogrt.active {
+  display: flex !important;
+}
+
+/* orbit-compact.css caps the view at calc(100% - 32px) to leave room for
+   the shelf row. There is no shelf row here, and without this the panel
+   would keep a 32px strip of empty shell under the transport. */
+#app #panel-mogrt > #sfxMogrtView {
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}

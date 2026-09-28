@@ -1,0 +1,451 @@
+/* ============================================================
+   CompX Orbit Studio — COLORS panel redesign
+   CUSTOM COLORS · RECENT COLORS · SWATCHES · MY PALETTES ·
+   GRADIENT BUILDER — presentation layer only.
+   No important declarations on purpose: this file loads last
+   and the panel's own buttons carry data-obs, so the legacy
+   global button rules skip them entirely.
+   ============================================================ */
+
+/* ---- Section header: CUSTOM COLORS ---- */
+.cx-color-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding: 0 2px;
+}
+
+.cx-color-head strong {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cx-color-head span {
+  color: #67716a;
+  font-size: 7.5px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+/* ---- Cards ---- */
+.cx-color-card {
+  position: relative;
+  margin: 0 0 8px;
+  padding: 10px;
+  border: 1px solid #2a332d;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(123, 97, 255, 0.06), transparent 34%),
+    linear-gradient(160deg, #141815, #0b0e0c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.cx-color-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #22ff6f, #00e8b8);
+  box-shadow: 0 0 8px rgba(34, 255, 111, 0.45);
+}
+
+/* ---- Card header ---- */
+.cx-color-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #232b26;
+}
+
+.cx-color-card-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: linear-gradient(145deg, #1c1526, #0d0a12);
+  border: 1px solid #3a2f4d;
+  color: #c9b8ff;
+  font-size: 12px;
+  box-shadow: 0 0 10px rgba(123, 97, 255, 0.14);
+}
+
+.cx-color-card-title {
+  flex: 1;
+  min-width: 0;
+  color: #e9f0eb;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Buttons (data-obs = exempt from global theme button rules) ---- */
+.cx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #2b352e;
+  border-radius: 5px;
+  background: #101412;
+  color: #aab6ae;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cx-btn:hover {
+  color: #e9f0eb;
+  background: #151a16;
+  border-color: #4a5b50;
+}
+
+.cx-btn.cx-btn-primary {
+  color: #031007;
+  background: linear-gradient(90deg, #0be748, #3cff72, #0be748);
+  background-size: 200% 100%;
+  border-color: #22ff6f;
+  box-shadow: 0 0 16px rgba(34, 255, 111, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.cx-btn.cx-btn-primary:hover {
+  color: #020603;
+  background-color: #55ff81;
+  border-color: #83ffa3;
+  box-shadow: 0 0 24px rgba(34, 255, 111, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.cx-btn-icon {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+.cx-btn-mini {
+  min-height: 22px;
+  padding: 3px 8px;
+  font-size: 7.5px;
+  letter-spacing: 0.06em;
+}
+
+.cx-btn-wide {
+  width: 100%;
+  min-height: 34px;
+}
+
+.cx-color-clear {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid #2b352e;
+  border-radius: 4px;
+  background: transparent;
+  color: #7e8a82;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.cx-color-clear:hover {
+  color: #ff8e97;
+  border-color: #71363d;
+}
+
+/* ---- Color picker row ---- */
+.cx-color-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cx-color-pick-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 2px;
+  border: 1px solid #2b352e;
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+}
+
+.cx-color-pick-row .cx-color-hex {
+  flex: 1;
+  min-width: 0;
+  font-family: "Cascadia Code", Consolas, monospace;
+  text-transform: uppercase;
+}
+
+/* ---- RGB / HSL fields ---- */
+.cx-color-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+
+.cx-color-fields-row {
+  display: flex;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cx-color-fields-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cx-color-fields-row label span {
+  flex: 0 0 13px;
+  color: #6d786f;
+  font-size: 7px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.cx-color-fields-row input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+/* ---- Action rows ---- */
+.cx-color-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.cx-color-actions .cx-btn {
+  min-height: 30px;
+}
+
+/* ---- Gradient options ---- */
+.cx-color-grad-options {
+  gap: 5px;
+}
+
+/* ---- Swatch grids inside cards ---- */
+.cx-color-card .swatch-grid {
+  padding: 2px 0 4px;
+}
+
+.cx-color-card .studio-empty {
+  padding: 6px 2px;
+}
+
+/* ---- Palettes ---- */
+.cx-palette-row {
+  margin-bottom: 6px;
+  padding: 8px;
+  border: 1px solid #2b352e;
+  border-radius: 6px;
+  background: #101412;
+}
+
+.cx-palette-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cx-palette-row-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #dce5de;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cx-palette-row-head .cx-btn {
+  min-height: 20px;
+  padding: 2px 7px;
+  font-size: 7.5px;
+}
+
+/* ---- COLOR LIBRARY (colorplate) card ---- */
+.cx-library-details {
+  padding: 0;
+}
+
+.cx-library-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  cursor: pointer;
+  list-style: none;
+  border-bottom: 1px solid #232b26;
+}
+
+.cx-library-details:not([open]) .cx-library-head {
+  padding-bottom: 10px;
+  border-bottom: 0;
+}
+
+.cx-library-head .cx-color-card-title {
+  flex: 0 0 auto;
+}
+
+.cx-library-sub {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #67716a;
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cx-library-caret {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #7e8a82;
+  font-size: 9px;
+  transition: transform 0.15s ease;
+}
+
+.cx-library-details:not([open]) .cx-library-caret {
+  transform: rotate(-90deg);
+}
+
+.cx-library-body {
+  padding: 8px 10px 10px;
+}
+
+/* Kill the legacy caret glyph prepended by style.css, we draw our own. */
+.cx-colors-legacy details > summary::before {
+  content: "";
+}
+
+/* ---- Colorplate library content ---- */
+#cxColorPlate {
+  color: #aab6ae;
+}
+
+#cxColorPlate .cp-secttitle {
+  margin: 12px 0 6px;
+  padding-left: 6px;
+  border-left: 2px solid #22ff6f;
+  color: #7e8a82;
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+}
+
+#cxColorPlate .cp-pgrid {
+  gap: 6px;
+}
+
+#cxColorPlate .cp-pbar {
+  border-color: #2b352e;
+  background: #0c0f0d;
+}
+
+#cxColorPlate .cp-pcolor:hover {
+  outline-color: #22ff6f;
+  box-shadow: 0 0 10px rgba(34, 255, 111, 0.25);
+}
+
+#cxColorPlate .cp-papply {
+  border-color: #2b352e;
+  background: #101412;
+  color: #8dffb0;
+}
+
+#cxColorPlate .cp-papply:hover {
+  border-color: #22ff6f;
+  background: rgba(34, 255, 111, 0.12);
+  color: #baffca;
+  box-shadow: 0 0 8px rgba(34, 255, 111, 0.2);
+}
+
+#cxColorPlate .cp-swgrid {
+  gap: 5px;
+}
+
+#cxColorPlate .cp-sw {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#cxColorPlate .cp-sw:hover {
+  outline-color: #22ff6f;
+  box-shadow: 0 0 10px rgba(34, 255, 111, 0.3);
+}
+
+#cxColorPlate .cp-grad2row,
+#cxColorPlate .cp-grad4row {
+  background: #101412;
+  border-color: #2b352e;
+}
+
+#cxColorPlate .cp-grad2row:hover,
+#cxColorPlate .cp-grad4row:hover {
+  border-color: #22ff6f;
+  background: rgba(34, 255, 111, 0.07);
+  box-shadow: 0 0 10px rgba(34, 255, 111, 0.14);
+}
+
+#cxColorPlate .cp-grad2bar {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+#cxColorPlate .cp-grad2name {
+  color: #8c978f;
+}
+
+/* ---- Gradient preview polish ---- */
+.cx-gradient-preview {
+  isolation: isolate;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .cx-color-head {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .cx-color-head span {
+    text-align: left;
+  }
+
+  .cx-color-fields {
+    grid-template-columns: 1fr;
+  }
+}

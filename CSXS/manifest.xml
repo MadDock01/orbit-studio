@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.compxorbit.studio"
+    ExtensionBundleVersion="2.6.0" ExtensionBundleName="Orbit Studio"
+    xmlns:ExtensionBundleId="http://ns.adobe.com/extension">
+  <ExtensionList>
+    <Extension Id="com.compxorbit.studio.main" Version="2.6.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- After Effects: same year-to-version mapping as Premiere -->
+      <Host Name="AEFT" Version="[22.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <!-- CEP 11 ships with the minimum supported 2022 hosts; newer CEP runtimes remain backward-compatible. -->
+      <RequiredRuntime Name="CSXS" Version="11.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.compxorbit.studio.main">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <!-- ScriptPath intentionally removed: hostscript loads only after licence verification via js/compx-loader.js -->
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Orbit Studio</Menu>
+          <Geometry>
+            <Size>
+              <Height>500</Height>
+              <Width>300</Width>
+            </Size>
+            <MinSize>
+              <Height>400</Height>
+              <Width>260</Width>
+            </MinSize>
+            <MaxSize>
+              <Height>2000</Height>
+              <Width>900</Width>
+            </MaxSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./icons/icon-normal.png</Icon>
+            <Icon Type="RollOver">./icons/icon-rollover.png</Icon>
+            <Icon Type="Darkest">./icons/icon-darkest.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

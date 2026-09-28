@@ -1,0 +1,2 @@
+/* Shared Shape Toolkit columns. Tools dashboard styling lives in orbit-dashboard.css. */
+:is(#panel-studio, #panel-toolkit) .shape-toolkit .tool-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}

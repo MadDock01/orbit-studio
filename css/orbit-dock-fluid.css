@@ -1,0 +1,253 @@
+/* ============================================================
+   ORBIT DOCK — FLUID SIZING
+   Loaded after orbit-global-dock.css, orbit-rail.css and
+   orbit-stagger.css.
+
+   The two rails were built on fixed pixel sizes with three
+   step-down tiers (440 / 380 / 340px). Above 440px nothing grew
+   any more, so at a 900px panel the top rail filled 43% of its
+   width and the bottom rail 33% — a row of 28px buttons stranded
+   in open space. Below 340px the steps still were not small
+   enough and the top rail scrolled sideways.
+
+   Everything here is one continuous ramp instead: each size is
+   calc(base + Nvw) fenced by clamp(), so the rails grow and
+   shrink with the panel with no visible jumps. The CEP panel is
+   the viewport, so vw tracks the panel width directly.
+
+   Ramp endpoints (viewport -> button box):
+   The low end of the ramp is set by what actually fits rather than by
+   taste: the bottom rail carries thirteen controls now, so its buttons
+   have to come down to about 15px before the row stops running out of
+   width. Below roughly 340px it cannot fit at any size and falls back
+   to the rail's own horizontal scroll.
+
+   Ramp endpoints (viewport -> button box):
+     260px -> 15px    below the fit threshold; the rail scrolls here
+     440px -> 22px    the whole rail fits from about 340px up
+     900px -> 40px    the manifest maximum, rail reads as full
+   ============================================================ */
+
+#app .cx-global-dock {
+  /* main button box + the glyph inside it */
+  --gd-btn: clamp(15px, calc(4px + 4vw), 40px);
+  --gd-ico: clamp(9px, calc(2.6px + 2.33vw), 23px);
+  /* Anchor pad: nine targets in the footprint of one button, so it
+     needs its own, steeper ramp. At the old sizes a cell was about a
+     third of a button (7px against 19px) and the pad read as a smudge
+     rather than a control. Now a cell is roughly half a button and the
+     pad is about 1.8x one, which is what makes it legible as a 3x3. */
+  --gd-cell: clamp(8px, calc(3.5px + 2.05vw), 22px);
+  --gd-dot: clamp(4.5px, calc(3px + 0.72vw), 10px);
+  /* The active dot also carries transform: scale(1.3) and a 3px ring
+     from orbit-dashboard.css, so its box is sized for ~60% of a cell
+     once that scale is applied, not before. */
+  --gd-dot-on: clamp(4.8px, calc(3.05px + 0.73vw), 10px);
+  /* chrome */
+  --gd-gap: clamp(3px, calc(1.7px + 0.5vw), 8px);
+  --gd-sep: clamp(16px, calc(10.5px + 2.1vw), 30px);
+  --gd-fx-w: clamp(22px, calc(10px + 4.9vw), 54px);
+  --gd-toggle-w: clamp(12px, calc(9.3px + 1.05vw), 20px);
+  --gd-chev: clamp(9px, calc(6.5px + 0.95vw), 16px);
+  /* bottom rail create buttons carry a label under the icon */
+  --gd-create-w: clamp(17px, calc(5px + 4.55vw), 46px);
+  --gd-create-ico: clamp(8px, calc(2.4px + 2.07vw), 21px);
+  --gd-label: clamp(6px, calc(4.3px + 0.65vw), 10px);
+}
+
+#app .cx-global-dock .gdock-inner {
+  gap: var(--gd-gap) !important;
+}
+
+/* ---- Shared button box ---- */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .tool-grid .tool-btn {
+  width: var(--gd-btn) !important;
+  height: var(--gd-btn) !important;
+  max-height: var(--gd-btn) !important;
+  border-radius: clamp(5px, calc(3.8px + 0.5vw), 9px) !important;
+}
+
+/* The glyph is a background image on ::before, pinned at 16px in
+   orbit-dashboard.css. Same specificity there, so this has to be
+   just as loud to take over. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .tool-btn[data-orbit-icon]::before {
+  flex: 0 0 var(--gd-ico) !important;
+  width: var(--gd-ico) !important;
+  height: var(--gd-ico) !important;
+}
+
+/* ---- Anchor pad ---- */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-anchor-grid {
+  grid-template-columns: repeat(3, var(--gd-cell)) !important;
+  gap: clamp(1px, 0.25vw, 3px) !important;
+  border-radius: clamp(6px, calc(4.6px + 0.6vw), 11px) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-anchor-grid .tool-btn {
+  width: var(--gd-cell) !important;
+  height: var(--gd-cell) !important;
+  max-height: var(--gd-cell) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .anchor-dot {
+  width: var(--gd-dot) !important;
+  height: var(--gd-dot) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .anchor-dot-btn.active .anchor-dot {
+  width: var(--gd-dot-on) !important;
+  height: var(--gd-dot-on) !important;
+}
+
+/* ---- Separators ---- */
+#app .cx-global-dock .gdock-sep {
+  height: var(--gd-sep) !important;
+}
+
+/* ---- FX flyout trigger ---- */
+#app .cx-global-dock .gdock-fx-btn {
+  width: var(--gd-fx-w) !important;
+  height: var(--gd-btn) !important;
+  border-radius: clamp(5px, calc(3.8px + 0.5vw), 9px) !important;
+}
+
+#app .cx-global-dock .gdock-fx-btn::before {
+  width: var(--gd-ico) !important;
+  height: var(--gd-ico) !important;
+  flex: 0 0 var(--gd-ico) !important;
+}
+
+#app .cx-global-dock .gdock-fx-tag {
+  font-size: clamp(7px, calc(5.2px + 0.68vw), 11px) !important;
+}
+
+/* ---- Collapse toggle ----
+   The chevron lives in a flex row and collapsed to 0px once the
+   full stylesheet stack loaded, so its basis stays explicit. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-toggle {
+  flex: 0 0 var(--gd-toggle-w) !important;
+  width: var(--gd-toggle-w) !important;
+  height: var(--gd-btn) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-toggle svg {
+  flex: 0 0 var(--gd-chev) !important;
+  width: var(--gd-chev) !important;
+  height: var(--gd-chev) !important;
+}
+
+/* ---- Bottom rail: icon over a micro label ---- */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-create-grid {
+  grid-template-columns: repeat(7, var(--gd-create-w)) !important;
+}
+
+#app #orbitBottomDock .gdock-create-grid .tool-btn {
+  width: var(--gd-create-w) !important;
+  height: var(--gd-btn) !important;
+  max-height: var(--gd-btn) !important;
+  padding: clamp(2px, 0.5vw, 5px) 1px clamp(1px, 0.35vw, 4px) !important;
+}
+
+#app #orbitBottomDock .gdock-create-grid .tool-btn::before {
+  flex: 0 0 var(--gd-create-ico) !important;
+  width: var(--gd-create-ico) !important;
+  height: var(--gd-create-ico) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-btn-label {
+  font-size: var(--gd-label) !important;
+}
+
+/* ---- Match / SVG switches on the right of the bottom rail ---- */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-qa-switch {
+  font-size: clamp(7px, calc(5.2px + 0.68vw), 11px) !important;
+  gap: clamp(4px, 0.9vw, 8px) !important;
+}
+
+/* Below 330px the label under each create button costs more than it
+   explains — the icon and the tooltip carry it from there. */
+@media (max-width: 330px) {
+  #app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-btn-label {
+    display: none !important;
+  }
+}
+
+/* ---- Spread the clusters, Flex GUI Pro style ----------------------------
+   The rail is a plain flex row starting at the left edge, so once the panel
+   was wider than its controls the whole strip clumped left and the right
+   third sat empty.
+
+   space-between would fix the edges but dump every spare pixel into the two
+   or three gaps between clusters. Instead each multi-button group takes a
+   share of the slack proportional to how many buttons it holds (flex: 6,
+   flex: 2, flex: 7 ...) and its columns become 1fr with the button centred
+   in each, so the spacing comes out even right across the rail, the way the
+   Flex rail reads. The anchor pad, FX button and switches keep their own
+   size and hold the ends.
+
+   These have to carry two IDs: orbit-global-dock.css pins every .tool-grid
+   to `flex: 0 0 auto` from `#app :is(#orbitGlobalDock,#orbitBottomDock)`,
+   which outranks a single-ID selector no matter how late it loads.
+
+   Only while the rail fits: when it overflows, packing left is what makes
+   the horizontal scroll usable. */
+/* min-width must stay at the grid's own content width. With
+   `min-width: 0` the flex item happily shrank below the width its
+   columns need, the columns kept their `minmax(var(--gd-btn), ...)`
+   floor, and the buttons spilled out of the group box onto the next
+   group — groups tiled correctly while their contents overlapped, so
+   the container never reported a scroll to give it away. */
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) :is(.gdock-align-grid, .gdock-trim-grid, .gdock-create-grid, .gdock-flip-grid, .gdock-seq-grid) {
+  justify-items: center !important;
+  min-width: min-content !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) .gdock-align-grid {
+  flex: 6 0 auto !important;
+  grid-template-columns: repeat(6, minmax(var(--gd-btn), 1fr)) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) .gdock-trim-grid {
+  flex: 2 0 auto !important;
+  grid-template-columns: repeat(2, minmax(var(--gd-btn), 1fr)) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) .gdock-create-grid {
+  flex: 7 0 auto !important;
+  grid-template-columns: repeat(7, minmax(var(--gd-create-w), 1fr)) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) .gdock-flip-grid {
+  flex: 2 0 auto !important;
+  grid-template-columns: repeat(2, minmax(var(--gd-btn), 1fr)) !important;
+}
+
+/* The sequencer moved into the bottom rail: four icons, same share
+   rule as every other group. */
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) .gdock-seq-grid {
+  flex: 4 0 auto !important;
+  grid-template-columns: repeat(4, minmax(var(--gd-btn), 1fr)) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock):not(.is-scrollable) :is(.gdock-anchor-grid, .gdock-fx, .gdock-switches, .gdock-sep) {
+  flex: 0 0 auto !important;
+}
+
+/* When the rail overflows the groups fall back to their natural size,
+   so the two moved groups still need their column counts. */
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-seq-grid {
+  grid-template-columns: repeat(4, var(--gd-btn)) !important;
+}
+
+#app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-flip-grid {
+  grid-template-columns: repeat(2, var(--gd-btn)) !important;
+}
+
+/* The Match / SVG captions cost about 35px, which is the difference
+   between the bottom rail fitting and scrolling through the middle of
+   the range. The toggles and their tooltips carry the meaning. */
+@media (max-width: 430px) {
+  #app :is(#orbitGlobalDock, #orbitBottomDock) .gdock-qa-switch .qa-switch-label {
+    display: none !important;
+  }
+}
