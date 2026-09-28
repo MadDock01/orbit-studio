@@ -2,17 +2,22 @@
    ORBIT LIBRARY TAB — one rail tab, four shelves
 
    The Library rail tab carries MOGRT / TEXT / MOTIONS / SFX in its
-   shelf row. main.js already switches assetType for the mogrt and sfx
-   shelves and shows/hides the TEXT and MOTIONS views, but it no longer
-   shows #sfxMogrtView, and on start-up it forces the shelf back to
-   TEXT. This file fills those two gaps from outside, so main.js (whose
+   shelf row:
+     MOGRT   -> #sfxMogrtView (main.js library, assetType "mogrt")
+     TEXT    -> #textAnimView    (main.js)
+     MOTIONS -> #motionPresetView (main.js)
+     SFX     -> #panel-sfxdesign (the Sound Designer workspace,
+                js/orbit-sfx.js)
+
+   main.js already shows/hides the TEXT and MOTIONS views, but it no
+   longer shows #sfxMogrtView and on start-up it forces the shelf back
+   to TEXT. This file fills those gaps from outside, so main.js (whose
    hash the loader checks) stays untouched.
    ============================================================ */
 (function () {
   "use strict";
 
   var SHELF_KEY = "compXLibraryShelf";
-  var MEDIA = { mogrt: true, sfx: true };
 
   // Old sessions may remember rail tabs that are now shelves.
   var savedShelf = "textanim";
@@ -26,22 +31,25 @@
     }
   } catch (e) { /* sandboxed storage */ }
 
-  var shelf = "textanim";
-
-  // The transport bar is hidden by the library stylesheets; it only earns its
-  // space on the SFX shelf once a sound is picked and the waveform is up.
-  function paintTransport() {
-    var transport = document.querySelector("#sfxMogrtView .transport");
-    var strip = document.getElementById("sndStrip");
-    if (!transport) return;
-    transport.classList.toggle("has-sound", shelf === "sfx" && !!strip && !strip.hidden);
-  }
+  var shelf = "";
 
   function paint(type) {
+    var was = shelf;
     shelf = type;
-    var view = document.getElementById("sfxMogrtView");
-    if (view) view.style.display = MEDIA[type] ? "" : "none";
-    paintTransport();
+    var library = document.getElementById("sfxMogrtView");
+    var designer = document.getElementById("panel-sfxdesign");
+    if (library) library.style.display = type === "mogrt" ? "" : "none";
+    if (designer) designer.style.display = type === "sfx" ? "flex" : "none";
+    if (type === "sfx" && was !== "sfx") {
+      // The waveform canvases measure 0 while hidden; a resize makes
+      // orbit-sfx.js repaint them at their real width.
+      setTimeout(function () {
+        try { window.dispatchEvent(new Event("resize")); } catch (e) { /* old CEP */ }
+      }, 0);
+    }
+    if (was === "sfx" && type !== "sfx") {
+      try { window.dispatchEvent(new CustomEvent("compx:sfxd-hidden")); } catch (e) { /* old CEP */ }
+    }
   }
 
   function init() {
@@ -67,11 +75,6 @@
 
     var active = row.querySelector(".shelf.active");
     paint(active ? active.dataset.type : "textanim");
-
-    var strip = document.getElementById("sndStrip");
-    if (strip && window.MutationObserver) {
-      new MutationObserver(paintTransport).observe(strip, { attributes: true, attributeFilter: ["hidden"] });
-    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

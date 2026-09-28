@@ -36,7 +36,6 @@
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-sfx.css?v=1" rel="stylesheet"/>
-<link href="css/orbit-sound.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
@@ -1263,23 +1262,6 @@
 </div>
 </div>
 <div class="transport">
-<div class="snd-strip" id="sndStrip" hidden>
-<div class="snd-wrap" id="sndWrap">
-<canvas class="snd-wave" id="sndWave" aria-label="Waveform — drag the handles to pick a segment"></canvas>
-<div class="snd-playhead" id="sndPlayhead" aria-hidden="true"></div>
-<button type="button" class="snd-handle" id="sndHandleA" aria-label="Segment start" title="Drag to set where the segment starts"></button>
-<button type="button" class="snd-handle" id="sndHandleB" aria-label="Segment end" title="Drag to set where the segment ends"></button>
-</div>
-<div class="snd-bar">
-<button type="button" class="snd-fold" id="sndFold" aria-expanded="true" title="Fold the waveform away to show more cards"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
-<span class="snd-name" id="sndName">—</span>
-<span class="snd-range" id="sndRange"></span>
-<button type="button" class="snd-btn" id="sndPlaySeg" title="Play just the selected segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg><b>SEGMENT</b></button>
-<button type="button" class="snd-btn" id="sndReset" title="Select the whole clip again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6v12M20 6v12M7 12h10M9.5 9.5 7 12l2.5 2.5M14.5 9.5 17 12l-2.5 2.5"/></svg><b>FULL</b></button>
-<button type="button" class="snd-btn snd-primary" id="sndInsert" title="Write the segment as a WAV and drop it on the active comp at the playhead"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v12M8 11.5l4 4 4-4M4.5 20h15"/></svg><b>INSERT</b></button>
-<span class="snd-status" id="sndStatus"></span>
-</div>
-</div>
 <div class="transport-main">
 <div class="now-playing" id="nowPlaying"><span class="label">Selected:</span> —</div>
 <div class="hint" id="playHint" style="margin-top:0;margin-bottom:0;">Click a sound to play · click again to stop</div>
@@ -1291,6 +1273,144 @@
 <div class="hint" id="hostHint">Connecting to host…</div>
 </div>
 </div><!-- /sfxMogrtView -->
+<div class="sfxd-view" id="panel-sfxdesign" style="display:none">
+<div class="sfxd-shell">
+
+<div class="sfxd-head">
+<span class="sfxd-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2.4l1.8-6 2.6 12 2.6-15 2.4 9 1.6-3H21"/></svg></span>
+<span class="sfxd-title"><strong>SOUND DESIGNER</strong><small>Library workspace</small></span>
+<span class="sfxd-host" id="sfxdHost" title="Which Adobe host this panel is talking to"><i></i>After Effects</span>
+<button type="button" class="sfxd-hicon" id="sfxdTogglePreview" aria-pressed="true" title="Show or hide the spectrum preview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.6l2-5 2.6 10 2.4-13 2.2 8 1.6-2.4H21"/></svg></button>
+<button type="button" class="sfxd-hicon" id="sfxdSettings" aria-expanded="false" title="Workspace settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.9 5.9l1.7 1.7M16.4 16.4l1.7 1.7M18.1 5.9l-1.7 1.7M7.6 16.4l-1.7 1.7"/></svg></button>
+</div>
+
+<div class="sfxd-settings" id="sfxdSettingsPanel" hidden>
+<label class="sfxd-set"><span>Insert at</span><select id="sfxdInsertTarget" title="Where a segment lands when you press Insert"><option value="playhead">Playhead</option><option value="selected">Selected layer start</option><option value="start">Composition start</option></select></label>
+<label class="sfxd-set"><span>Organise</span><select id="sfxdOrganise" title="Where imported footage is filed in the project panel"><option value="folder">CompX SFX folder</option><option value="root">Project root</option></select></label>
+<label class="sfxd-set sfxd-set-check"><input type="checkbox" id="sfxdAutoPreview" checked/><span>Play on select</span></label>
+</div>
+
+<div class="sfxd-body">
+
+<aside class="sfxd-lib" id="sfxdLib">
+<div class="sfxd-lib-head">
+<span class="sfxd-lib-title"><b>LIBRARY</b><small id="sfxdSourceCount">No source yet</small></span>
+<button type="button" class="sfxd-hicon sm" id="sfxdRescan" title="Rescan every folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4.5V10h-5.5"/></svg></button>
+<button type="button" class="sfxd-hicon sm" id="sfxdAddFolder" title="Add a folder of sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5v13M5.5 12h13"/></svg></button>
+</div>
+<div class="sfxd-filterbox">
+<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
+<input type="text" id="sfxdFolderFilter" placeholder="Filter local folders…" aria-label="Filter local folders"/>
+</div>
+<div class="sfxd-folders" id="sfxdFolders" role="listbox" aria-label="Indexed folders"></div>
+<div class="sfxd-lib-foot"><span id="sfxdLibFoot">0 indexed sounds</span></div>
+</aside>
+
+<section class="sfxd-main">
+<div class="sfxd-searchbar">
+<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
+<input type="text" id="sfxdSearch" placeholder="Search local sounds…" aria-label="Search local sounds"/>
+<button type="button" class="sfxd-clear" id="sfxdSearchClear" hidden title="Clear the search">✕</button>
+</div>
+
+<div class="sfxd-filters" id="sfxdFilters" role="group" aria-label="Sound filters">
+<span class="sfxd-chiprow">
+<button type="button" class="sfxd-chip is-on" data-sfxd-filter="all" aria-pressed="true">All</button>
+<button type="button" class="sfxd-chip" data-sfxd-filter="oneshot" aria-pressed="false" title="Two seconds or shorter">One shots</button>
+<button type="button" class="sfxd-chip" data-sfxd-filter="ambience" aria-pressed="false" title="Longer than two seconds">Ambience</button>
+<button type="button" class="sfxd-chip" data-sfxd-filter="fav" aria-pressed="false">Favorites <em id="sfxdFavCount">0</em></button>
+</span>
+<span class="sfxd-filters-gap"></span>
+<button type="button" class="sfxd-hicon sm" id="sfxdDensity" aria-pressed="false" title="Switch between comfortable and compact rows"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</div>
+
+<div class="sfxd-resulthead">
+<span id="sfxdCount">No folders yet</span>
+<label class="sfxd-sort">Sorted by
+<select id="sfxdSort" title="How the results are ordered">
+<option value="relevance">Relevance</option>
+<option value="name">Name</option>
+<option value="duration">Duration</option>
+<option value="size">Size</option>
+</select>
+</label>
+</div>
+
+<div class="sfxd-results" id="sfxdResults" role="listbox" aria-label="Sound results" tabindex="0">
+<div class="sfxd-empty" id="sfxdEmpty">Add a folder of sounds to get started.</div>
+</div>
+</section>
+
+</div>
+
+<div class="sfxd-preview" id="sfxdPreview">
+<div class="sfxd-preview-head">
+<span class="sfxd-preview-title"><b>SPECTRUM PREVIEW</b><small id="sfxdPvName">Nothing selected</small></span>
+<span class="sfxd-zoomval" id="sfxdZoomVal">1.0×</span>
+<button type="button" class="sfxd-hicon sm" id="sfxdZoomOut" title="Zoom the waveform out"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4M8.4 11h5.2"/></svg></button>
+<button type="button" class="sfxd-hicon sm" id="sfxdZoomIn" title="Zoom the waveform in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4M8.4 11h5.2M11 8.4v5.2"/></svg></button>
+</div>
+
+<div class="sfxd-preview-body">
+<div class="sfxd-wavebox">
+<div class="sfxd-ruler"><span id="sfxdT0">0:00</span><span id="sfxdTM">—</span><span id="sfxdT1">—</span></div>
+<div class="sfxd-wrap" id="sfxdWrap">
+<canvas class="sfxd-wave" id="sfxdWave" aria-label="Waveform — drag the handles to pick a segment"></canvas>
+<div class="sfxd-playhead" id="sfxdPlayhead" aria-hidden="true"></div>
+<button type="button" class="sfxd-handle sfxd-handle-a" id="sfxdHandleA" role="slider" aria-label="Segment start" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Drag to set where the segment starts — arrow keys nudge, Shift for bigger steps"></button>
+<button type="button" class="sfxd-handle sfxd-handle-b" id="sfxdHandleB" role="slider" aria-label="Segment end" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" title="Drag to set where the segment ends — arrow keys nudge, Shift for bigger steps"></button>
+</div>
+<div class="sfxd-wavebtns">
+<button type="button" class="sfxd-mini" data-sfxd-chan="mono" aria-pressed="false" title="Fold both channels into one trace">Mono</button>
+<button type="button" class="sfxd-mini is-on" data-sfxd-chan="stereo" aria-pressed="true" title="Draw left and right separately">Stereo</button>
+<button type="button" class="sfxd-mini" id="sfxdReverse" aria-pressed="false" title="Play and insert the segment backwards"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 6.5v11L3.5 12ZM20.5 6.5v11L13 12Z"/></svg>Reverse</button>
+</div>
+</div>
+
+<div class="sfxd-meta">
+<div class="sfxd-metacell"><span>FORMAT</span><b id="sfxdFormat">—</b></div>
+<div class="sfxd-metacell"><span>SIZE</span><b id="sfxdSize">—</b></div>
+<div class="sfxd-metacell"><span>LENGTH</span><b id="sfxdLength">—</b></div>
+<div class="sfxd-metacell"><span>SOURCE</span><b id="sfxdSource">—</b></div>
+<div class="sfxd-tags" id="sfxdTags"></div>
+</div>
+</div>
+</div>
+
+<div class="sfxd-transport">
+<span class="sfxd-now">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.4l1.8-5 2.4 10 2.4-13 2.2 8 1.6-2.2H21"/></svg>
+<span><small>NOW PREVIEWING</small><b id="sfxdNowName">Select a sound</b></span>
+</span>
+<span class="sfxd-tbtns">
+<button type="button" class="sfxd-tbtn" id="sfxdPrev" title="Previous sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6v12l-9-6Z"/><path d="M6.5 6v12"/></svg></button>
+<button type="button" class="sfxd-tbtn sfxd-play" id="sfxdPlay" title="Play or pause the segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg></button>
+<button type="button" class="sfxd-tbtn" id="sfxdNext" title="Next sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6v12l9-6Z"/><path d="M17.5 6v12"/></svg></button>
+<button type="button" class="sfxd-tbtn" id="sfxdStop" title="Stop and return to the segment start"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.4"/></svg></button>
+<button type="button" class="sfxd-tbtn" id="sfxdLoop" aria-pressed="false" title="Loop the segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-2.4-2.4M17 17H7l2.4 2.4"/><path d="M17 7v4M7 17v-4"/></svg></button>
+</span>
+<button type="button" class="sfxd-fxbtn" id="sfxdFxBtn" aria-expanded="false" title="Gain, pitch and speed applied to the preview and to what you insert">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 16h14"/><circle cx="9.5" cy="8" r="2.1"/><circle cx="15" cy="16" r="2.1"/></svg>
+<b>FX</b><small id="sfxdFxState">Effects</small>
+</button>
+<span class="sfxd-time" id="sfxdTime">0:0.00</span>
+<button type="button" class="sfxd-tbtn" id="sfxdClear" title="Clear the selection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></svg></button>
+<button type="button" class="sfxd-insert" id="sfxdInsert" title="Render the segment and place it on the active composition">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v12M8 11.5l4 4 4-4M4.5 20h15"/></svg><b>INSERT</b>
+</button>
+</div>
+
+<div class="sfxd-fxrack" id="sfxdFxRack" hidden>
+<label class="sfxd-slider"><span>GAIN</span><input type="range" id="sfxdGain" min="-24" max="12" step="0.5" value="0" title="Level applied to the preview and to what you insert"/><b id="sfxdGainVal">0.0 dB</b></label>
+<label class="sfxd-slider"><span>PITCH</span><input type="range" id="sfxdPitch" min="-12" max="12" step="1" value="0" title="Semitones up or down, with the length held"/><b id="sfxdPitchVal">0 st</b></label>
+<label class="sfxd-slider"><span>SPEED</span><input type="range" id="sfxdSpeed" min="25" max="400" step="5" value="100" title="Playback rate — pitch follows it, the way tape does"/><b id="sfxdSpeedVal">1.00×</b></label>
+<button type="button" class="sfxd-mini" id="sfxdFxReset" title="Back to unity">RESET</button>
+</div>
+
+<div class="sfxd-status" id="sfxdStatus" role="status" aria-live="polite">Add a folder to index your sounds.</div>
+
+</div>
+</div> <!-- /panel-sfxdesign -->
 <div id="textAnimView" style="display:none;">
 <div class="cx-textlib-tabs" id="textLibraryTabs" role="tablist" aria-label="Text library mode">
 <button class="active" type="button" data-text-library-tab="styles">PREMIUM STYLES</button>
@@ -1501,144 +1621,6 @@
 <label class="car-field car-field-wide"><span>DRIVES</span><select id="gridAffect" class="cx-select" title="Which property the effector drives on each cell."><option value="scale">Scale</option><option value="opacity">Opacity</option></select></label>
 </div>
 </div>
-
-</div>
-</div>
-<div class="app-panel" id="panel-sfxdesign">
-<div class="sfxd-shell">
-
-<div class="sfxd-head">
-<span class="sfxd-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2.4l1.8-6 2.6 12 2.6-15 2.4 9 1.6-3H21"/></svg></span>
-<span class="sfxd-title"><strong>SOUND DESIGNER</strong><small>Library workspace</small></span>
-<span class="sfxd-host" id="sfxdHost" title="Which Adobe host this panel is talking to"><i></i>After Effects</span>
-<button type="button" class="sfxd-hicon" id="sfxdTogglePreview" aria-pressed="true" title="Show or hide the spectrum preview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.6l2-5 2.6 10 2.4-13 2.2 8 1.6-2.4H21"/></svg></button>
-<button type="button" class="sfxd-hicon" id="sfxdSettings" aria-expanded="false" title="Workspace settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.9 5.9l1.7 1.7M16.4 16.4l1.7 1.7M18.1 5.9l-1.7 1.7M7.6 16.4l-1.7 1.7"/></svg></button>
-</div>
-
-<div class="sfxd-settings" id="sfxdSettingsPanel" hidden>
-<label class="sfxd-set"><span>Insert at</span><select id="sfxdInsertTarget" title="Where a segment lands when you press Insert"><option value="playhead">Playhead</option><option value="selected">Selected layer start</option><option value="start">Composition start</option></select></label>
-<label class="sfxd-set"><span>Organise</span><select id="sfxdOrganise" title="Where imported footage is filed in the project panel"><option value="folder">CompX SFX folder</option><option value="root">Project root</option></select></label>
-<label class="sfxd-set sfxd-set-check"><input type="checkbox" id="sfxdAutoPreview" checked/><span>Play on select</span></label>
-</div>
-
-<div class="sfxd-body">
-
-<aside class="sfxd-lib" id="sfxdLib">
-<div class="sfxd-lib-head">
-<span class="sfxd-lib-title"><b>LIBRARY</b><small id="sfxdSourceCount">No source yet</small></span>
-<button type="button" class="sfxd-hicon sm" id="sfxdRescan" title="Rescan every folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4.5V10h-5.5"/></svg></button>
-<button type="button" class="sfxd-hicon sm" id="sfxdAddFolder" title="Add a folder of sounds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5v13M5.5 12h13"/></svg></button>
-</div>
-<div class="sfxd-filterbox">
-<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
-<input type="text" id="sfxdFolderFilter" placeholder="Filter local folders…" aria-label="Filter local folders"/>
-</div>
-<div class="sfxd-folders" id="sfxdFolders" role="listbox" aria-label="Indexed folders"></div>
-<div class="sfxd-lib-foot"><span id="sfxdLibFoot">0 indexed sounds</span></div>
-</aside>
-
-<section class="sfxd-main">
-<div class="sfxd-searchbar">
-<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
-<input type="text" id="sfxdSearch" placeholder="Search local sounds…" aria-label="Search local sounds"/>
-<button type="button" class="sfxd-clear" id="sfxdSearchClear" hidden title="Clear the search">✕</button>
-</div>
-
-<div class="sfxd-filters" id="sfxdFilters" role="group" aria-label="Sound filters">
-<span class="sfxd-chiprow">
-<button type="button" class="sfxd-chip is-on" data-sfxd-filter="all" aria-pressed="true">All</button>
-<button type="button" class="sfxd-chip" data-sfxd-filter="oneshot" aria-pressed="false" title="Two seconds or shorter">One shots</button>
-<button type="button" class="sfxd-chip" data-sfxd-filter="ambience" aria-pressed="false" title="Longer than two seconds">Ambience</button>
-<button type="button" class="sfxd-chip" data-sfxd-filter="fav" aria-pressed="false">Favorites <em id="sfxdFavCount">0</em></button>
-</span>
-<span class="sfxd-filters-gap"></span>
-<button type="button" class="sfxd-hicon sm" id="sfxdDensity" aria-pressed="false" title="Switch between comfortable and compact rows"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-</div>
-
-<div class="sfxd-resulthead">
-<span id="sfxdCount">No folders yet</span>
-<label class="sfxd-sort">Sorted by
-<select id="sfxdSort" title="How the results are ordered">
-<option value="relevance">Relevance</option>
-<option value="name">Name</option>
-<option value="duration">Duration</option>
-<option value="size">Size</option>
-</select>
-</label>
-</div>
-
-<div class="sfxd-results" id="sfxdResults" role="listbox" aria-label="Sound results" tabindex="0">
-<div class="sfxd-empty" id="sfxdEmpty">Add a folder of sounds to get started.</div>
-</div>
-</section>
-
-</div>
-
-<div class="sfxd-preview" id="sfxdPreview">
-<div class="sfxd-preview-head">
-<span class="sfxd-preview-title"><b>SPECTRUM PREVIEW</b><small id="sfxdPvName">Nothing selected</small></span>
-<span class="sfxd-zoomval" id="sfxdZoomVal">1.0×</span>
-<button type="button" class="sfxd-hicon sm" id="sfxdZoomOut" title="Zoom the waveform out"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4M8.4 11h5.2"/></svg></button>
-<button type="button" class="sfxd-hicon sm" id="sfxdZoomIn" title="Zoom the waveform in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4M8.4 11h5.2M11 8.4v5.2"/></svg></button>
-</div>
-
-<div class="sfxd-preview-body">
-<div class="sfxd-wavebox">
-<div class="sfxd-ruler"><span id="sfxdT0">0:00</span><span id="sfxdTM">—</span><span id="sfxdT1">—</span></div>
-<div class="sfxd-wrap" id="sfxdWrap">
-<canvas class="sfxd-wave" id="sfxdWave" aria-label="Waveform — drag the handles to pick a segment"></canvas>
-<div class="sfxd-playhead" id="sfxdPlayhead" aria-hidden="true"></div>
-<button type="button" class="sfxd-handle sfxd-handle-a" id="sfxdHandleA" role="slider" aria-label="Segment start" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Drag to set where the segment starts — arrow keys nudge, Shift for bigger steps"></button>
-<button type="button" class="sfxd-handle sfxd-handle-b" id="sfxdHandleB" role="slider" aria-label="Segment end" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" title="Drag to set where the segment ends — arrow keys nudge, Shift for bigger steps"></button>
-</div>
-<div class="sfxd-wavebtns">
-<button type="button" class="sfxd-mini" data-sfxd-chan="mono" aria-pressed="false" title="Fold both channels into one trace">Mono</button>
-<button type="button" class="sfxd-mini is-on" data-sfxd-chan="stereo" aria-pressed="true" title="Draw left and right separately">Stereo</button>
-<button type="button" class="sfxd-mini" id="sfxdReverse" aria-pressed="false" title="Play and insert the segment backwards"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 6.5v11L3.5 12ZM20.5 6.5v11L13 12Z"/></svg>Reverse</button>
-</div>
-</div>
-
-<div class="sfxd-meta">
-<div class="sfxd-metacell"><span>FORMAT</span><b id="sfxdFormat">—</b></div>
-<div class="sfxd-metacell"><span>SIZE</span><b id="sfxdSize">—</b></div>
-<div class="sfxd-metacell"><span>LENGTH</span><b id="sfxdLength">—</b></div>
-<div class="sfxd-metacell"><span>SOURCE</span><b id="sfxdSource">—</b></div>
-<div class="sfxd-tags" id="sfxdTags"></div>
-</div>
-</div>
-</div>
-
-<div class="sfxd-transport">
-<span class="sfxd-now">
-<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.4l1.8-5 2.4 10 2.4-13 2.2 8 1.6-2.2H21"/></svg>
-<span><small>NOW PREVIEWING</small><b id="sfxdNowName">Select a sound</b></span>
-</span>
-<span class="sfxd-tbtns">
-<button type="button" class="sfxd-tbtn" id="sfxdPrev" title="Previous sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6v12l-9-6Z"/><path d="M6.5 6v12"/></svg></button>
-<button type="button" class="sfxd-tbtn sfxd-play" id="sfxdPlay" title="Play or pause the segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg></button>
-<button type="button" class="sfxd-tbtn" id="sfxdNext" title="Next sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6v12l9-6Z"/><path d="M17.5 6v12"/></svg></button>
-<button type="button" class="sfxd-tbtn" id="sfxdStop" title="Stop and return to the segment start"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.4"/></svg></button>
-<button type="button" class="sfxd-tbtn" id="sfxdLoop" aria-pressed="false" title="Loop the segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-2.4-2.4M17 17H7l2.4 2.4"/><path d="M17 7v4M7 17v-4"/></svg></button>
-</span>
-<button type="button" class="sfxd-fxbtn" id="sfxdFxBtn" aria-expanded="false" title="Gain, pitch and speed applied to the preview and to what you insert">
-<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 16h14"/><circle cx="9.5" cy="8" r="2.1"/><circle cx="15" cy="16" r="2.1"/></svg>
-<b>FX</b><small id="sfxdFxState">Effects</small>
-</button>
-<span class="sfxd-time" id="sfxdTime">0:0.00</span>
-<button type="button" class="sfxd-tbtn" id="sfxdClear" title="Clear the selection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></svg></button>
-<button type="button" class="sfxd-insert" id="sfxdInsert" title="Render the segment and place it on the active composition">
-<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v12M8 11.5l4 4 4-4M4.5 20h15"/></svg><b>INSERT</b>
-</button>
-</div>
-
-<div class="sfxd-fxrack" id="sfxdFxRack" hidden>
-<label class="sfxd-slider"><span>GAIN</span><input type="range" id="sfxdGain" min="-24" max="12" step="0.5" value="0" title="Level applied to the preview and to what you insert"/><b id="sfxdGainVal">0.0 dB</b></label>
-<label class="sfxd-slider"><span>PITCH</span><input type="range" id="sfxdPitch" min="-12" max="12" step="1" value="0" title="Semitones up or down, with the length held"/><b id="sfxdPitchVal">0 st</b></label>
-<label class="sfxd-slider"><span>SPEED</span><input type="range" id="sfxdSpeed" min="25" max="400" step="5" value="100" title="Playback rate — pitch follows it, the way tape does"/><b id="sfxdSpeedVal">1.00×</b></label>
-<button type="button" class="sfxd-mini" id="sfxdFxReset" title="Back to unity">RESET</button>
-</div>
-
-<div class="sfxd-status" id="sfxdStatus" role="status" aria-live="polite">Add a folder to index your sounds.</div>
 
 </div>
 </div>
@@ -2015,7 +1997,6 @@
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
 <script src="js/orbit-sfx.js?v=1"></script>
-<script src="js/orbit-sound.js?v=1"></script>
 <script src="js/orbit-library-tab.js?v=1"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>

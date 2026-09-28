@@ -1435,8 +1435,10 @@
     var rail = document.getElementById("appTabsRow");
     if (rail) rail.addEventListener("click", function (ev) {
       var btn = ev.target.closest(".app-tab");
-      if (btn && btn.getAttribute("data-apptab") !== "sfxdesign") stop();
+      if (btn && btn.getAttribute("data-apptab") !== "sfx") stop();
     });
+    // So does switching the Library to another shelf.
+    window.addEventListener("compx:sfxd-hidden", stop);
 
     var resizeTimer = 0;
     window.addEventListener("resize", function () {
