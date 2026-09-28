@@ -465,3 +465,21 @@
 #flexAutoCaptions .cx-simple-lang-hint b {
   color: #fff1cc;
 }
+
+/* Guide Grid modal: the close button sat right against the title */
+#guideGridModal .modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+#guideGridModal #btnGuideGridClose {
+  margin-left: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}

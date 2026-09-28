@@ -20616,8 +20616,22 @@ function ae_guideGrid(cols, rows, border, markerShape, fitLayer) {
     try {
       var posProp = layer.property("ADBE Transform Group").property("ADBE Position");
       if (target) {
+        // The grid is drawn about its own origin, so it has to sit on the
+        // middle of the target's box in the target's layer space. [0, 0]
+        // put it on the layer's corner (a text layer's baseline start).
         layer.parent = target;
-        posProp.setValue([0, 0]);
+        var box = null;
+        try { box = target.sourceRectAtTime(comp.time, false); } catch (eBox) { box = null; }
+        posProp.setValue(box && box.width > 0 ? [box.left + box.width / 2, box.top + box.height / 2] : [0, 0]);
+        // Tracking: centre and size follow the layer's box as it changes
+        // (typing, animated shapes). Disable the expressions to freeze it.
+        var TRACK = "try { var r = thisLayer.parent.sourceRectAtTime(time, false); ";
+        compxGuideSetExpr(posProp, TRACK + "[r.left + r.width / 2, r.top + r.height / 2]; } catch (err) { value; }", "HOST_GUIDE_TRACK_POS_001");
+        try {
+          var fxs = layer.property("ADBE Effect Parade");
+          compxGuideSetExpr(fxs.property("Width").property(1), TRACK + "r.width > 0 ? r.width : value; } catch (err) { value; }", "HOST_GUIDE_TRACK_W_001");
+          compxGuideSetExpr(fxs.property("Height").property(1), TRACK + "r.height > 0 ? r.height : value; } catch (err) { value; }", "HOST_GUIDE_TRACK_H_001");
+        } catch (eTrack) { compxAuditFallback("HOST_GUIDE_TRACK_001", eTrack); }
       } else {
         posProp.setValue([cx, cy]);
       }
