@@ -44,6 +44,11 @@
   var PEAK_CACHE_CAP = 400;
   var ONESHOT_MAX = 2;        // seconds; the One shots / Ambience line
   var ZOOMS = [1, 2, 4, 8, 16];
+  var CLOUD = "@freesound";   // activeFolder value for the Freesound source
+  var FS_SEARCH = "https://freesound.org/apiv2/search/text/";
+  var FS_FIELDS = "id,name,duration,previews,license,username,filesize,type,samplerate,channels,tags,url";
+  var FS_PAGE = 30;
+  var FS_MAX_BYTES = 40 * 1024 * 1024;
   var LABELS = [
     { name: "Red", c: "#ff5f6d" }, { name: "Orange", c: "#ffa94d" },
     { name: "Yellow", c: "#ffe066" }, { name: "Green", c: "#3cff5f" },
@@ -269,6 +274,7 @@
       body: panel.querySelector(".sfxd-body"),
       lockPitch: document.getElementById("sfxdLockPitch"),
       restoreDropped: document.getElementById("sfxdRestoreDropped"),
+      fsKey: document.getElementById("sfxdFsKey"),
       count: document.getElementById("sfxdCount"),
       sort: document.getElementById("sfxdSort"),
       results: document.getElementById("sfxdResults"),
@@ -323,6 +329,10 @@
     var dropped = readJson("dropped", {});          // path -> 1, removed from the index (file kept)
     var labelFilter = read("labelFilter", "");      // "" is every label
     var lockPitch = read("lockPitch", "0") === "1";
+    // Freesound: results of the last cloud search, as items shaped like the
+    // local ones (path "freesound:<id>", remote carries the rest).
+    var fsKey = read("fsKey", "");
+    var fsItems = [], fsNext = "", fsQuery = "", fsBusy = false, fsError = "", fsTimer = 0, fsToken = 0;
     // Search tabs: each keeps its own query and filter chip.
     var tabs = readJson("tabs", null);
     if (!tabs || !tabs.length) tabs = [{ q: "", filter: filter }];
@@ -499,6 +509,11 @@
           '<span class="sfxd-fcount">' + (counts[f.path] || 0) + "</span>" +
           '<span class="sfxd-fdrop" role="button" tabindex="0" data-sfxd-drop="' + escapeAttr(f.path) + '" title="Stop indexing this folder">✕</span></button>';
       }
+      var cloudOn = activeFolder === CLOUD;
+      html += '<button type="button" class="sfxd-folder sfxd-cloud' + (cloudOn ? " is-on" : "") + '" data-sfxd-folder="' + CLOUD + '" role="option" aria-selected="' + cloudOn + '" title="Freesound cloud library">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18.5h10a4 4 0 0 0 .6-8A5.5 5.5 0 0 0 7 9.2a4.7 4.7 0 0 0 0 9.3Z"/></svg>' +
+        '<span class="sfxd-fname"><b>Freesound</b><small>' + (fsKey ? "Cloud library" : "Add an API key in Settings") + "</small></span>" +
+        (cloudOn && fsItems.length ? '<span class="sfxd-fcount">' + fsItems.length + "</span>" : "") + "</button>";
       el.folders.innerHTML = html;
 
       if (el.sourceCount) {
@@ -533,8 +548,9 @@
         if (!btn) return;
         activeFolder = btn.getAttribute("data-sfxd-folder");
         write("activeFolder", activeFolder);
+        paintSearchMode();
         paintFolders();
-        render();
+        if (activeFolder === CLOUD) fsSearch(false); else render();
       });
     }
 
@@ -609,14 +625,17 @@
       if (el.searchClear) el.searchClear.hidden = !query;
 
       var out = [], i, it;
-      for (i = 0; i < items.length; i++) {
-        it = items[i];
-        if (activeFolder && it.root !== activeFolder) continue;
+      var cloud = activeFolder === CLOUD;
+      var pool = cloud ? fsItems : items;
+      for (i = 0; i < pool.length; i++) {
+        it = pool[i];
+        if (cloud && dropped[it.path]) continue;
+        if (!cloud && activeFolder && it.root !== activeFolder) continue;
         if (filter === "fav" && !favs[it.path]) continue;
         if (filter === "oneshot" && !(it.duration >= 0 && it.duration <= ONESHOT_MAX)) continue;
         if (filter === "ambience" && !(it.duration > ONESHOT_MAX)) continue;
         if (labelFilter !== "" && String(labels[it.path]) !== labelFilter) continue;
-        if (query) {
+        if (query && !cloud) {
           it._score = score(it, query);
           if (it._score < 0) continue;
         } else {
@@ -639,6 +658,7 @@
           var db = b.duration < 0 ? Infinity : b.duration;
           return da - db;
         }
+        if (cloud) return (a._rank || 0) - (b._rank || 0);   // Freesound's own relevance
         if (query && b._score !== a._score) return b._score - a._score;
         return a.name.localeCompare(b.name);
       });
@@ -653,13 +673,28 @@
       for (k in favs) if (favs[k]) favTotal++;
       if (el.favCount) el.favCount.textContent = favTotal;
 
-      if (el.count) {
+      var cloud = activeFolder === CLOUD;
+      if (el.count && cloud) {
+        el.count.textContent = fsBusy ? "Searching Freesound…"
+          : view.length ? view.length + " Freesound result" + (view.length === 1 ? "" : "s")
+          : "Freesound";
+      } else if (el.count) {
         el.count.textContent = !folders.length ? "No folders yet"
           : view.length ? view.length + " result" + (view.length === 1 ? "" : "s")
           : "Nothing matched";
       }
 
       el.results.classList.toggle("is-compact", compact);
+
+      if (!view.length && cloud) {
+        el.results.innerHTML = '<div class="sfxd-empty">' + escapeHtml(
+          !fsKey ? "Add your Freesound API key in Settings to search the cloud library."
+            : fsBusy ? "Searching Freesound…"
+            : fsError ? fsError
+            : !query || query.length < 2 ? "Type at least two characters to search Freesound."
+            : "Freesound found nothing for “" + query + "”.") + "</div>";
+        return;
+      }
 
       if (!view.length) {
         el.results.innerHTML = '<div class="sfxd-empty">' +
@@ -690,16 +725,21 @@
           "</span>" +
           '<span class="sfxd-rowinfo">' +
           '<span class="sfxd-rowdur' + (known ? "" : " is-unknown") + '">' + (known ? fmtTime(it.duration) : "—:—") + "</span>" +
-          '<span class="sfxd-rowmeta">' + escapeHtml(it.ext) + " · " + fmtSize(it.size) + "</span>" +
+          '<span class="sfxd-rowmeta">' + escapeHtml(it.ext) + " · " +
+          (it.remote ? escapeHtml(it.remote.license) + " · " + escapeHtml(it.remote.user) : fmtSize(it.size)) + "</span>" +
           "</span>" +
           '<span class="sfxd-rowend">' +
-          (query ? '<span class="sfxd-score">' + it._score + "%</span>" : "") +
+          (query && !it.remote ? '<span class="sfxd-score">' + it._score + "%</span>" : "") +
           '<button type="button" class="sfxd-fav' + (favs[it.path] ? " is-on" : "") + '" data-sfxd-fav="' + i + '" title="' + (favs[it.path] ? "Remove from favourites" : "Add to favourites") + '" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7-4.3-7-9A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.7-7 9-7 9Z"/></svg></button>' +
           "</span></div>"
         );
       }
       if (view.length > cap) {
         html.push('<div class="sfxd-empty">' + (view.length - cap) + " more — narrow the search to see them.</div>");
+      }
+      if (cloud && fsNext) {
+        html.push('<div class="sfxd-empty"><button type="button" class="sfxd-mini" id="sfxdFsMore"' + (fsBusy ? " disabled" : "") + ">" +
+          (fsBusy ? "LOADING…" : "MORE FREESOUND RESULTS") + "</button></div>");
       }
       el.results.innerHTML = html.join("");
       queueRowWaves();
@@ -753,6 +793,7 @@
         if (!it) continue;
         if (peakCache[it.path]) { drawRowWave(c, peakCache[it.path]); continue; }
         drawRowWave(c, null);
+        if (it.remote) continue;   // no download just to draw a thumbnail
         if (it.size > PEAK_FILE_CAP || !fsMod) continue;
         observeRow(c, it);
       }
@@ -806,6 +847,16 @@
 
     function decodeFile(item, done) {
       var c = ctx();
+      if (item && item.remote) {
+        if (!c) { done(null); return; }
+        fetchRemote(item, function (arr) {
+          if (!arr) { done(null); return; }
+          try {
+            c.decodeAudioData(arr, function (buf) { done(buf); }, function () { done(null); });
+          } catch (e) { done(null); }
+        });
+        return;
+      }
       if (!c || !fsMod) { done(null); return; }
       var data;
       try { data = fsMod.readFileSync(item.path); } catch (e) { done(null); return; }
@@ -881,7 +932,7 @@
       saveTabs();
       paintTabs();
       paintFilters();
-      render();
+      if (activeFolder === CLOUD) fsSearch(false); else render();
       if (focus && el.search) el.search.focus();
     }
 
@@ -920,7 +971,7 @@
       saveTabs();
       clearTimeout(tabNameTimer);
       tabNameTimer = setTimeout(paintTabs, 250);
-      render();
+      if (activeFolder === CLOUD) scheduleFsSearch(); else render();
     });
     if (el.searchClear) el.searchClear.addEventListener("click", function () {
       el.search.value = ""; tabs[tabIdx].q = ""; saveTabs(); paintTabs(); render(); el.search.focus();
@@ -965,6 +1016,206 @@
       el.density.setAttribute("aria-pressed", compact ? "true" : "false");
       paintResults();
     });
+
+    // ---------- Freesound ----------
+    // Search goes to the public API with the user's key; audition and insert
+    // use the HQ preview (an MP3), which needs no OAuth. Everything fetched is
+    // kept in Documents/CompX Freesound so the project never points at a temp
+    // file, and each download adds its credit line to CREDITS.txt there.
+    var httpsMod = null;
+    try { httpsMod = (typeof require !== "undefined" ? require : window.require)("https"); } catch (e) { httpsMod = null; }
+    if (httpsMod && typeof httpsMod.get !== "function") httpsMod = null;
+
+    function trustedFsUrl(u) {
+      return /^https:\/\/([a-z0-9-]+\.)*freesound\.org\//i.test(String(u || ""));
+    }
+
+    function licenseShort(url) {
+      var u = String(url || "").toLowerCase();
+      if (u.indexOf("publicdomain/zero") >= 0) return "CC0";
+      if (u.indexOf("sampling+") >= 0) return "Sampling+";
+      if (u.indexOf("by-nc") >= 0) return "CC BY-NC";
+      if (u.indexOf("/by/") >= 0 || u.indexOf("by/3") >= 0 || u.indexOf("by/4") >= 0) return "CC BY";
+      return "See license";
+    }
+
+    // GET over Node https when CEP has it (no CORS, redirects checked here),
+    // otherwise fetch. asBinary returns an ArrayBuffer, else parsed JSON.
+    function httpGet(url, asBinary, done) {
+      var finished = false;
+      function end(err, val) { if (finished) return; finished = true; done(err, val); }
+      if (!trustedFsUrl(url)) { end("Untrusted remote audio URL."); return; }
+      if (httpsMod) {
+        (function hop(u, left) {
+          if (!trustedFsUrl(u)) { end("Freesound redirected to an untrusted download address."); return; }
+          var req = httpsMod.get(u, { headers: { "User-Agent": "CompX-Orbit-Studio" } }, function (res) {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              res.resume();
+              if (left <= 0) { end("Freesound redirected the download too many times."); return; }
+              hop(String(res.headers.location).indexOf("http") === 0 ? res.headers.location : "https://freesound.org" + res.headers.location, left - 1);
+              return;
+            }
+            if (res.statusCode === 401 || res.statusCode === 403) { res.resume(); end("Freesound rejected the API key. Check it in Settings."); return; }
+            if (res.statusCode === 429) { res.resume(); end("Freesound request limit reached. Please try again later."); return; }
+            if (res.statusCode !== 200) { res.resume(); end("Freesound answered " + res.statusCode + "."); return; }
+            var chunks = [], total = 0;
+            res.on("data", function (d) {
+              total += d.length;
+              if (total > FS_MAX_BYTES) { req.abort(); end("This sound is too large to download safely."); return; }
+              chunks.push(d);
+            });
+            res.on("end", function () {
+              var buf = Buffer.concat(chunks);
+              if (asBinary) end(null, buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
+              else { try { end(null, JSON.parse(buf.toString("utf8"))); } catch (e) { end("Freesound search failed."); } }
+            });
+          });
+          req.on("error", function () { end("Freesound could not be reached."); });
+          req.setTimeout(20000, function () { req.abort(); end(asBinary ? "The Freesound download timed out." : "The Freesound search timed out."); });
+        })(url, 4);
+        return;
+      }
+      if (!window.fetch) { end("CEP HTTPS is unavailable."); return; }
+      window.fetch(url).then(function (res) {
+        if (res.url && !trustedFsUrl(res.url)) throw "Freesound redirected to an untrusted download address.";
+        if (res.status === 401 || res.status === 403) throw "Freesound rejected the API key. Check it in Settings.";
+        if (res.status === 429) throw "Freesound request limit reached. Please try again later.";
+        if (!res.ok) throw "Freesound answered " + res.status + ".";
+        return asBinary ? res.arrayBuffer() : res.json();
+      }).then(function (v) {
+        if (asBinary && v && v.byteLength > FS_MAX_BYTES) { end("This sound is too large to download safely."); return; }
+        end(null, v);
+      }, function (e) {
+        end(typeof e === "string" ? e : (asBinary ? "The Freesound download failed." : "Freesound search failed."));
+      });
+    }
+
+    function toItem(r, rank) {
+      var prev = r.previews || {};
+      var safe = String(r.name || ("freesound " + r.id)).replace(/\.[a-z0-9]{2,4}$/i, "");
+      return {
+        path: "freesound:" + r.id,
+        name: safe,
+        file: safe,
+        ext: "MP3",
+        size: Number(r.filesize) || 0,
+        duration: typeof r.duration === "number" ? r.duration : -1,
+        rootName: "Freesound",
+        _rank: rank,
+        remote: {
+          id: r.id,
+          preview: prev["preview-hq-mp3"] || prev["preview-lq-mp3"] || "",
+          license: licenseShort(r.license),
+          licenseUrl: r.license || "",
+          user: r.username || "unknown",
+          page: r.url || ("https://freesound.org/s/" + r.id + "/"),
+          tags: (r.tags || []).slice(0, 12)
+        }
+      };
+    }
+
+    function fsSearch(more) {
+      clearTimeout(fsTimer);
+      var q = (el.search && el.search.value || "").trim();
+      if (!more) { fsItems = []; fsNext = ""; fsError = ""; }
+      if (!fsKey || q.length < 2) { fsBusy = false; render(); paintFolders(); return; }
+      var url = more ? fsNext
+        : FS_SEARCH + "?query=" + encodeURIComponent(q) + "&fields=" + FS_FIELDS + "&page_size=" + FS_PAGE;
+      if (!url) return;
+      url += (url.indexOf("?") >= 0 ? "&" : "?") + "token=" + encodeURIComponent(fsKey);
+      var mine = ++fsToken;
+      fsBusy = true; fsQuery = q;
+      render();
+      say(more ? "Loading more Freesound results…" : "Searching Freesound…");
+      httpGet(url, false, function (err, data) {
+        if (mine !== fsToken) return;
+        fsBusy = false;
+        if (err) { fsError = err; say(err, "error"); render(); return; }
+        var list = (data && data.results) || [], base = fsItems.length;
+        for (var i = 0; i < list.length; i++) fsItems.push(toItem(list[i], base + i));
+        fsNext = data && data.next ? String(data.next).replace(/([?&])token=[^&]*&?/, "$1").replace(/[?&]$/, "") : "";
+        say(fsItems.length ? (data.count || fsItems.length) + " Freesound result" + ((data.count || fsItems.length) === 1 ? "" : "s") + " for “" + q + "”." : "Freesound found nothing for “" + q + "”.",
+          fsItems.length ? "ok" : "");
+        render();
+        paintFolders();
+      });
+    }
+
+    function scheduleFsSearch() {
+      clearTimeout(fsTimer);
+      fsTimer = setTimeout(function () { fsSearch(false); }, 450);
+    }
+
+    function fsDir() {
+      if (!fsMod || !pathMod || !osMod) return "";
+      var dir = pathMod.join(osMod.homedir(), "Documents", "CompX Freesound");
+      try { if (!fsMod.existsSync(dir)) fsMod.mkdirSync(dir, { recursive: true }); } catch (e) { return ""; }
+      return dir;
+    }
+
+    function addCredit(dir, item) {
+      try {
+        var file = pathMod.join(dir, "CREDITS.txt");
+        var line = "\"" + item.name + "\" by " + item.remote.user + " — " + item.remote.page + " — " + (item.remote.licenseUrl || item.remote.license);
+        var have = fsMod.existsSync(file) ? String(fsMod.readFileSync(file, "utf8")) : "";
+        if (have.indexOf(item.remote.page) >= 0) return;
+        fsMod.writeFileSync(file, have + (have && have.slice(-1) !== "\n" ? "\n" : "") + line + "\n");
+      } catch (e) { /* credits are a courtesy, never a blocker */ }
+    }
+
+    // Returns the audio as an ArrayBuffer, downloading the preview once and
+    // reading the kept copy after that.
+    function fetchRemote(item, done) {
+      var dir = fsDir();
+      var safe = item.name.replace(/[^A-Za-z0-9_\- ]+/g, "").replace(/\s+/g, "_").slice(0, 48) || "sound";
+      var local = dir ? pathMod.join(dir, item.remote.id + "_" + safe + ".mp3") : "";
+      if (local) {
+        try {
+          if (fsMod.existsSync(local)) {
+            var data = fsMod.readFileSync(local);
+            item.local = local;
+            done(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
+            return;
+          }
+        } catch (e) { /* download it again */ }
+      }
+      if (!item.remote.preview) { say("This Freesound result has no downloadable preview.", "error"); done(null); return; }
+      say("Downloading " + item.name + " from Freesound…");
+      httpGet(item.remote.preview, true, function (err, arr) {
+        if (err || !arr || !arr.byteLength) { say(err || "Freesound returned an empty audio file.", "error"); done(null); return; }
+        if (local) {
+          try {
+            fsMod.writeFileSync(local, Buffer.from(new Uint8Array(arr)));
+            item.local = local;
+            item.size = arr.byteLength;
+            addCredit(dir, item);
+          } catch (e) { item.local = ""; }
+        }
+        done(arr);
+      });
+    }
+
+    if (el.results) el.results.addEventListener("click", function (ev) {
+      if (ev.target && ev.target.id === "sfxdFsMore") fsSearch(true);
+    });
+
+    if (el.fsKey) {
+      el.fsKey.value = fsKey;
+      el.fsKey.addEventListener("change", function () {
+        fsKey = el.fsKey.value.trim();
+        write("fsKey", fsKey);
+        paintFolders();
+        if (activeFolder === CLOUD) fsSearch(false);
+        say(fsKey ? "Freesound key saved." : "Freesound key removed.");
+      });
+    }
+
+    function paintSearchMode() {
+      if (!el.search) return;
+      var cloud = activeFolder === CLOUD;
+      el.search.placeholder = cloud ? "Search Freesound…" : "Search local sounds…";
+      el.search.setAttribute("aria-label", cloud ? "Search Freesound" : "Search local sounds");
+    }
 
     // ---------- context menu ----------
     // Right-click (or the Menu key / Shift+F10) on a row: favourite, pin to
@@ -1238,9 +1489,12 @@
       if (el.format) el.format.textContent = current.ext || "—";
       if (el.size) el.size.textContent = fmtSize(current.size);
       if (el.length) el.length.textContent = current.duration >= 0 ? fmtTime(current.duration) : "—:—";
-      if (el.source) el.source.textContent = current.rootName || "Local";
+      if (el.source) el.source.textContent = current.remote
+        ? "Freesound · " + current.remote.user + " · " + current.remote.license
+        : (current.rootName || "Local");
+      if (el.source) el.source.title = current.remote ? current.remote.page : "";
       if (el.tags) {
-        var tags = tagsOf(current.file), html = "", i;
+        var tags = current.remote ? current.remote.tags.slice(0, 8) : tagsOf(current.file), html = "", i;
         for (i = 0; i < tags.length; i++) {
           html += '<button type="button" class="sfxd-tag" data-sfxd-tag="' + escapeAttr(tags[i]) + '" title="Search for this word">' + escapeHtml(tags[i]) + "</button>";
         }
@@ -1747,8 +2001,9 @@
         // file wherever it can.
         var untouched = selA <= 0.0001 && selB >= 0.9999 && !reversed &&
           !fx.gain && !fx.pitch && Math.abs(fx.speed - 1) < 0.002;
-        var outPath = current.path;
+        var outPath = current.remote ? current.local : current.path;
         var layerName = current.name;
+        if (current.remote && !outPath) { fail("The Freesound download is not on disk yet."); return; }
 
         if (!untouched) {
           try {
@@ -1843,6 +2098,7 @@
     if (el.search) el.search.value = tabs[tabIdx].q || "";
     filter = tabs[tabIdx].filter || filter;
     paintTabs();
+    paintSearchMode();
     paintLockPitch();
     paintLabelFilter();
     paintDropped();
@@ -1854,6 +2110,7 @@
 
     if (folders.length) rescan(true);
     render();
+    if (activeFolder === CLOUD) fsSearch(false);
     say(folders.length
       ? items.length + " sounds indexed across " + folders.length + " folder" + (folders.length === 1 ? "" : "s") + "."
       : "Add a folder to index your sounds.");

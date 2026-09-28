@@ -1727,3 +1727,43 @@
     display: none !important;
   }
 }
+
+/* ---- Freesound ---- */
+#app #panel-sfxdesign .sfxd-set-key {
+  flex: 1 1 220px !important;
+  min-width: 0 !important;
+}
+#app #panel-sfxdesign .sfxd-set-key input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 6px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 5px !important;
+  background: #060806 !important;
+  color: var(--sx-text) !important;
+  font: 500 9px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0 !important;
+}
+#app #panel-sfxdesign .sfxd-set-key input:focus {
+  border-color: var(--sx-accent) !important;
+  outline: none !important;
+}
+#app #panel-sfxdesign .sfxd-set-note {
+  flex: 1 1 100% !important;
+  margin: 0 !important;
+  color: var(--sx-faint) !important;
+  font: 500 8px/1.35 "Segoe UI", sans-serif !important;
+}
+#app #panel-sfxdesign .sfxd-set-note b {
+  color: var(--sx-dim) !important;
+  font-weight: 600 !important;
+}
+#app #panel-sfxdesign .sfxd-folder.sfxd-cloud {
+  margin-top: 4px !important;
+  border-top: 1px solid var(--sx-line-soft) !important;
+}
+#app #panel-sfxdesign .sfxd-folder.sfxd-cloud svg {
+  stroke: #4dabf7 !important;
+}
