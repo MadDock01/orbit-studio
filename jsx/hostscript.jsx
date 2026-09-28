@@ -19611,29 +19611,51 @@ function compxGridFindRig(comp) {
   return null;
 }
 
-// Cells sit under the rig, so their Position is already relative to it —
-// the layout only has to say where each index lands around the origin.
+var COMPX_GRID_CELL = "COMPX_GRID_CELL";          // + " dup" (made by Build) or " own" (a layer the user picked)
+var COMPX_GRID_EFFECTOR = "COMPX_GRID_EFFECTOR";  // + ":scale" / ":opacity"
+
+// Cells under the rig. Old builds tagged their copies with the generic morph tag.
+function compxGridCells(comp, rig) {
+  var out = [], i, layer, note;
+  for (i = 1; i <= comp.numLayers; i++) {
+    layer = comp.layer(i);
+    var parent = null;
+    try { parent = layer.parent; } catch (eP) { parent = null; }
+    if (!parent || parent.index !== rig.index) continue;
+    try { note = String(layer.comment || ""); } catch (eC) { note = ""; }
+    if (note.indexOf(COMPX_GRID_CELL) === 0 || note.indexOf(COMPX_MORPH_GEN) >= 0) out.push(layer);
+  }
+  return out;
+}
+
+// Cells sit under the rig, whose layer space starts at its anchor-relative
+// origin, so the rig's anchor is added back. The result matches the
+// layer's dimensions (2 values for a 2D layer, 3 for a 3D one), and it is
+// added to the cell's own Position (set to 0) so a cell can still be nudged.
 function compxGridExpression(mode, total) {
   var head =
     "// COMPX_GRID\n" +
     "try {\n" +
     '  var rig = thisComp.layer("' + COMPX_GRID_RIG + '");\n' +
     '  var i = thisLayer.effect("Grid Index")(1);\n' +
-    "  var n = " + total + ";\n";
-  var tail = "\n} catch (err) {\n  value;\n}";
+    "  var n = " + total + ";\n" +
+    "  var ap = rig.transform.anchorPoint;\n";
+  var tail =
+    "\n  var q = [p[0] + ap[0], p[1] + ap[1], p[2] + (ap.length > 2 ? ap[2] : 0)];\n" +
+    "  value.length > 2 ? value + q : value + [q[0], q[1]];\n" +
+    "} catch (err) {\n  value;\n}";
 
   if (mode === "radial") {
     return head +
       '  var r = rig.effect("Radius")(1);\n' +
       '  var a0 = rig.effect("Angle")(1);\n' +
-      "  var ang = degreesToRadians((i / n) * 360 + a0);\n" +
-      "  [Math.cos(ang) * r, Math.sin(ang) * r, 0];" + tail;
+      "  var ang = degreesToRadians((i / n) * 360 + a0 - 90);\n" +
+      "  var p = [Math.cos(ang) * r, Math.sin(ang) * r, 0];" + tail;
   }
 
   if (mode === "sphere") {
     // Fibonacci placement: each point steps one golden angle round the
-    // axis while y walks evenly from pole to pole, which spreads them
-    // without the crowding you get from a lat/long grid.
+    // axis while y walks evenly from pole to pole.
     return head +
       '  var r = rig.effect("Radius")(1);\n' +
       '  var a0 = degreesToRadians(rig.effect("Angle")(1));\n' +
@@ -19642,7 +19664,7 @@ function compxGridExpression(mode, total) {
       "  var y = i * off - 1 + off / 2;\n" +
       "  var rad = Math.sqrt(Math.max(0, 1 - y * y));\n" +
       "  var phi = i * inc + a0;\n" +
-      "  [Math.cos(phi) * rad * r, y * r, Math.sin(phi) * rad * r];" + tail;
+      "  var p = [Math.cos(phi) * rad * r, y * r, Math.sin(phi) * rad * r];" + tail;
   }
 
   return head +
@@ -19652,41 +19674,80 @@ function compxGridExpression(mode, total) {
     "  var rows = Math.ceil(n / cols);\n" +
     "  var col = i % cols;\n" +
     "  var row = Math.floor(i / cols);\n" +
-    "  [ (col - (cols - 1) / 2) * sx, (row - (rows - 1) / 2) * sy, 0 ];" + tail;
+    "  var p = [(col - (cols - 1) / 2) * sx, (row - (rows - 1) / 2) * sy, 0];" + tail;
 }
 
-// 1. BUILD — replicate the selected layer into a live grid
+// Hand a cell back: made copies are deleted, the user's own layers keep
+// living where the grid left them.
+function compxGridRelease(cell) {
+  var note = "";
+  try { note = String(cell.comment || ""); } catch (e) { note = ""; }
+  if (note.indexOf(COMPX_GRID_CELL + " own") === 0) {
+    try {
+      var pos = cell.property("ADBE Transform Group").property("ADBE Position");
+      var at = pos.value;
+      pos.expression = "";
+      pos.setValue(at);
+      var idx = cell.property("ADBE Effect Parade").property("Grid Index");
+      if (idx) idx.remove();
+      cell.comment = "";
+    } catch (eOwn) { compxAuditFallback("HOST_GRID_RELEASE_001", eOwn); }
+  } else {
+    try { cell.remove(); } catch (eDup) { compxAuditFallback("HOST_GRID_RELEASE_002", eDup); }
+  }
+}
+
+// 1. BUILD
+//   one layer selected  -> it is copied into every cell (the original is hidden)
+//   2+ layers selected  -> those layers themselves are laid out, in stack order
+// Building again replaces the previous grid instead of piling a second one on.
 function ae_gridBuild(mode, cols, rows, count, spacing, radius) {
   var undoOpen = false;
   try {
     if (!isAfterEffects()) return toolResult(false, "Grid is available in After Effects only.");
     var comp = getActiveComp();
     if (!comp) return toolResult(false, "Open a composition first.");
-    var layers = getSelectedLayers(comp);
-    if (layers.length === 0) return toolResult(false, "Select the layer to build the grid from.");
 
     var kind = String(mode || "rect");
     if (kind !== "radial" && kind !== "sphere") kind = "rect";
 
+    var picked = [], i, sel = getSelectedLayers(comp);
+    var oldRig = compxGridFindRig(comp);
+    for (i = 0; i < sel.length; i++) {
+      var l = sel[i];
+      if (oldRig && l.index === oldRig.index) continue;
+      if (l instanceof CameraLayer || l instanceof LightLayer) continue;
+      if (String(l.comment || "").indexOf(COMPX_GRID_EFFECTOR) === 0) continue;
+      if (l.locked) return toolResult(false, "“" + l.name + "” is locked. Unlock it or leave it out.");
+      picked.push(l);
+    }
+    if (!picked.length) return toolResult(false, "Select the layer to build the grid from (or 2+ layers to lay out).");
+    picked.sort(function (a, b) { return a.index - b.index; });
+
+    var arrange = picked.length >= 2;
     var nCols = Math.max(1, Math.min(60, Math.round(Number(cols) || 5)));
     var nRows = Math.max(1, Math.min(60, Math.round(Number(rows) || 5)));
     var nCount = Math.max(2, Math.min(COMPX_GRID_MAX, Math.round(Number(count) || 12)));
     var gap = Math.max(1, Number(spacing) || 120);
     var rad = Math.max(1, Number(radius) || 300);
-
-    var total = kind === "rect" ? nCols * nRows : nCount;
+    var total = arrange ? picked.length : (kind === "rect" ? nCols * nRows : nCount);
     if (total > COMPX_GRID_MAX) {
       return toolResult(false, "That is " + total + " cells. Keep it to " + COMPX_GRID_MAX + " or fewer.");
     }
 
-    var source = layers[0];
-    if (source.locked) return toolResult(false, "The selected layer is locked.");
-
     app.beginUndoGroup("Orbit Grid");
     undoOpen = true;
 
-    var rig = compxGridFindRig(comp);
-    if (!rig) {
+    var rig = oldRig;
+    if (rig) {
+      // Rebuild: clear the previous cells, except layers picked again now.
+      var old = compxGridCells(comp, rig), k, keep;
+      for (i = 0; i < old.length; i++) {
+        keep = false;
+        for (k = 0; k < picked.length; k++) if (picked[k].index === old[i].index) { keep = true; break; }
+        if (!keep) compxGridRelease(old[i]);
+      }
+    } else {
       rig = comp.layers.addNull(comp.duration);
       rig.name = COMPX_GRID_RIG;
       rig.property("ADBE Transform Group").property("ADBE Position")
@@ -19696,43 +19757,111 @@ function ae_gridBuild(mode, cols, rows, count, spacing, radius) {
     rig.threeDLayer = true;
     compxMorphTag(rig, "COMPX_GRID_RIG " + COMPX_MORPH_GEN);
 
-    compxGridSlider(rig, "Columns", nCols);
+    compxGridSlider(rig, "Columns", arrange && kind === "rect" ? Math.min(nCols, total) : nCols);
     compxGridSlider(rig, "Spacing X", gap);
     compxGridSlider(rig, "Spacing Y", gap);
     compxGridSlider(rig, "Radius", rad);
     compxGridSlider(rig, "Angle", 0);
 
     var expr = compxGridExpression(kind, total);
-    var made = 0, i;
+    var cells = [];
+    if (arrange) {
+      for (i = 0; i < picked.length; i++) cells.push({ layer: picked[i], tag: COMPX_GRID_CELL + " own" });
+    } else {
+      var source = picked[0];
+      for (i = 0; i < total; i++) {
+        var copy = source.duplicate();
+        copy.name = source.name + " " + (i + 1);
+        cells.push({ layer: copy, tag: COMPX_GRID_CELL + " dup" });
+      }
+      source.enabled = false;
+    }
 
-    for (i = 0; i < total; i++) {
-      var cell = source.duplicate();
-      cell.name = source.name + " " + (i + 1);
+    for (i = 0; i < cells.length; i++) {
+      var cell = cells[i].layer;
       // Sphere places cells on the z axis, so those have to be 3D.
       if (kind === "sphere") cell.threeDLayer = true;
+      // Lay a cell out about its middle, or text sits off its slot.
+      compxCarCenterAnchor(cell, cell.threeDLayer);
       try { cell.parent = rig; } catch (eP) { compxAuditFallback("HOST_GRID_PARENT_001", eP); }
       compxGridSlider(cell, "Grid Index", i);
       var posProp = cell.property("ADBE Transform Group").property("ADBE Position");
       try {
+        if (posProp.dimensionsSeparated) posProp.dimensionsSeparated = false;
+        posProp.expression = "";
+        posProp.setValue(cell.threeDLayer ? [0, 0, 0] : [0, 0]);
         posProp.expression = expr;
       } catch (eE) { compxAuditFallback("HOST_GRID_EXPR_001", eE); }
-      compxMorphTag(cell, COMPX_MORPH_GEN);
-      made++;
+      try { cell.comment = cells[i].tag; } catch (eT) { compxAuditFallback("HOST_GRID_TAG_001", eT); }
     }
-
-    source.enabled = false;
-    compxMorphTag(source, COMPX_MORPH_TAG);
+    compxGridRefreshEffectors(comp, rig);
     try { rig.selected = true; } catch (eS) { compxAuditFallback("HOST_GRID_SEL_001", eS); }
 
     app.endUndoGroup();
     undoOpen = false;
 
-    var label = kind === "rect" ? nCols + " x " + nRows + " grid" : (kind === "sphere" ? "sphere" : "ring") + " of " + total;
+    var shape = kind === "rect" ? "grid" : (kind === "sphere" ? "sphere" : "ring");
+    var label = arrange
+      ? total + " layers laid out as a " + shape
+      : (kind === "rect" ? nCols + " x " + nRows + " grid" : shape + " of " + total);
     return toolResult(true, label + " built. The sliders on " + COMPX_GRID_RIG + " drive it live.");
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_GRID_UNDO_001", eEnd); }
     return toolResult(false, "Grid error: " + String(e));
   }
+}
+
+// Every effector in the comp, by what it drives.
+function compxGridEffectors(comp) {
+  var out = { scale: [], opacity: [] }, i, note;
+  for (i = 1; i <= comp.numLayers; i++) {
+    try { note = String(comp.layer(i).comment || ""); } catch (e) { note = ""; }
+    if (note.indexOf(COMPX_GRID_EFFECTOR + ":opacity") === 0) out.opacity.push(comp.layer(i).name);
+    else if (note.indexOf(COMPX_GRID_EFFECTOR) === 0) out.scale.push(comp.layer(i).name);
+  }
+  return out;
+}
+
+// One expression per property that folds in every effector, so a second or
+// third effector adds to the first instead of being refused.
+function compxGridProxExpression(names, target) {
+  var list = [], i;
+  for (i = 0; i < names.length; i++) list.push('"' + String(names[i]).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"');
+  return "// COMPX_GRID_PROX\n" +
+    "try {\n" +
+    "  var names = [" + list.join(", ") + "];\n" +
+    "  var here = thisLayer.toComp(thisLayer.transform.anchorPoint);\n" +
+    "  var m = 1;\n" +
+    "  for (var j = 0; j < names.length; j++) {\n" +
+    "    try {\n" +
+    "      var e = thisComp.layer(names[j]);\n" +
+    '      var R = Math.max(1, e.effect("Falloff")(1));\n' +
+    '      var S = e.effect("Strength")(1) / 100;\n' +
+    "      var k = Math.max(0, 1 - length(here, e.toComp(e.transform.anchorPoint)) / R);\n" +
+    (target === "opacity" ? "      m *= Math.max(0, 1 - k * S);\n" : "      m *= Math.max(0, 1 + k * S);\n") +
+    "    } catch (gone) {}\n" +
+    "  }\n" +
+    "  value * m;\n" +
+    "} catch (err) {\n  value;\n}";
+}
+
+// Rewrite the proximity expressions on every cell of the rig. A property the
+// user scripted themselves (not ours) is left alone.
+function compxGridRefreshEffectors(comp, rig) {
+  var fx = compxGridEffectors(comp), cells = compxGridCells(comp, rig), driven = 0, i;
+  var jobs = [["ADBE Scale", fx.scale, "scale"], ["ADBE Opacity", fx.opacity, "opacity"]];
+  for (i = 0; i < cells.length; i++) {
+    var tr = cells[i].property("ADBE Transform Group");
+    for (var j = 0; j < jobs.length; j++) {
+      var prop = tr.property(jobs[j][0]);
+      if (!prop) continue;
+      var ours = !prop.expression || String(prop.expression).indexOf("// COMPX_GRID_PROX") === 0;
+      if (!ours) continue;
+      prop.expression = jobs[j][1].length ? compxGridProxExpression(jobs[j][1], jobs[j][2]) : "";
+      if (jobs[j][1].length) driven++;
+    }
+  }
+  return driven;
 }
 
 // 2. PROXIMITY — a null that swells or fades the cells nearest it
@@ -19745,21 +19874,22 @@ function ae_gridProximity(falloff, strength, affect) {
 
     var rig = compxGridFindRig(comp);
     if (!rig) return toolResult(false, "Build a grid first — proximity drives the cells under " + COMPX_GRID_RIG + ".");
+    if (!compxGridCells(comp, rig).length) return toolResult(false, "The grid has no cells. Build it again first.");
 
     var range = Math.max(10, Number(falloff) || 400);
     var power = Math.max(-200, Math.min(200, Number(strength) || 60));
-    var target = String(affect || "scale");
+    var target = String(affect || "scale") === "opacity" ? "opacity" : "scale";
 
     app.beginUndoGroup("Orbit Grid Proximity");
     undoOpen = true;
 
-    // Number the effectors so several can push on the same grid.
-    var n = 1, i, layer;
-    for (i = 1; i <= comp.numLayers; i++) {
-      layer = comp.layer(i);
-      if (layer.name.indexOf("Grid Effector ") === 0) n++;
-    }
-    var name = "Grid Effector " + n;
+    var n = 1, i, name;
+    do {
+      name = "Grid Effector " + n;
+      var taken = false;
+      for (i = 1; i <= comp.numLayers; i++) if (comp.layer(i).name === name) { taken = true; break; }
+      n++;
+    } while (taken);
 
     var effector = comp.layers.addNull(comp.duration);
     effector.name = name;
@@ -19768,48 +19898,15 @@ function ae_gridProximity(falloff, strength, affect) {
             .setValue([comp.width / 2, comp.height / 2, 0]);
     compxGridSlider(effector, "Falloff", range);
     compxGridSlider(effector, "Strength", power);
-    compxMorphTag(effector, COMPX_MORPH_GEN);
+    effector.comment = COMPX_GRID_EFFECTOR + ":" + target;
 
-    // Distance is measured in comp space so it stays right whatever the
-    // rig's own position, rotation or scale happen to be.
-    var head =
-      "// COMPX_GRID_PROX\n" +
-      "try {\n" +
-      '  var e = thisComp.layer("' + name + '");\n' +
-      '  var R = Math.max(1, e.effect("Falloff")(1));\n' +
-      '  var S = e.effect("Strength")(1) / 100;\n' +
-      "  var d = length(thisLayer.toComp(thisLayer.transform.anchorPoint), e.toComp([0,0,0]));\n" +
-      "  var k = Math.max(0, 1 - d / R);\n";
-    var tail = "\n} catch (err) {\n  value;\n}";
-
-    var applied = 0;
-    for (i = 1; i <= comp.numLayers; i++) {
-      layer = comp.layer(i);
-      var parent = null;
-      try { parent = layer.parent; } catch (eP) { parent = null; }
-      if (!parent || parent !== rig) continue;
-
-      var tr = layer.property("ADBE Transform Group");
-      if (target === "opacity") {
-        var op = tr.property("ADBE Opacity");
-        if (op && !op.expressionEnabled) {
-          op.expression = head + "  value * (1 - k * S);" + tail;
-          applied++;
-        }
-      } else {
-        var sc = tr.property("ADBE Scale");
-        if (sc && !sc.expressionEnabled) {
-          sc.expression = head + "  value * (1 + k * S);" + tail;
-          applied++;
-        }
-      }
-    }
+    var driven = compxGridRefreshEffectors(comp, rig);
 
     app.endUndoGroup();
     undoOpen = false;
 
-    if (applied === 0) return toolResult(false, "No free cells to drive — they may already carry an expression on that property.");
-    return toolResult(true, name + " added, driving " + target + " on " + applied + " cells. Move it in the comp to see it work.");
+    if (!driven) return toolResult(false, name + " added, but every cell already has its own " + target + " expression, so nothing is driven.");
+    return toolResult(true, name + " added, driving " + target + " on the grid (with any other effectors). Move it in the comp to see it work.");
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_GRID_PROX_UNDO_001", eEnd); }
     return toolResult(false, "Proximity error: " + String(e));
@@ -20953,7 +21050,9 @@ function ae_flexGridShapeFallback(comp, cols, rows, cellW, cellH, border, opacit
   });
 }
 
-var COMPX_GRID_MAX = 8;
+// Its own name: sharing COMPX_GRID_MAX with the Carousel-tab grid (300)
+// re-declared that one as 8, so every grid over 8 cells was refused.
+var COMPX_GUIDE_GRID_MAX = 8;
 var COMPX_GRID_MARK = "COMPX_GRID_OVERLAY";
 
 function compxGridFindLive(comp) {
@@ -21208,8 +21307,8 @@ function compxGridBuildLive(comp, cfg) {
   var lineW = cfg.border;
   if (lineW <= 0) lineW = Math.max(2, Math.round(comp.width / 640));
   var color = [0.235, 1, 0.373];
-  var cols = Math.max(1, Math.min(COMPX_GRID_MAX, Math.round(Number(cfg.cols) || 3)));
-  var rows = Math.max(1, Math.min(COMPX_GRID_MAX, Math.round(Number(cfg.rows) || 3)));
+  var cols = Math.max(1, Math.min(COMPX_GUIDE_GRID_MAX, Math.round(Number(cfg.cols) || 3)));
+  var rows = Math.max(1, Math.min(COMPX_GUIDE_GRID_MAX, Math.round(Number(cfg.rows) || 3)));
   var box = compxGridLiveBox(comp, cfg, cols, rows);
   var cellW = box.gw / Math.max(1, cols);
   var cellH = box.gh / Math.max(1, rows);
@@ -21246,7 +21345,7 @@ function compxGridBuildLive(comp, cfg) {
   var hg = root.addProperty("ADBE Vector Group"); hg.name = "Grid Lines H";
   var hgContents = hg.property("ADBE Vectors Group");
   var n, strokeV, strokeH, fillV, fillH, vx, hy;
-  for (n = 0; n <= COMPX_GRID_MAX; n++) {
+  for (n = 0; n <= COMPX_GUIDE_GRID_MAX; n++) {
     vx = box.left + box.gw * (n / Math.max(1, cols));
     hy = box.top + box.gh * (n / Math.max(1, rows));
     compxGridAddLivePath(vgContents, "V" + n, compxGridLineExpr("v", n), n > cols ? [[0, 0], [0, 0]] : [[vx, 0], [vx, comp.height]]);
@@ -21277,8 +21376,8 @@ function compxGridBuildLive(comp, cfg) {
   if (Number(cfg.marker) > 0) {
     var my, mx, g, contents, pathG, path, fill, stroke, pos, op, mxX, myY;
     var markerSize = Math.max(2, Number(cfg.marker) || 22);
-    for (my = 0; my <= COMPX_GRID_MAX; my++) {
-      for (mx = 0; mx <= COMPX_GRID_MAX; mx++) {
+    for (my = 0; my <= COMPX_GUIDE_GRID_MAX; my++) {
+      for (mx = 0; mx <= COMPX_GUIDE_GRID_MAX; mx++) {
         g = root.addProperty("ADBE Vector Group");
         g.name = "Marker " + String(my + 1) + "x" + String(mx + 1);
         contents = g.property("ADBE Vectors Group");
