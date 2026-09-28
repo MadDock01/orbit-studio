@@ -36,6 +36,7 @@
 <link href="css/orbit-stagger.css?v=3" rel="stylesheet"/>
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=3" rel="stylesheet"/>
+<link href="css/orbit-arrow.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-sfx.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
@@ -679,6 +680,71 @@
      ═══════════════════════════════════════════════════════════════════ -->
 <div class="app-panel" id="panel-toolkit">
 <div class="tools-scroll">
+<div class="tool-section arrow-card" id="arrowCreatorCard">
+<div class="tool-section-head">
+<div class="tool-section-title">ARROW CREATOR</div>
+<div class="arrow-head-actions">
+<button type="button" class="arrow-icon-btn" id="arrowFlip" aria-pressed="false" title="Flip the bend to the other side"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M17 4v16M3 8l4-4 4 4M13 16l4 4 4-4"/></svg><span>Flip</span></button>
+<button type="button" class="arrow-icon-btn" id="arrowReset" title="Reset every setting"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg></button>
+<span class="tool-help" title="Pick a preset or build your own, then Create Arrow in Comp. The arrow is one shape layer: the line is trimmed by an Arrow Progress slider and the head rides the end of the line, so a draw-on is just two keyframes on that slider. Select an arrow and press Update to rebuild it with the current settings; its keyframes are kept.">?</span>
+</div>
+</div>
+
+<div class="arrow-preview">
+<div class="arrow-preview-bar">
+<span class="arrow-preview-label">LIVE PREVIEW</span>
+<span class="arrow-preview-size" id="arrowPreviewZoom">—</span>
+<button type="button" class="arrow-play" id="arrowPlay" title="Play the draw-on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>Play</span></button>
+</div>
+<div class="arrow-preview-stage" id="arrowPreviewStage">
+<svg id="arrowPreviewSvg" viewBox="-250 -80 500 160" preserveAspectRatio="xMidYMid meet" aria-label="Arrow preview">
+<defs><mask id="arrowPreviewMask" maskUnits="userSpaceOnUse" x="-5000" y="-5000" width="10000" height="10000"><path id="arrowPreviewMaskPath" fill="none" stroke="#fff" stroke-linecap="butt" stroke-linejoin="round"/></mask></defs>
+<g mask="url(#arrowPreviewMask)">
+<path id="arrowPreviewLine" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="arrowPreviewTaper" stroke="currentColor"></g>
+<path id="arrowPreviewHeadStart" stroke-linejoin="round" stroke-linecap="round"/>
+<path id="arrowPreviewHeadEnd" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
+</div>
+</div>
+
+<div class="arrow-label">QUICK PRESETS</div>
+<div class="arrow-presets" id="arrowPresets"></div>
+
+<div class="arrow-label">PATH SHAPE</div>
+<div class="arrow-seg arrow-seg-3" id="arrowShapes" role="group" aria-label="Path shape"></div>
+
+<div class="arrow-label">ARROWHEAD TIP</div>
+<div class="arrow-seg arrow-seg-5" id="arrowHeads" role="group" aria-label="Arrowhead tip"></div>
+
+<div class="arrow-label">STYLE</div>
+<div class="arrow-fields">
+<label class="arrow-field arrow-field-color" title="Line and head colour"><span>COLOR</span><input type="color" id="arrowColor" value="#35c8ff"/></label>
+<label class="arrow-field" title="Line thickness in pixels"><span>WIDTH</span><input type="number" id="arrowWidth" min="1" max="200" step="1" value="8"/></label>
+<label class="arrow-field" title="Arrowhead size in pixels"><span>HEAD</span><input type="number" id="arrowHeadSize" min="4" max="600" step="1" value="34"/></label>
+<label class="arrow-field" title="Distance from tail to tip in pixels"><span>LENGTH</span><input type="number" id="arrowLength" min="40" max="4000" step="10" value="420"/></label>
+<label class="arrow-field" title="How far the path bends away from a straight line, in percent"><span>BEND</span><input type="number" id="arrowBend" min="0" max="100" step="1" value="35"/></label>
+</div>
+<div class="arrow-toggles">
+<label class="arrow-check" title="A head at both ends"><input type="checkbox" id="arrowDouble"/><span>Double</span></label>
+<label class="arrow-check" title="Dashed line"><input type="checkbox" id="arrowDashed"/><span>Dashed</span></label>
+<label class="arrow-check" title="Line starts thin and swells toward the head"><input type="checkbox" id="arrowTaper"/><span>Taper</span></label>
+<label class="arrow-check" title="Adds a Glow effect to the layer"><input type="checkbox" id="arrowNeon"/><span>Neon glow</span></label>
+</div>
+
+<div class="arrow-anim">
+<label class="arrow-check" title="Keyframe Arrow Progress 0 to 100 from the playhead"><input type="checkbox" id="arrowAnimate" checked/><span>Draw-on animation</span></label>
+<label class="arrow-field arrow-field-inline" title="Length of the draw-on in frames"><span>FRAMES</span><input type="number" id="arrowFrames" min="1" max="600" step="1" value="20"/></label>
+</div>
+
+<div class="arrow-actions">
+<button type="button" class="arrow-create" id="arrowCreate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c4-9 9-12 15-12"/><path d="M14 4l5 2-2 5"/></svg>CREATE ARROW IN COMP</button>
+<button type="button" class="arrow-update" id="arrowUpdate" title="Rebuild the selected arrow with these settings; its keyframes are kept"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>Update</button>
+</div>
+<div class="arrow-status" id="arrowStatus" aria-live="polite"></div>
+</div>
+
 <div class="tool-dash-row tools-project-row">
 <div class="tool-section" id="toolkitShapeSourceSection">
 <div class="tool-section-head">
@@ -2051,12 +2117,13 @@
 <script src="js/diagnostics.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/compx-license.js?v=65"></script>
-<script src="js/compx-loader.js?v=118"></script>
+<script src="js/compx-loader.js?v=119"></script>
 <script src="js/license-gate.js"></script>
 <script src="js/orbit-global-dock.js?v=2"></script>
 <script src="js/orbit-library-ui.js?v=1"></script>
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
+<script src="js/orbit-arrow.js?v=1"></script>
 <script src="js/orbit-sfx.js?v=2"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>

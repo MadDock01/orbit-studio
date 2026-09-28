@@ -23664,3 +23664,203 @@ function ae_carouselState() {
     return toolResult(false, "Carousel state error: " + String(e));
   }
 }
+
+// ============================================================
+// ARROW CREATOR (Toolkit tab)
+// The panel does the geometry: it sends the line as vertices plus
+// in/out tangents, and each head as a small path drawn pointing +X
+// with its tip at the origin. This side only builds the layer:
+//
+//   Arrow Line   path > trim > stroke       (trim end follows Progress)
+//   Head End     path > fill or stroke      (rides the trim end)
+//   Head Start   same, reversed             (double arrows only)
+//
+// One "Arrow Progress" slider drives all of it, so a draw-on is two
+// keyframes on one property. The heads use pointOnPath/tangentOnPath,
+// so they stay on the line whatever the user does to the path later.
+// `inset` is how far (percent of the line) the line stops short of a
+// head, so a thick stroke never pokes out through the tip.
+// ============================================================
+var COMPX_ARROW_TAG = "COMPX_ARROW";
+
+function compxArrowShape(pts, inT, outT, closed) {
+  var s = new Shape();
+  s.vertices = pts;
+  s.inTangents = inT;
+  s.outTangents = outT;
+  s.closed = !!closed;
+  return s;
+}
+
+function compxArrowGroup(contents, name) {
+  var g = contents.addProperty("ADBE Vector Group");
+  g.name = name;
+  return g;
+}
+
+function compxArrowPath(group, name, shape) {
+  var p = group.property("ADBE Vectors Group").addProperty("ADBE Vector Shape - Group");
+  p.name = name;
+  p.property("ADBE Vector Shape").setValue(shape);
+  return p;
+}
+
+function compxArrowStroke(group, color, width, cap) {
+  var s = group.property("ADBE Vectors Group").addProperty("ADBE Vector Graphic - Stroke");
+  s.property("ADBE Vector Stroke Color").setValue(color);
+  s.property("ADBE Vector Stroke Width").setValue(width);
+  try { s.property("ADBE Vector Stroke Line Cap").setValue(cap || 2); } catch (e0) { compxAuditFallback("HOST_ARROW_CAP_001", e0); }
+  try { s.property("ADBE Vector Stroke Line Join").setValue(2); } catch (e1) { compxAuditFallback("HOST_ARROW_JOIN_001", e1); }
+  return s;
+}
+
+function compxArrowFill(group, color) {
+  var f = group.property("ADBE Vectors Group").addProperty("ADBE Vector Graphic - Fill");
+  f.property("ADBE Vector Fill Color").setValue(color);
+  return f;
+}
+
+function compxArrowNum(v, def, lo, hi) {
+  var n = Number(v);
+  if (!isFinite(n)) n = def;
+  return Math.max(lo, Math.min(hi, n));
+}
+
+function compxArrowPts(list) {
+  var out = [];
+  for (var i = 0; i < list.length; i++) out.push([Number(list[i][0]) || 0, Number(list[i][1]) || 0]);
+  return out;
+}
+
+function compxArrowHead(contents, name, head, color, width, atStart, inset) {
+  var g = compxArrowGroup(contents, name);
+  compxArrowPath(g, "Head Path", compxArrowShape(compxArrowPts(head.pts), compxArrowPts(head.inT), compxArrowPts(head.outT), head.closed));
+  if (head.filled) compxArrowFill(g, color);
+  else compxArrowStroke(g, color, width, 2);
+  var xf = g.property("ADBE Vector Transform Group");
+  var pathRef = 'content("Arrow Line").content("Line Path").path';
+  var prog = 'clamp(effect("Arrow Progress")(1), 0, 100)';
+  xf.property("ADBE Vector Position").expression = atStart
+    ? pathRef + ".pointOnPath(0);"
+    : "var P = " + pathRef + ";\nP.pointOnPath(" + prog + " / 100);";
+  xf.property("ADBE Vector Rotation").expression = atStart
+    ? "var d = " + pathRef + ".tangentOnPath(0.001);\nradiansToDegrees(Math.atan2(d[1], d[0])) + 180;"
+    : "var t = Math.max(0.001, " + prog + " / 100);\nvar d = " + pathRef + ".tangentOnPath(t);\nradiansToDegrees(Math.atan2(d[1], d[0]));";
+  // Heads grow in over the first stretch of the draw so a 0% arrow is empty.
+  xf.property("ADBE Vector Scale").expression =
+    "var s = linear(" + prog + ", 0, " + Math.max(0.5, inset * 1.5).toFixed(3) + ", 0, 100);\n[s, s];";
+  return g;
+}
+
+function compxArrowIsOurs(layer) {
+  return !!layer && String(layer.comment || "").indexOf(COMPX_ARROW_TAG) === 0;
+}
+
+function compxArrowFill3(c) {
+  if (!c || c.length < 3) return [1, 1, 1];
+  return [compxArrowNum(c[0], 1, 0, 1), compxArrowNum(c[1], 1, 0, 1), compxArrowNum(c[2], 1, 0, 1)];
+}
+
+function ae_arrowBuild(payload) {
+  var undoOpen = false;
+  try {
+    var comp = getActiveComp();
+    if (!comp) return toolResult(false, "Open a composition first.");
+    var cfg = JSON.parse(String(payload || "{}"));
+    if (!cfg.line || !cfg.line.pts || cfg.line.pts.length < 2) return toolResult(false, "The arrow path is empty.");
+    var update = cfg.mode === "update";
+    var layer = null, i;
+
+    if (update) {
+      var sel = getSelectedLayers(comp);
+      for (i = 0; i < sel.length; i++) if (compxArrowIsOurs(sel[i])) { layer = sel[i]; break; }
+      if (!layer) return toolResult(false, "Select an arrow made by Arrow Creator, then press Update.");
+    }
+
+    var color = compxArrowFill3(cfg.color);
+    var width = compxArrowNum(cfg.width, 8, 0.5, 400);
+    var inset = compxArrowNum(cfg.inset, 0, 0, 40);
+    var startInset = compxArrowNum(cfg.startInset, 0, 0, 40);
+
+    app.beginUndoGroup(update ? "Update Arrow" : "Create Arrow");
+    undoOpen = true;
+
+    if (!layer) {
+      layer = comp.layers.addShape();
+      layer.name = cfg.name ? String(cfg.name) : "Arrow";
+      layer.property("ADBE Transform Group").property("ADBE Position").setValue([comp.width / 2, comp.height / 2]);
+      try { layer.startTime = 0; layer.inPoint = comp.time; } catch (tErr) { compxAuditFallback("HOST_ARROW_INPOINT_001", tErr); }
+    }
+    layer.comment = COMPX_ARROW_TAG;
+
+    // Rebuild the contents from scratch; the layer, its transform and any
+    // keyframes on Arrow Progress survive an Update.
+    var contents = layer.property("ADBE Root Vectors Group");
+    for (i = contents.numProperties; i >= 1; i--) contents.property(i).remove();
+
+    var effects = layer.property("ADBE Effect Parade");
+    var progress = effects.property("Arrow Progress");
+    if (!progress) {
+      progress = effects.addProperty("ADBE Slider Control");
+      progress.name = "Arrow Progress";
+      progress.property(1).setValue(100);
+    }
+
+    // ---- line ----
+    var line = compxArrowGroup(contents, "Arrow Line");
+    var L = cfg.line;
+    compxArrowPath(line, "Line Path", compxArrowShape(compxArrowPts(L.pts), compxArrowPts(L.inT), compxArrowPts(L.outT), false));
+    var trim = line.property("ADBE Vectors Group").addProperty("ADBE Vector Filter - Trim");
+    trim.name = "Line Trim";
+    trim.property("ADBE Vector Trim End").expression =
+      "Math.max(0, Math.min(100, effect(\"Arrow Progress\")(1) - " + inset.toFixed(3) + "));";
+    if (startInset > 0) trim.property("ADBE Vector Trim Start").setValue(Math.min(startInset, 99));
+    var stroke = compxArrowStroke(line, color, width, cfg.cap === "butt" ? 1 : 2);
+    if (cfg.dashed) {
+      try { ae_shapeAddDash(stroke, Math.max(4, width * 2.2), Math.max(4, width * 1.6)); } catch (dErr) { compxAuditFallback("HOST_ARROW_DASH_001", dErr); }
+    }
+    if (cfg.taper) {
+      try { ae_shapeApplyTaperValues(stroke, { startWidth: 0, endWidth: 100, startLength: 55, endLength: 0, ease: 50 }); } catch (tpErr) { compxAuditFallback("HOST_ARROW_TAPER_001", tpErr); }
+    }
+
+    // ---- heads ----
+    if (cfg.head && cfg.head.pts && cfg.head.pts.length >= 2) {
+      compxArrowHead(contents, "Head End", cfg.head, color, width, false, inset);
+      if (cfg.double) compxArrowHead(contents, "Head Start", cfg.head, color, width, true, inset);
+    }
+    // Heads draw above the line.
+    try { line.moveTo(contents.numProperties); } catch (mErr) { compxAuditFallback("HOST_ARROW_ORDER_001", mErr); }
+
+    // ---- neon ----
+    var glow = effects.property("Arrow Glow");
+    if (cfg.neon && !glow) {
+      try { glow = effects.addProperty("ADBE Glo2"); glow.name = "Arrow Glow"; } catch (gErr) { compxAuditFallback("HOST_ARROW_GLOW_001", gErr); }
+    } else if (!cfg.neon && glow) {
+      glow.remove();
+    }
+
+    // ---- draw-on ----
+    var slider = progress.property(1);
+    if (cfg.animate) {
+      while (slider.numKeys > 0) slider.removeKey(1);
+      var frames = compxArrowNum(cfg.frames, 20, 1, 600);
+      var t0 = comp.time, t1 = comp.time + frames * comp.frameDuration;
+      slider.setValueAtTime(t0, 0);
+      slider.setValueAtTime(t1, 100);
+      var easeIn = [new KeyframeEase(0, 75)], easeOut = [new KeyframeEase(0, 75)];
+      for (i = 1; i <= slider.numKeys; i++) {
+        try { slider.setTemporalEaseAtKey(i, easeIn, easeOut); } catch (eErr) { compxAuditFallback("HOST_ARROW_EASE_001", eErr); }
+      }
+    } else if (!update) {
+      slider.setValue(100);
+    }
+
+    layer.selected = true;
+    app.endUndoGroup();
+    undoOpen = false;
+    return toolResult(true, update ? "Arrow updated." : ("Arrow created" + (cfg.animate ? " with a " + Math.round(compxArrowNum(cfg.frames, 20, 1, 600)) + "-frame draw-on." : ".")));
+  } catch (e) {
+    if (undoOpen) { try { app.endUndoGroup(); } catch (ue) { compxAuditFallback("HOST_ARROW_UNDO_001", ue); } }
+    return toolResult(false, "Arrow Creator: " + String(e));
+  }
+}
