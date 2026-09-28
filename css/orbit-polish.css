@@ -1,0 +1,314 @@
+/* ============================================================
+   ORBIT POLISH — loaded last
+
+   Small fixes found by rendering every tab at 900x700 and 380x760,
+   plus the styling for js/orbit-polish.js (Quick Find, Interface
+   size, logo fallback).
+   ============================================================ */
+
+/* ---- Library: the shelf row carries three shelves now ---- */
+#app #panel-sfx > .asset-type-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* ---- Library TEXT: the 44px box under the cards was a placeholder
+   for a dock that lives at the bottom of the panel now. ---- */
+#app #panel-sfx > #textAnimView::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* ---- Rail: on short panels the tabs no longer fit and Settings /
+   Logout fell off the bottom. Tighter tabs keep them on screen. ---- */
+@media (max-height: 780px) {
+  #app #appTabsRow {
+    gap: 1px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+  #app #appTabsRow .app-tab,
+  #app #appTabsRow .rail-account {
+    height: 36px !important;
+    min-height: 36px !important;
+    gap: 2px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+}
+@media (max-height: 640px) {
+  #app #appTabsRow .app-tab,
+  #app #appTabsRow .rail-account {
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+  #app #appTabsRow .orbit-tab-label,
+  #app #appTabsRow .rail-account-label {
+    display: none !important;
+  }
+}
+
+/* ---- Native checkboxes, radios and sliders in the theme colour ---- */
+#app input[type="checkbox"],
+#app input[type="radio"],
+#app input[type="range"] {
+  accent-color: #3cff5f;
+}
+
+/* ---- Logo fallback (assets/compx-mark.png missing) ---- */
+.orbit-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 7px;
+  background: radial-gradient(circle at 35% 30%, #1d3a26 0%, #0a120c 70%);
+  box-shadow: inset 0 0 0 1px #2a4a34, 0 0 10px rgba(60, 255, 95, 0.18);
+}
+.orbit-logo-fallback svg {
+  width: 72%;
+  height: 72%;
+  fill: none;
+  stroke: #3cff5f;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.orbit-logo-fallback svg circle.core {
+  fill: #3cff5f;
+  stroke: none;
+}
+
+/* ---- Quick Find button in the title bar ---- */
+#app .orbit-find-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  margin: 0 10px 0 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid #22322a !important;
+  border-radius: 7px !important;
+  background: rgba(8, 14, 10, 0.85) !important;
+  color: #8ba295 !important;
+  font: 500 10px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+#app .orbit-find-btn:hover,
+#app .orbit-find-btn:focus-visible {
+  border-color: #3cff5f !important;
+  color: #eafff0 !important;
+  outline: none !important;
+}
+#app .orbit-find-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+#app .orbit-find-btn kbd {
+  padding: 1px 4px;
+  border: 1px solid #22322a;
+  border-radius: 4px;
+  color: #6d7f74;
+  font: 600 8px/1.2 "Segoe UI", sans-serif;
+}
+@media (max-width: 520px) {
+  #app .orbit-find-btn span,
+  #app .orbit-find-btn kbd {
+    display: none !important;
+  }
+  #app .orbit-find-btn {
+    width: 26px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+}
+
+/* ---- Quick Find palette ---- */
+.orbit-find {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 56px 12px 12px;
+  background: rgba(2, 5, 3, 0.62);
+}
+.orbit-find[hidden] {
+  display: none;
+}
+.orbit-find-box {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100%);
+  max-height: min(460px, calc(100vh - 80px));
+  border: 1px solid #22322a;
+  border-radius: 12px;
+  background: #0a110c;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(60, 255, 95, 0.06);
+  overflow: hidden;
+}
+.orbit-find-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #1b2720;
+}
+.orbit-find-head svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: #3cff5f;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.orbit-find-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #eafff0;
+  font: 500 13px/1 "Segoe UI", sans-serif;
+  outline: none;
+}
+.orbit-find-input::placeholder {
+  color: #6d7f74;
+}
+.orbit-find-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 5px;
+  overflow-y: auto;
+  list-style: none;
+}
+.orbit-find-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.orbit-find-item b {
+  overflow: hidden;
+  color: #eafff0;
+  font: 600 11px/1.25 "Segoe UI", sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.orbit-find-item b mark {
+  background: none;
+  color: #3cff5f;
+}
+.orbit-find-item small {
+  grid-column: 1;
+  overflow: hidden;
+  color: #6d7f74;
+  font: 500 9.5px/1.3 "Segoe UI", sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.orbit-find-item em {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 2px 6px;
+  border: 1px solid #22322a;
+  border-radius: 5px;
+  color: #8ba295;
+  font: 600 9px/1.2 "Segoe UI", sans-serif;
+  font-style: normal;
+  white-space: nowrap;
+}
+.orbit-find-item.is-on {
+  background: #13221a;
+  box-shadow: inset 2px 0 0 #3cff5f;
+}
+.orbit-find-empty {
+  padding: 18px 10px;
+  color: #6d7f74;
+  font: 500 11px/1.4 "Segoe UI", sans-serif;
+  text-align: center;
+}
+.orbit-find-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 7px 12px;
+  border-top: 1px solid #1b2720;
+  color: #6d7f74;
+  font: 500 9px/1.3 "Segoe UI", sans-serif;
+}
+.orbit-find-foot kbd {
+  padding: 0 4px;
+  border: 1px solid #22322a;
+  border-radius: 3px;
+  color: #8ba295;
+  font: 600 8.5px/1.4 "Segoe UI", sans-serif;
+}
+
+/* The control Quick Find took you to */
+.orbit-find-flash {
+  outline: 2px solid #3cff5f !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(60, 255, 95, 0.18), 0 0 16px rgba(60, 255, 95, 0.35) !important;
+  transition: outline-color 0.2s ease !important;
+}
+
+/* ---- Interface size card (Plugin Settings) ---- */
+.orbit-uiscale-card {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid #22322a;
+  border-radius: 10px;
+  background: #0b120d;
+}
+.orbit-uiscale-card h4 {
+  margin: 0 0 3px;
+  color: #eafff0;
+  font: 700 11px/1.3 "Segoe UI", sans-serif;
+  letter-spacing: 0.04em;
+}
+.orbit-uiscale-card p {
+  margin: 0 0 8px;
+  color: #6d7f74;
+  font: 500 9.5px/1.4 "Segoe UI", sans-serif;
+}
+.orbit-uiscale-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+.orbit-uiscale-row button {
+  height: 26px;
+  min-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #22322a;
+  border-radius: 6px;
+  background: #070c08;
+  color: #8ba295;
+  font: 600 10px/1 "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+.orbit-uiscale-row button:hover {
+  color: #eafff0;
+  border-color: #2f4a39;
+}
+.orbit-uiscale-row button[aria-pressed="true"] {
+  border-color: #3cff5f;
+  background: #12251a;
+  color: #eafff0;
+}

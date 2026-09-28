@@ -269,6 +269,7 @@
       filters: document.getElementById("sfxdFilters"),
       favCount: document.getElementById("sfxdFavCount"),
       density: document.getElementById("sfxdDensity"),
+      viewToggle: document.getElementById("sfxdViewToggle"),
       labelFilter: document.getElementById("sfxdLabelFilter"),
       resizer: document.getElementById("sfxdResizer"),
       body: panel.querySelector(".sfxd-body"),
@@ -344,6 +345,7 @@
     var sortBy = read("sort", "relevance");
     var query = "";
     var compact = read("compact", "0") === "1";
+    var viewMode = read("view", "list") === "cards" ? "cards" : "list";   // result layout
     var current = null;                             // the selected item
     var buffer = null;                              // its decoded AudioBuffer
     var selA = 0, selB = 1;                         // segment, 0..1 of the file
@@ -685,6 +687,7 @@
       }
 
       el.results.classList.toggle("is-compact", compact);
+      el.results.classList.toggle("is-cards", viewMode === "cards");
 
       if (!view.length && cloud) {
         el.results.innerHTML = '<div class="sfxd-empty">' + escapeHtml(
@@ -1008,6 +1011,30 @@
 
     if (el.sort) el.sort.addEventListener("change", function () {
       sortBy = el.sort.value; write("sort", sortBy); render();
+    });
+
+    function paintViewToggle() {
+      if (!el.viewToggle) return;
+      var btns = el.viewToggle.querySelectorAll("[data-sfxd-view]");
+      for (var i = 0; i < btns.length; i++) {
+        var on = btns[i].getAttribute("data-sfxd-view") === viewMode;
+        btns[i].classList.toggle("is-on", on);
+        btns[i].setAttribute("aria-pressed", on ? "true" : "false");
+      }
+      if (el.density) el.density.title = viewMode === "cards"
+        ? "Switch between large and small cards"
+        : "Switch between comfortable and compact rows";
+    }
+    if (el.viewToggle) el.viewToggle.addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-sfxd-view]");
+      if (!b) return;
+      var next = b.getAttribute("data-sfxd-view");
+      if (next === viewMode) return;
+      viewMode = next;
+      write("view", viewMode);
+      paintViewToggle();
+      paintResults();
+      if (el.results) el.results.scrollTop = 0;
     });
 
     if (el.density) el.density.addEventListener("click", function () {
@@ -2096,6 +2123,7 @@
     if (el.search) el.search.value = tabs[tabIdx].q || "";
     filter = tabs[tabIdx].filter || filter;
     paintTabs();
+    paintViewToggle();
     paintSearchMode();
     paintLockPitch();
     paintLabelFilter();
