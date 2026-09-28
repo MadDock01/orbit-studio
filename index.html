@@ -41,7 +41,7 @@
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-guide.css?v=2" rel="stylesheet"/>
-<link href="css/orbit-polish.css?v=5" rel="stylesheet"/>
+<link href="css/orbit-polish.css?v=6" rel="stylesheet"/>
 </head>
 <body>
 
@@ -214,24 +214,14 @@
 </div>
 
 <span class="gdock-sep" aria-hidden="true"></span>
-
-<div class="gdock-fx">
-<button type="button" class="gdock-fx-btn" id="orbitDockFxBtn" data-orbit-icon="bolt" title="Quick FX — apply a common effect to the selection" aria-haspopup="true" aria-expanded="false" aria-controls="orbitDockFxFlyout"><span class="gdock-fx-tag">FX</span></button>
+<div class="tool-grid icon-only gdock-flip-grid gdock-key-grid">
+<button class="tool-btn" type="button" id="orbitDockReverseKeys" data-orbit-icon="reverse-keys" title="Reverse Keyframes — select two or more keyframes on a property; their order flips, with easing and path handles following">Reverse Keys</button>
 </div>
 
 </div>
 <button type="button" class="gdock-toggle" id="orbitGlobalDockToggle" title="Collapse quick dock" aria-expanded="true" aria-controls="orbitGlobalDockInner">
 <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 10 8 5 13 10"></polyline></svg>
 </button>
-<div class="gdock-fx-flyout" id="orbitDockFxFlyout" role="menu" aria-label="Quick FX" hidden>
-<div class="tool-grid icon-only gdock-fx-grid">
-<button class="tool-btn" role="menuitem" data-arg="ADBE Ramp" data-tool="effect" title="Gradient Ramp" data-orbit-icon="gradient">Gradient</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Glo2" data-tool="effect" title="Glow" data-orbit-icon="glow">Glow</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Fill" data-tool="effect" title="Fill" data-orbit-icon="fill">Fill</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Tint" data-tool="effect" title="Tint" data-orbit-icon="tint">Tint</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Gaussian Blur 2" data-tool="effect" title="Gaussian Blur" data-orbit-icon="blur">Blur</button>
-</div>
-</div>
 </div>
 <!-- /Global Dock -->
 
@@ -285,7 +275,7 @@
 <span class="tool-help" title="Quick layer, effect, and shape creation shortcuts.">?</span>
 </div>
 <!-- QUICK ACTIONS moved to the bottom global dock (#orbitBottomDock). -->
-<!-- EFFECTS BROWSER moved to the global dock (#orbitGlobalDock) as QUICK FX. -->
+<!-- QUICK FX lives under TEXT / MASK TOOLS below. -->
 <div class="tool-subgroup subgroup-timeline">
 <div class="tool-subgroup-title">TIMELINE UTILITIES</div>
 <div class="tool-grid tool-grid-4">
@@ -305,6 +295,14 @@
 <button class="tool-btn" data-tool="capitalize" title="Uppercase text layer content" data-orbit-icon="uppercase">Uppercase</button>
 <button class="tool-btn" id="btnExplodeTextPro" title="Split the selected text layer into one animated layer per character" data-orbit-icon="explode">Text Explode</button>
 <button class="tool-btn" id="btnGuideGridOpen" type="button" aria-haspopup="dialog" aria-controls="guideGridModal" aria-expanded="false" title="Guide Grid — draw a layout grid with markers as a guide layer" data-orbit-icon="grid">Guide Grid</button>
+</div>
+<div class="tool-subgroup-title tools-quickfx-title">QUICK FX</div>
+<div class="tool-grid tool-grid-5 tools-quickfx-grid">
+<button class="tool-btn" data-arg="ADBE Ramp" data-tool="effect" title="Add Gradient Ramp to the selected layer(s)" data-orbit-icon="gradient">Gradient</button>
+<button class="tool-btn" data-arg="ADBE Glo2" data-tool="effect" title="Add Glow to the selected layer(s)" data-orbit-icon="glow">Glow</button>
+<button class="tool-btn" data-arg="ADBE Fill" data-tool="effect" title="Add Fill to the selected layer(s)" data-orbit-icon="fill">Fill</button>
+<button class="tool-btn" data-arg="ADBE Tint" data-tool="effect" title="Add Tint to the selected layer(s)" data-orbit-icon="tint">Tint</button>
+<button class="tool-btn" data-arg="ADBE Gaussian Blur 2" data-tool="effect" title="Add Gaussian Blur to the selected layer(s)" data-orbit-icon="blur">Blur</button>
 </div>
 </div>
 </div>
@@ -2055,7 +2053,7 @@
 <script src="js/compx-license.js?v=65"></script>
 <script src="js/compx-loader.js?v=118"></script>
 <script src="js/license-gate.js"></script>
-<script src="js/orbit-global-dock.js?v=1"></script>
+<script src="js/orbit-global-dock.js?v=2"></script>
 <script src="js/orbit-library-ui.js?v=1"></script>
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
