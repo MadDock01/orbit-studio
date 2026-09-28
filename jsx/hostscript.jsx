@@ -14800,7 +14800,9 @@ function compxSimpleSrt_applyTextFx(layer, presetFile, start, end) {
   // Supply it per cue: their fallback uses absolute second 1 and breaks later cues.
   var markers = layer.property("ADBE Marker");
   while (markers.numKeys > 0) markers.removeKey(markers.numKeys);
-  markers.setValueAtTime(start + Math.min(0.45, (end - start) * 0.35), new MarkerValue("In"));
+  // At the cue start: the words animate in as they are spoken. It used to sit
+  // up to 0.45s later, so every caption lagged the voice.
+  markers.setValueAtTime(start, new MarkerValue("In"));
 }
 
 function ae_createSimpleSrtCaptions(dataStr) {
@@ -14839,23 +14841,43 @@ function ae_createSimpleSrtCaptions(dataStr) {
     originalTime = comp.time;
     originalSelection = comp.selectedLayers;
     var created = 0, ignored = 0;
+    // The animation is optional: an empty preset name means plain captions.
     var animationPresetName = String(data.textAnimationPreset || "");
     var animationPresetLabel = String(data.textAnimationName || animationPresetName || "Text Animation");
-    if (!/^[^\/\\:]+\.ffx$/i.test(animationPresetName) || animationPresetName.indexOf("..") >= 0) {
-      return toolResult(false, "Select a valid IN text animation before creating captions.");
+    var animationPresetFile = null;
+    if (animationPresetName) {
+      if (!/^[^\/\\:]+\.ffx$/i.test(animationPresetName) || animationPresetName.indexOf("..") >= 0) {
+        return toolResult(false, "That text animation is not valid. Pick another one, or None.");
+      }
+      animationPresetFile = new File(compxCopyPasta_joinPath(compxCopyPasta_getExtensionRoot(), "presets", "text-animations", animationPresetName));
+      if (!animationPresetFile.exists) return toolResult(false, "Caption animation preset is missing: " + animationPresetName);
     }
-    var animationPresetFile = new File(compxCopyPasta_joinPath(compxCopyPasta_getExtensionRoot(), "presets", "text-animations", animationPresetName));
-    if (!animationPresetFile.exists) return toolResult(false, "Caption animation preset is missing: " + animationPresetName);
+
+    // SRT 00:00 is the start of the media. With "selected clip", captions
+    // follow that clip wherever it sits in the comp (and its time stretch).
+    var timeOffset = 0, timeScale = 1, timingNote = "";
+    if (String(data.timingBase || "comp") === "layer") {
+      var clip = null;
+      for (var sel = 0; sel < originalSelection.length; sel++) {
+        var candidate = originalSelection[sel];
+        if (candidate instanceof AVLayer && candidate.source && !(candidate instanceof TextLayer)) { clip = candidate; break; }
+      }
+      if (!clip) return toolResult(false, "Select the video/audio clip the SRT belongs to, or set \"Place captions from\" to the start of the comp.");
+      timeOffset = Number(clip.startTime) || 0;
+      timeScale = (Number(clip.stretch) || 100) / 100;
+      timingNote = " Synced to " + clip.name + ".";
+    }
 
     app.beginUndoGroup("Create SRT Captions");
     undoStarted = true;
 
+    var toComp = function (t) { return timeOffset + (Number(t) || 0) * timeScale; };
     for (var i = 0; i < cues.length; i++) {
       var cue = cues[i] || {};
-      var start = Math.max(0, Number(cue.start) || 0);
+      var start = Math.max(0, toComp(cue.start));
       if (start >= comp.duration) { ignored++; continue; }
-      var nextStart = i + 1 < cues.length ? Math.max(0, Number(cues[i + 1].start) || comp.duration) : comp.duration;
-      var requestedEnd = Number(cue.end);
+      var nextStart = i + 1 < cues.length ? Math.max(0, toComp(cues[i + 1].start)) : comp.duration;
+      var requestedEnd = toComp(cue.end);
       if (!(requestedEnd > start)) requestedEnd = start + 0.5;
       var end = Math.min(comp.duration, requestedEnd, nextStart);
       if (!(end > start)) end = Math.min(comp.duration, start + Math.max(comp.frameDuration, 0.08));
@@ -14909,12 +14931,14 @@ function ae_createSimpleSrtCaptions(dataStr) {
       transform.property("ADBE Anchor Point").setValue([rect.left + rect.width / 2, rect.top + rect.height / 2]);
       var finalPosition = [comp.width / 2, comp.height * vertical];
       transform.property("ADBE Position").setValue(finalPosition);
-      try {
-        compxSimpleSrt_applyTextFx(layer, animationPresetFile, start, end);
-      } catch (animationPresetError) {
-        throw new Error("Could not apply " + animationPresetLabel + " to caption " + (created + 1) + ": " + String(animationPresetError));
+      if (animationPresetFile) {
+        try {
+          compxSimpleSrt_applyTextFx(layer, animationPresetFile, start, end);
+        } catch (animationPresetError) {
+          throw new Error("Could not apply " + animationPresetLabel + " to caption " + (created + 1) + ": " + String(animationPresetError));
+        }
       }
-      if (data.font) {
+      if (animationPresetFile && data.font) {
         try {
           var appliedDoc = textProperty.value;
           appliedDoc.text = displayedText;
@@ -14940,7 +14964,7 @@ function ae_createSimpleSrtCaptions(dataStr) {
     }
     app.endUndoGroup();
     undoStarted = false;
-    return toolResult(created > 0, created + " SRT caption layer" + (created === 1 ? "" : "s") + " created directly in " + comp.name + (animationPresetFile ? " with " + animationPresetLabel : "") + "." + (ignored ? " " + ignored + " invalid/out-of-range cue(s) ignored." : ""));
+    return toolResult(created > 0, created + " SRT caption layer" + (created === 1 ? "" : "s") + " created directly in " + comp.name + (animationPresetFile ? " with " + animationPresetLabel : " (no animation)") + "." + timingNote + (ignored ? " " + ignored + " invalid/out-of-range cue(s) ignored." : ""));
   } catch (error) {
     for (var rollback = pendingLayers.length - 1; rollback >= 0; rollback--) {
       try { pendingLayers[rollback].remove(); } catch (rollbackError) { compxAuditFallback("HOST_SIMPLE_SRT_ROLLBACK_001", rollbackError); }

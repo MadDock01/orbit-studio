@@ -312,3 +312,156 @@
   background: #12251a;
   color: #eafff0;
 }
+
+/* ============================================================
+   Caption Studio: step-by-step flow
+   01 Source > 02 Timing > 03 Animation (optional) > 04 Text
+   ============================================================ */
+#flexAutoCaptions .cx-simple-step-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 8px;
+}
+#flexAutoCaptions .cx-simple-step-title b {
+  color: #eafff0;
+  font: 700 12px/1.25 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-step-title small {
+  color: #8ba295;
+  font: 500 10px/1.35 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 10px;
+}
+#flexAutoCaptions .cx-simple-step-nav .tool-btn {
+  flex: 0 1 auto;
+  min-width: 90px;
+  font-size: 10px !important;
+}
+#flexAutoCaptions .cx-simple-step-nav .tool-btn.primary {
+  margin-left: auto;
+}
+#flexAutoCaptions .cx-cap-stepbar-step small {
+  white-space: nowrap;
+}
+
+/* Timing report and cue list */
+#flexAutoCaptions .cx-srt-timing {
+  margin: 8px 0 6px;
+  padding: 7px 9px;
+  border: 1px solid #22322a;
+  border-radius: 7px;
+  font: 500 10px/1.4 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-srt-timing:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-srt-timing.is-ok {
+  color: #9ff5b3;
+  background: rgba(60, 255, 95, 0.06);
+}
+#flexAutoCaptions .cx-srt-timing.has-warn {
+  color: #ffd98a;
+  border-color: rgba(255, 193, 77, 0.35);
+  background: rgba(255, 193, 77, 0.07);
+}
+#flexAutoCaptions .cx-srt-cues {
+  max-height: 180px;
+  margin: 0 0 8px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #1b2720;
+  border-radius: 7px;
+  background: #070c08;
+}
+#flexAutoCaptions .cx-srt-cues:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-srt-cues li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1px 10px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #111a14;
+}
+#flexAutoCaptions .cx-srt-cues li:last-child {
+  border-bottom: 0;
+}
+#flexAutoCaptions .cx-srt-cues time {
+  color: #6d7f74;
+  font: 600 9.5px/1.4 Consolas, "Segoe UI", monospace;
+  white-space: nowrap;
+}
+#flexAutoCaptions .cx-srt-cues span {
+  overflow: hidden;
+  color: #d8eadc;
+  font: 500 10.5px/1.4 "Segoe UI", "Hind Siliguri", sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#flexAutoCaptions .cx-srt-cues em {
+  grid-column: 2;
+  color: #ffc14d;
+  font: 600 9px/1.3 "Segoe UI", sans-serif;
+  font-style: normal;
+}
+#flexAutoCaptions .cx-srt-cues li.has-warn time {
+  color: #ffc14d;
+}
+#flexAutoCaptions .cx-simple-timing-base {
+  margin-top: 4px;
+}
+
+/* Step 3: "None" is a real choice now */
+#flexAutoCaptions #btnSimpleTemplateClear {
+  min-width: 52px;
+}
+
+/* Step 4: numbered fields and a recap of every choice */
+#flexAutoCaptions [data-simple-stage-panel="text"] .cx-quickstyle-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+#flexAutoCaptions [data-simple-stage-panel="text"] .cx-cap-field > span {
+  color: #cfe9d6 !important;
+  font-weight: 700 !important;
+}
+#flexAutoCaptions .cx-simple-recap {
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border: 1px dashed #2a382f;
+  border-radius: 7px;
+  color: #9fb4a6;
+  font: 500 10px/1.45 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-recap:empty {
+  display: none;
+}
+#flexAutoCaptions .cx-simple-replace-note {
+  display: block;
+  margin-top: 6px;
+  color: #6d7f74;
+  font: 500 9px/1.35 "Segoe UI", sans-serif;
+}
+
+/* Source: model advice for Bangla */
+#flexAutoCaptions .cx-simple-lang-hint {
+  margin: 6px 0 8px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 193, 77, 0.35);
+  border-radius: 7px;
+  background: rgba(255, 193, 77, 0.07);
+  color: #ffd98a;
+  font: 500 10px/1.45 "Segoe UI", sans-serif;
+}
+#flexAutoCaptions .cx-simple-lang-hint[hidden] {
+  display: none;
+}
+#flexAutoCaptions .cx-simple-lang-hint b {
+  color: #fff1cc;
+}

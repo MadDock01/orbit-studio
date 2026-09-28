@@ -40,7 +40,7 @@
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-guide.css?v=2" rel="stylesheet"/>
-<link href="css/orbit-polish.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-polish.css?v=2" rel="stylesheet"/>
 </head>
 <body>
 
@@ -322,7 +322,11 @@
 <div class="cx-cap-stepbar">
 <button class="cx-cap-stepbar-step active" data-simple-caption-stage="source" type="button"><span>01</span><b>SOURCE</b><small>Choose or transcribe</small></button>
 <i class="cx-cap-stepbar-arrow">›</i>
-<button class="cx-cap-stepbar-step" data-simple-caption-stage="style" disabled type="button"><span>02</span><b>ANIMATION</b><small>Select style, then create</small></button>
+<button class="cx-cap-stepbar-step" data-simple-caption-stage="review" disabled type="button"><span>02</span><b>TIMING</b><small>Check the cues</small></button>
+<i class="cx-cap-stepbar-arrow">›</i>
+<button class="cx-cap-stepbar-step" data-simple-caption-stage="style" disabled type="button"><span>03</span><b>ANIMATION</b><small>Optional</small></button>
+<i class="cx-cap-stepbar-arrow">›</i>
+<button class="cx-cap-stepbar-step" data-simple-caption-stage="text" disabled type="button"><span>04</span><b>TEXT</b><small>Font &amp; position</small></button>
 </div>
 <div class="cx-simple-stage-panel" data-simple-stage-panel="source">
 <div class="cx-cap-sources">
@@ -347,6 +351,7 @@
 <label class="cx-cap-field"><span>Model</span><select class="counter-select" id="simpleCaptionModel"><option value="tiny">Whisper Tiny</option><option selected value="base">Whisper Base</option><option value="small">Whisper Small</option><option value="medium">Whisper Medium</option><option value="large-v3-turbo">Fast - Large V3 Turbo</option><option value="large-v3">Accurate - Large V3 Q5</option></select></label>
 <label class="cx-cap-field"><span>Language</span><select class="counter-select" id="simpleCaptionLanguage"><option value="">Auto Language</option><option value="en">English</option><option value="bn">Bangla</option><option value="hi">Hindi</option><option value="ur">Urdu</option></select></label>
 </div>
+<p class="cx-simple-lang-hint" id="simpleLangHint" hidden>Bangla: pick <b>Whisper Small</b> or bigger. Tiny and Base often write Bangla speech in English letters (Banglish).</p>
 <button class="tool-btn wide primary" disabled id="btnSimpleTranscribe" type="button">✨ TRANSCRIBE MEDIA</button>
 <div class="cx-simple-transcribe-progress" id="simpleTranscribeProgress" hidden aria-live="polite">
 <div class="cx-simple-transcribe-progress-head">
@@ -356,29 +361,43 @@
 <div class="cx-simple-transcribe-progress-track"><i id="simpleTranscribeProgressBar"></i></div>
 </div>
 </div>
-<div class="cx-simple-stage-panel" data-simple-stage-panel="style" hidden>
+<div class="cx-simple-stage-panel" data-simple-stage-panel="review" hidden>
+<div class="cx-simple-step-title"><b>Check the timing</b><small>Every cue becomes one caption layer at these times.</small></div>
 <div class="cx-srt-summary" id="simpleSrtSummary">
 <i aria-hidden="true"></i>
 <span class="cx-simple-srt-count" id="simpleSrtCount">0 valid cues</span>
 <span class="cx-srt-range" id="simpleSrtRange"></span>
 <button class="cx-quickstyle-advanced" id="btnSimpleAdvanced" type="button" aria-expanded="false" aria-controls="simpleSrtEditor" title="Show or hide the raw SRT text">✎ EDIT TEXT</button>
 </div>
+<div class="cx-srt-timing" id="simpleSrtTiming" aria-live="polite"></div>
+<ol class="cx-srt-cues" id="simpleSrtCueList" aria-label="Caption cues"></ol>
 <textarea class="cx-caption-editor cx-simple-srt-editor" id="simpleSrtEditor" spellcheck="true" hidden placeholder="1&#10;00:00:00,000 --> 00:00:02,500&#10;Your caption text"></textarea>
+<label class="cx-cap-field cx-simple-timing-base"><span>Place captions from</span><select class="counter-select" id="simpleSrtTimingBase" title="Where 00:00 of the SRT lands in your comp"><option value="comp">Start of the comp (0:00)</option><option value="layer">Start of the selected clip</option></select></label>
+<div class="cx-simple-step-nav"><button class="tool-btn" data-simple-go="source" type="button">‹ BACK</button><button class="tool-btn primary" data-simple-go="style" type="button">NEXT: ANIMATION ›</button></div>
+</div>
+<div class="cx-simple-stage-panel" data-simple-stage-panel="style" hidden>
+<div class="cx-simple-step-title"><b>Pick an animation</b><small>Optional — skip it for plain captions.</small></div>
 <div class="cx-simple-template-head"><span>PREMIUM STYLES</span><small>SELECT ONE · APPLIED TO EVERY CAPTION</small></div>
 <div class="cx-simple-template-grid tanim-card-grid" id="simpleCaptionTemplateGrid" aria-label="Caption text animations"></div>
-<div class="cx-simple-template-selected" id="simpleCaptionTemplateSelected"><strong>Select Animation</strong><span>Pick a Premium Style. It will be applied to every caption.</span><button id="btnSimpleTemplateClear" type="button" title="Clear the selected text animation">CLEAR</button></div>
+<div class="cx-simple-template-selected" id="simpleCaptionTemplateSelected"><strong>Select Animation</strong><span>Pick a Premium Style. It will be applied to every caption.</span><button id="btnSimpleTemplateClear" type="button" title="Use no animation">NONE</button></div>
+<div class="cx-simple-step-nav"><button class="tool-btn" data-simple-go="review" type="button">‹ BACK</button><button class="tool-btn primary" data-simple-go="text" type="button">NEXT: TEXT ›</button></div>
+</div>
+<div class="cx-simple-stage-panel" data-simple-stage-panel="text" hidden>
+<div class="cx-simple-step-title"><b>Font &amp; position</b><small>Applied to every caption.</small></div>
 <div class="cx-quickstyle-grid">
-<label class="cx-cap-field"><span>Position</span><select class="counter-select" id="simpleSrtPosition"><option value="bottom">Bottom</option><option value="lower-third">Lower Third</option><option value="middle">Middle</option><option value="top-third">Top Third</option><option value="top">Top</option></select></label>
-<div class="cx-cap-field cx-simple-font-field"><span>System Font</span><div class="cx-simple-font-combo"><input class="counter-input" id="simpleSrtFontSearch" placeholder="Search fonts..." type="text" title="Type to filter installed fonts" autocomplete="off"/><select class="counter-select" id="simpleSrtFont" title="Installed system fonts detected from After Effects"><option value="">System default</option></select><button id="btnSimpleLoadSystemFonts" type="button" title="Refresh fonts from After Effects" aria-label="Refresh system fonts">&#8635;</button></div><datalist id="simpleSystemFontList"></datalist><small id="simpleSystemFontStatus" hidden>Reading fonts from After Effects...</small></div>
-<label class="cx-cap-field cx-simple-size-field"><span>Size</span><input class="counter-input" id="simpleSrtFontSize" min="16" max="300" type="number" value="72"/></label>
+<div class="cx-cap-field cx-simple-font-field"><span>1 · Font</span><div class="cx-simple-font-combo"><input class="counter-input" id="simpleSrtFontSearch" placeholder="Search fonts..." type="text" title="Type to filter installed fonts" autocomplete="off"/><select class="counter-select" id="simpleSrtFont" title="Installed system fonts detected from After Effects"><option value="">System default</option></select><button id="btnSimpleLoadSystemFonts" type="button" title="Refresh fonts from After Effects" aria-label="Refresh system fonts">&#8635;</button></div><datalist id="simpleSystemFontList"></datalist><small id="simpleSystemFontStatus" hidden>Reading fonts from After Effects...</small></div>
+<label class="cx-cap-field cx-simple-size-field"><span>2 · Size</span><input class="counter-input" id="simpleSrtFontSize" min="16" max="300" type="number" value="72"/></label>
+<label class="cx-cap-field"><span>3 · Position</span><select class="counter-select" id="simpleSrtPosition"><option value="bottom">Bottom</option><option value="lower-third">Lower Third</option><option value="middle">Middle</option><option value="top-third">Top Third</option><option value="top">Top</option></select></label>
 </div>
 <div class="cx-simple-srt-options">
 <label class="caption-toggle"><input id="simpleSrtShadow" checked type="checkbox"/> Shadow</label>
-<span>Applied to every caption: each cue becomes one editable text layer, and existing CompX captions are replaced.</span>
 </div>
+<div class="cx-simple-recap" id="simpleSrtRecap"></div>
+<div class="cx-simple-step-nav"><button class="tool-btn" data-simple-go="style" type="button">‹ BACK</button></div>
 <div class="cx-srt-commit"><button class="tool-btn wide primary cx-simple-srt-generate" disabled id="btnSimpleSrtGenerate" type="button">✨ CREATE CAPTIONS</button></div>
-<div class="cx-simple-srt-status"><i></i><span class="hint" id="simpleSrtStatus">Ready to create captions</span></div>
+<small class="cx-simple-replace-note">Each cue becomes one editable text layer; existing CompX captions are replaced.</small>
 </div>
+<div class="cx-simple-srt-status"><i></i><span class="hint" id="simpleSrtStatus">Ready to create captions</span></div>
 </div>
 <div class="cx-cap-header">
 <div class="cx-cap-header-icon">💬</div>
