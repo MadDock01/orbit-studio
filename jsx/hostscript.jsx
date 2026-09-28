@@ -23047,6 +23047,17 @@ function compxCarSetExpr(layer, matchName, expr) {
   } catch (e) { compxAuditFallback("HOST_CAR_EXPR_001", e); }
 }
 
+// Hand a card back: no carousel expressions, no Card Index, no tag.
+function compxCarRelease(layer) {
+  var names = ["ADBE Position", "ADBE Scale", "ADBE Opacity", "ADBE Rotate Z", "ADBE Rotate Y"], j;
+  for (j = 0; j < names.length; j++) compxCarSetExpr(layer, names[j], null);
+  try {
+    var fx = layer.property("ADBE Effect Parade").property("Card Index");
+    if (fx) fx.remove();
+  } catch (eR) { compxAuditFallback("HOST_CAR_RMFX_001", eR); }
+  try { layer.comment = ""; } catch (eC) { compxAuditFallback("HOST_CAR_RMTAG_001", eC); }
+}
+
 /* ---------- the expressions ---------- */
 
 var COMPX_CAR_TAIL = "\n} catch (err) {\n  value;\n}";
@@ -23252,12 +23263,23 @@ function ae_carouselBuild(style, optsJson) {
     var radius = Math.max(1, Number(o.radius) || 600);
     var cardScale = Math.max(1, Number(o.cardScale) || 60);
     var falloff = Math.max(0, Math.min(100, Number(o.falloff) || 0));
-    var tilt = Math.max(-90, Math.min(90, Number(o.tilt) || 0));
+    // Degrees per card on strip/stack (the panel keeps those to ±90), and
+    // FOLLOW percent on a path, which must be able to reach 100.
+    var tilt = Math.max(-100, Math.min(100, Number(o.tilt) || 0));
     var speed = Number(o.speed) || 0;
     var visible = Math.max(1, Math.min(n, Math.round(Number(o.visible) || Math.min(n, 5))));
 
     app.beginUndoGroup("Orbit Carousel");
     undoOpen = true;
+
+    // A rebuild from a different selection would otherwise leave the old
+    // cards tagged and still driven by the rig with the old card count.
+    var previous = compxCarCards(comp), p, q, keep;
+    for (p = 0; p < previous.length; p++) {
+      keep = false;
+      for (q = 0; q < cards.length; q++) if (cards[q].index === previous[p].index) { keep = true; break; }
+      if (!keep) compxCarRelease(previous[p]);
+    }
 
     var rig = compxCarFindNamed(comp, COMPX_CAR_RIG);
     if (!rig) {
@@ -23351,7 +23373,7 @@ function ae_carouselUpdate(optsJson) {
     if (o.radius !== undefined) compxCarSlider(rig, "Radius", Math.max(1, Number(o.radius) || 600));
     if (o.cardScale !== undefined) compxCarSlider(rig, "Card Scale", Math.max(1, Number(o.cardScale) || 60));
     if (o.falloff !== undefined) compxCarSlider(rig, "Falloff", Math.max(0, Math.min(100, Number(o.falloff) || 0)));
-    if (o.tilt !== undefined) compxCarSlider(rig, "Tilt", Math.max(-90, Math.min(90, Number(o.tilt) || 0)));
+    if (o.tilt !== undefined) compxCarSlider(rig, "Tilt", Math.max(-100, Math.min(100, Number(o.tilt) || 0)));
     if (o.speed !== undefined) compxCarSlider(rig, "Speed", Number(o.speed) || 0);
     if (o.visible !== undefined) compxCarSlider(rig, "Visible", Math.max(1, Math.round(Number(o.visible) || 5)));
 
@@ -23382,15 +23404,8 @@ function ae_carouselRemove() {
     app.beginUndoGroup("Orbit Carousel Remove");
     undoOpen = true;
 
-    var i, names = ["ADBE Position", "ADBE Scale", "ADBE Opacity", "ADBE Rotate Z", "ADBE Rotate Y"], j;
-    for (i = 0; i < cards.length; i++) {
-      for (j = 0; j < names.length; j++) compxCarSetExpr(cards[i], names[j], null);
-      try {
-        var fx = cards[i].property("ADBE Effect Parade").property("Card Index");
-        if (fx) fx.remove();
-      } catch (eR) { compxAuditFallback("HOST_CAR_RMFX_001", eR); }
-      try { cards[i].comment = ""; } catch (eC) { compxAuditFallback("HOST_CAR_RMTAG_001", eC); }
-    }
+    var i;
+    for (i = 0; i < cards.length; i++) compxCarRelease(cards[i]);
     if (rig) try { rig.remove(); } catch (eL) { compxAuditFallback("HOST_CAR_RMRIG_001", eL); }
     if (pathLayer) try { pathLayer.remove(); } catch (eP) { compxAuditFallback("HOST_CAR_RMPATH_001", eP); }
     if (cam) try { cam.remove(); } catch (eM) { compxAuditFallback("HOST_CAR_RMCAM_001", eM); }
