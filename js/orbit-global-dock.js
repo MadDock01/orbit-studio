@@ -1,6 +1,6 @@
 /* ============================================================
    ORBIT GLOBAL DOCKS
-   Top rail    (#orbitGlobalDock) — anchor · align · trim · Quick FX
+   Top rail    (#orbitGlobalDock) — anchor · align · trim · flip · reverse keys
    Bottom rail (#orbitBottomDock) — layer creation (Quick Actions)
 
    Both live outside .app-panel, so a tab switch never rebuilds them.
@@ -130,9 +130,37 @@
     }
   }
 
+  /* ---- Reverse Keyframes (top rail) ----
+     Uses ae_advancedKeyframes("reverse"), which flips the order of the
+     selected keyframes on each property and swaps their in/out easing
+     and spatial handles so the motion plays backwards. main.js loads
+     after the licence check, so the bridge is looked up per click. */
+  function wireReverseKeys() {
+    var btn = document.getElementById("orbitDockReverseKeys");
+    if (!btn) return;
+    var busy = false;
+    function toast(message, isError) {
+      if (typeof window.showToast === "function") window.showToast(message, !!isError);
+    }
+    btn.addEventListener("click", function () {
+      if (busy) return;
+      var host = window.CompXHostBridge;
+      if (!host || typeof host.call !== "function") { toast("After Effects is not connected yet.", true); return; }
+      busy = true;
+      btn.classList.add("is-busy");
+      host.call('ae_advancedKeyframes("reverse",1)', function (parsed) {
+        busy = false;
+        btn.classList.remove("is-busy");
+        if (parsed && parsed.success) toast(parsed.message || "Keyframes reversed");
+        else toast((parsed && parsed.message) || "Select two or more keyframes on a property first.", true);
+      });
+    });
+  }
+
   function init() {
     var closeHooks = [];
     wireFxFlyout(closeHooks);
+    wireReverseKeys();
     RAILS.forEach(function (spec) { wireRail(spec, closeHooks); });
   }
 

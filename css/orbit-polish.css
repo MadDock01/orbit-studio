@@ -609,3 +609,35 @@
   max-width: 100%;
 }
 #panel-advanced .cx3d-footer-status { font-size: 8px !important; }
+
+/* ============================================================
+   Top dock: Reverse Keys (replaces the Quick FX flyout)
+   ============================================================ */
+#app :is(#panel-tools,#orbitGlobalDock,#orbitBottomDock) [data-orbit-icon="reverse-keys"] { --orbit-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209.5l2.5%202.5L6%2014.5%203.5%2012z%22%2F%3E%3Cpath%20d%3D%22M18%209.5l2.5%202.5-2.5%202.5-2.5-2.5z%22%2F%3E%3Cpath%20d%3D%22M8%205.5h8.5M14%203l2.5%202.5L14%208%22%2F%3E%3Cpath%20d%3D%22M16%2018.5H7.5M10%2016l-2.5%202.5L10%2021%22%2F%3E%3C%2Fsvg%3E"); }
+#app #orbitGlobalDock:not(.is-scrollable) .gdock-key-grid.gdock-flip-grid {
+  flex: 1 0 auto !important;
+  grid-template-columns: minmax(var(--gd-btn), 1fr) !important;
+}
+#app #orbitGlobalDock .gdock-key-grid.gdock-flip-grid { grid-template-columns: var(--gd-btn, 28px) !important; }
+#app #orbitGlobalDock #orbitDockReverseKeys.is-busy { opacity: 0.5 !important; pointer-events: none !important; }
+
+/* ============================================================
+   Tools > TEXT / MASK TOOLS: Quick FX row fills the empty half
+   ============================================================ */
+#app #panel-tools .subgroup-textmask .tools-quickfx-title { margin-top: 8px !important; }
+#app #panel-tools .subgroup-textmask .tools-quickfx-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+}
+#app #panel-tools .subgroup-textmask .tools-quickfx-grid .tool-btn {
+  min-width: 0 !important;
+  font-size: 9.5px !important;
+  padding: 4px 2px !important;
+}
+#app #panel-tools .subgroup-textmask .tools-quickfx-grid .tool-btn[data-orbit-icon]::before {
+  flex-basis: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+#app #panel-tools .subgroup-textmask .tools-quickfx-title { --section-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20color%3D%22%233cff5f%22%20stroke%3D%22%233cff5f%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m14%202-9%2012h7l-2%208%209-12h-7l2-8Z%22%2F%3E%3C%2Fsvg%3E"); }

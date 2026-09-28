@@ -1,0 +1,332 @@
+/* ============================================================
+   ORBIT COLOR FX — Animation tab > COLOR FX
+   Weight: #app plus the panel id and !important, to beat the shared
+   .tool-section skin and the #app button rules in the console theme.
+   ============================================================ */
+
+/* The library tabs grow from two to three. */
+#app .cx-textlib-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+#app .cfx-panel[hidden] { display: none !important; }
+
+#app .cfx-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 10px !important;
+}
+
+#app .cfx-shell.is-busy .cfx-card { pointer-events: none !important; opacity: 0.6 !important; }
+
+#app .cfx-subtitle {
+  margin-top: 3px !important;
+  font: 500 8.5px/1.3 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+}
+
+/* ---- controls ---- */
+#app .cfx-controls {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px !important;
+  border: 1px solid #22382c !important;
+  border-radius: 9px !important;
+  background: rgba(6, 12, 8, 0.56) !important;
+}
+
+@media (max-width: 460px) {
+  #app .cfx-controls { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+#app .cfx-colors { display: flex !important; align-items: flex-end !important; gap: 5px !important; }
+
+#app .cfx-color {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+#app .cfx-color span,
+#app .cfx-field span {
+  font: 700 7.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.1em !important;
+  color: #7f9488 !important;
+}
+
+#app .cfx-color input[type="color"] {
+  width: 58px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 1px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 5px !important;
+  background: #0a110d !important;
+  cursor: pointer !important;
+}
+
+#app .cfx-swap {
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #22382c !important;
+  border-radius: 6px !important;
+  background: #0a110d !important;
+  color: #8ba295 !important;
+  cursor: pointer !important;
+}
+
+#app .cfx-swap svg { width: 13px !important; height: 13px !important; fill: none !important; stroke: currentColor !important; stroke-width: 2 !important; stroke-linecap: round !important; stroke-linejoin: round !important; }
+#app .cfx-swap:hover { color: #eafff0 !important; border-color: #3cff5f !important; }
+
+#app .cfx-palettes {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  align-items: center !important;
+}
+
+#app #panel-sfx .cfx-palettes .cfx-chip {
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #2f4a39 !important;
+  border-radius: 50% !important;
+  background: var(--cfx-chip, #222) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s, border-color 0.15s !important;
+}
+
+#app #panel-sfx .cfx-palettes .cfx-chip:hover { transform: scale(1.12) !important; border-color: #eafff0 !important; }
+
+#app .cfx-fields { display: flex !important; gap: 5px !important; }
+
+#app .cfx-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+#app .cfx-field input[type="number"] {
+  width: 56px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 5px !important;
+  background: #0a110d !important;
+  color: #eafff0 !important;
+  font: 700 10px/1 "Segoe UI", sans-serif !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+#app .cfx-field input:focus { border-color: #3cff5f !important; outline: none !important; }
+
+/* ---- cards ---- */
+#app .cfx-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)) !important;
+  gap: 6px !important;
+}
+
+#app .cfx-card {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #22382c !important;
+  border-radius: 9px !important;
+  background: #0b120e !important;
+  overflow: hidden !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s !important;
+}
+
+#app .cfx-card:hover {
+  border-color: #3cff5f !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 12px rgba(60, 255, 95, 0.14) !important;
+}
+
+#app .cfx-stage {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  height: 64px !important;
+  padding: 0 8px !important;
+  overflow: hidden !important;
+  background: radial-gradient(120% 100% at 50% 30%, #17211b 0%, #070b08 100%) !important;
+  border-bottom: 1px solid #16241c !important;
+}
+
+#app .cfx-word {
+  white-space: nowrap !important;
+  font: 900 clamp(15px, 4.2vw, 20px)/1 "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  text-align: center !important;
+}
+
+#app .cfx-u {
+  display: inline-block !important;
+  transform-origin: 50% 70% !important;
+  will-change: color, transform, filter;
+}
+
+#app .cfx-badge {
+  position: absolute !important;
+  top: 5px !important;
+  left: 6px !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  background: rgba(60, 255, 95, 0.12) !important;
+  color: #3cff5f !important;
+  font: 800 6.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.1em !important;
+}
+
+#app .cfx-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 6px 7px 7px !important;
+}
+
+#app .cfx-meta strong {
+  color: #eafff0 !important;
+  font: 700 10px/1.2 "Segoe UI", sans-serif !important;
+}
+
+#app .cfx-meta small {
+  color: #7f9488 !important;
+  font: 500 8.5px/1.3 "Segoe UI", sans-serif !important;
+}
+
+/* ---- foot ---- */
+#app .cfx-foot {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#app .cfx-clean {
+  flex: 0 0 auto !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 1px solid #4a2a2a !important;
+  border-radius: 6px !important;
+  background: #140b0b !important;
+  color: #ffb0b0 !important;
+  font: 800 8.5px/1 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+  cursor: pointer !important;
+}
+
+#app .cfx-clean:hover { border-color: #ff6b6b !important; color: #ffdede !important; }
+
+#app .cfx-status {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 500 8.5px/1.3 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+}
+
+#app .cfx-status.is-error { color: #ff9b9b !important; }
+#app .cfx-status.is-ok { color: #9fd6ac !important; }
+
+/* Word-based samples are longer; keep them inside the card when a word scales up. */
+#app .cfx-word.is-words { font-size: clamp(13px, 3vw, 16px) !important; }
+
+/* ---- 125-style catalogue ---- */
+#app .cfx-palette-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+#app .cfx-mine {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  font: 600 8.5px/1.2 "Segoe UI", sans-serif !important;
+  color: #a8bcae !important;
+}
+
+#app .cfx-mine input { width: 12px !important; height: 12px !important; margin: 0 !important; accent-color: #3cff5f !important; }
+#app .cfx-shell.is-mine .cfx-mine { color: #3cff5f !important; }
+
+#app #panel-sfx .cfx-palettes .cfx-chip { width: 18px !important; height: 18px !important; min-height: 18px !important; }
+
+#app .cfx-filter {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+#app .cfx-search,
+#app .cfx-family {
+  height: 26px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid #22382c !important;
+  border-radius: 6px !important;
+  background: #0a110d !important;
+  color: #eafff0 !important;
+  font: 500 10px/1 "Segoe UI", sans-serif !important;
+  box-sizing: border-box !important;
+}
+
+#app .cfx-search:focus,
+#app .cfx-family:focus { border-color: #3cff5f !important; outline: none !important; }
+
+#app .cfx-count {
+  font: 700 8.5px/1 "Segoe UI", sans-serif !important;
+  color: #7f9488 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 420px) {
+  #app .cfx-filter { grid-template-columns: minmax(0, 1fr) auto !important; }
+  #app .cfx-count { grid-column: 1 / -1 !important; }
+}
+
+#app .cfx-card[hidden] { display: none !important; }
+
+#app .cfx-dots {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  display: flex !important;
+  gap: 2px !important;
+}
+
+#app .cfx-dots i {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--cfx-dot) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5) !important;
+}
+
+#app .cfx-color input[type="color"] { width: 46px !important; }

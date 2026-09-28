@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: file:; script-src 'self' 'wasm-unsafe-eval' http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; connect-src 'self' https://esiiawfjzmuqplzzdoog.supabase.co https://esiiawfjzmuqplzzdoog.functions.supabase.co http://127.0.0.1:*; object-src 'none'; base-uri 'none'; frame-src 'none'; worker-src 'self' blob:;"/>
 <title>Orbit Studio</title>
+<script src="js/orbit-solo.js?v=1"></script>
 <link href="css/style.css?v=12" rel="stylesheet"/>
 <link href="css/library-visual.css?v=7" rel="stylesheet"/>
 <link href="css/graph20.css?v=9" rel="stylesheet"/>
@@ -35,12 +36,14 @@
 <link href="css/orbit-stagger.css?v=3" rel="stylesheet"/>
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=3" rel="stylesheet"/>
-<link href="css/orbit-sfx.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-arrow.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-colorfx.css?v=2" rel="stylesheet"/>
+<link href="css/orbit-sfx.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-guide.css?v=2" rel="stylesheet"/>
-<link href="css/orbit-polish.css?v=5" rel="stylesheet"/>
+<link href="css/orbit-polish.css?v=6" rel="stylesheet"/>
 </head>
 <body>
 
@@ -213,24 +216,14 @@
 </div>
 
 <span class="gdock-sep" aria-hidden="true"></span>
-
-<div class="gdock-fx">
-<button type="button" class="gdock-fx-btn" id="orbitDockFxBtn" data-orbit-icon="bolt" title="Quick FX — apply a common effect to the selection" aria-haspopup="true" aria-expanded="false" aria-controls="orbitDockFxFlyout"><span class="gdock-fx-tag">FX</span></button>
+<div class="tool-grid icon-only gdock-flip-grid gdock-key-grid">
+<button class="tool-btn" type="button" id="orbitDockReverseKeys" data-orbit-icon="reverse-keys" title="Reverse Keyframes — select two or more keyframes on a property; their order flips, with easing and path handles following">Reverse Keys</button>
 </div>
 
 </div>
 <button type="button" class="gdock-toggle" id="orbitGlobalDockToggle" title="Collapse quick dock" aria-expanded="true" aria-controls="orbitGlobalDockInner">
 <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 10 8 5 13 10"></polyline></svg>
 </button>
-<div class="gdock-fx-flyout" id="orbitDockFxFlyout" role="menu" aria-label="Quick FX" hidden>
-<div class="tool-grid icon-only gdock-fx-grid">
-<button class="tool-btn" role="menuitem" data-arg="ADBE Ramp" data-tool="effect" title="Gradient Ramp" data-orbit-icon="gradient">Gradient</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Glo2" data-tool="effect" title="Glow" data-orbit-icon="glow">Glow</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Fill" data-tool="effect" title="Fill" data-orbit-icon="fill">Fill</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Tint" data-tool="effect" title="Tint" data-orbit-icon="tint">Tint</button>
-<button class="tool-btn" role="menuitem" data-arg="ADBE Gaussian Blur 2" data-tool="effect" title="Gaussian Blur" data-orbit-icon="blur">Blur</button>
-</div>
-</div>
 </div>
 <!-- /Global Dock -->
 
@@ -284,7 +277,7 @@
 <span class="tool-help" title="Quick layer, effect, and shape creation shortcuts.">?</span>
 </div>
 <!-- QUICK ACTIONS moved to the bottom global dock (#orbitBottomDock). -->
-<!-- EFFECTS BROWSER moved to the global dock (#orbitGlobalDock) as QUICK FX. -->
+<!-- QUICK FX lives under TEXT / MASK TOOLS below. -->
 <div class="tool-subgroup subgroup-timeline">
 <div class="tool-subgroup-title">TIMELINE UTILITIES</div>
 <div class="tool-grid tool-grid-4">
@@ -304,6 +297,14 @@
 <button class="tool-btn" data-tool="capitalize" title="Uppercase text layer content" data-orbit-icon="uppercase">Uppercase</button>
 <button class="tool-btn" id="btnExplodeTextPro" title="Split the selected text layer into one animated layer per character" data-orbit-icon="explode">Text Explode</button>
 <button class="tool-btn" id="btnGuideGridOpen" type="button" aria-haspopup="dialog" aria-controls="guideGridModal" aria-expanded="false" title="Guide Grid — draw a layout grid with markers as a guide layer" data-orbit-icon="grid">Guide Grid</button>
+</div>
+<div class="tool-subgroup-title tools-quickfx-title">QUICK FX</div>
+<div class="tool-grid tool-grid-5 tools-quickfx-grid">
+<button class="tool-btn" data-arg="ADBE Ramp" data-tool="effect" title="Add Gradient Ramp to the selected layer(s)" data-orbit-icon="gradient">Gradient</button>
+<button class="tool-btn" data-arg="ADBE Glo2" data-tool="effect" title="Add Glow to the selected layer(s)" data-orbit-icon="glow">Glow</button>
+<button class="tool-btn" data-arg="ADBE Fill" data-tool="effect" title="Add Fill to the selected layer(s)" data-orbit-icon="fill">Fill</button>
+<button class="tool-btn" data-arg="ADBE Tint" data-tool="effect" title="Add Tint to the selected layer(s)" data-orbit-icon="tint">Tint</button>
+<button class="tool-btn" data-arg="ADBE Gaussian Blur 2" data-tool="effect" title="Add Gaussian Blur to the selected layer(s)" data-orbit-icon="blur">Blur</button>
 </div>
 </div>
 </div>
@@ -680,6 +681,71 @@
      ═══════════════════════════════════════════════════════════════════ -->
 <div class="app-panel" id="panel-toolkit">
 <div class="tools-scroll">
+<div class="tool-section arrow-card" id="arrowCreatorCard">
+<div class="tool-section-head">
+<div class="tool-section-title">ARROW CREATOR</div>
+<div class="arrow-head-actions">
+<button type="button" class="arrow-icon-btn" id="arrowFlip" aria-pressed="false" title="Flip the bend to the other side"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M17 4v16M3 8l4-4 4 4M13 16l4 4 4-4"/></svg><span>Flip</span></button>
+<button type="button" class="arrow-icon-btn" id="arrowReset" title="Reset every setting"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg></button>
+<span class="tool-help" title="Pick a preset or build your own, then Create Arrow in Comp. The arrow is one shape layer: the line is trimmed by an Arrow Progress slider and the head rides the end of the line, so a draw-on is just two keyframes on that slider. Select an arrow and press Update to rebuild it with the current settings; its keyframes are kept.">?</span>
+</div>
+</div>
+
+<div class="arrow-preview">
+<div class="arrow-preview-bar">
+<span class="arrow-preview-label">LIVE PREVIEW</span>
+<span class="arrow-preview-size" id="arrowPreviewZoom">—</span>
+<button type="button" class="arrow-play" id="arrowPlay" title="Play the draw-on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>Play</span></button>
+</div>
+<div class="arrow-preview-stage" id="arrowPreviewStage">
+<svg id="arrowPreviewSvg" viewBox="-250 -80 500 160" preserveAspectRatio="xMidYMid meet" aria-label="Arrow preview">
+<defs><mask id="arrowPreviewMask" maskUnits="userSpaceOnUse" x="-5000" y="-5000" width="10000" height="10000"><path id="arrowPreviewMaskPath" fill="none" stroke="#fff" stroke-linecap="butt" stroke-linejoin="round"/></mask></defs>
+<g mask="url(#arrowPreviewMask)">
+<path id="arrowPreviewLine" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="arrowPreviewTaper" stroke="currentColor"></g>
+<path id="arrowPreviewHeadStart" stroke-linejoin="round" stroke-linecap="round"/>
+<path id="arrowPreviewHeadEnd" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
+</div>
+</div>
+
+<div class="arrow-label">QUICK PRESETS</div>
+<div class="arrow-presets" id="arrowPresets"></div>
+
+<div class="arrow-label">PATH SHAPE</div>
+<div class="arrow-seg arrow-seg-3" id="arrowShapes" role="group" aria-label="Path shape"></div>
+
+<div class="arrow-label">ARROWHEAD TIP</div>
+<div class="arrow-seg arrow-seg-5" id="arrowHeads" role="group" aria-label="Arrowhead tip"></div>
+
+<div class="arrow-label">STYLE</div>
+<div class="arrow-fields">
+<label class="arrow-field arrow-field-color" title="Line and head colour"><span>COLOR</span><input type="color" id="arrowColor" value="#35c8ff"/></label>
+<label class="arrow-field" title="Line thickness in pixels"><span>WIDTH</span><input type="number" id="arrowWidth" min="1" max="200" step="1" value="8"/></label>
+<label class="arrow-field" title="Arrowhead size in pixels"><span>HEAD</span><input type="number" id="arrowHeadSize" min="4" max="600" step="1" value="34"/></label>
+<label class="arrow-field" title="Distance from tail to tip in pixels"><span>LENGTH</span><input type="number" id="arrowLength" min="40" max="4000" step="10" value="420"/></label>
+<label class="arrow-field" title="How far the path bends away from a straight line, in percent"><span>BEND</span><input type="number" id="arrowBend" min="0" max="100" step="1" value="35"/></label>
+</div>
+<div class="arrow-toggles">
+<label class="arrow-check" title="A head at both ends"><input type="checkbox" id="arrowDouble"/><span>Double</span></label>
+<label class="arrow-check" title="Dashed line"><input type="checkbox" id="arrowDashed"/><span>Dashed</span></label>
+<label class="arrow-check" title="Line starts thin and swells toward the head"><input type="checkbox" id="arrowTaper"/><span>Taper</span></label>
+<label class="arrow-check" title="Adds a Glow effect to the layer"><input type="checkbox" id="arrowNeon"/><span>Neon glow</span></label>
+</div>
+
+<div class="arrow-anim">
+<label class="arrow-check" title="Keyframe Arrow Progress 0 to 100 from the playhead"><input type="checkbox" id="arrowAnimate" checked/><span>Draw-on animation</span></label>
+<label class="arrow-field arrow-field-inline" title="Length of the draw-on in frames"><span>FRAMES</span><input type="number" id="arrowFrames" min="1" max="600" step="1" value="20"/></label>
+</div>
+
+<div class="arrow-actions">
+<button type="button" class="arrow-create" id="arrowCreate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c4-9 9-12 15-12"/><path d="M14 4l5 2-2 5"/></svg>CREATE ARROW IN COMP</button>
+<button type="button" class="arrow-update" id="arrowUpdate" title="Rebuild the selected arrow with these settings; its keyframes are kept"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>Update</button>
+</div>
+<div class="arrow-status" id="arrowStatus" aria-live="polite"></div>
+</div>
+
 <div class="tool-dash-row tools-project-row">
 <div class="tool-section" id="toolkitShapeSourceSection">
 <div class="tool-section-head">
@@ -1199,6 +1265,7 @@
 <div class="cx-textlib-tabs" id="textLibraryTabs" role="tablist" aria-label="Text library mode">
 <button class="active" type="button" data-text-library-tab="styles">PREMIUM STYLES</button>
 <button type="button" data-text-library-tab="textfx">TEXT FX <em>125</em></button>
+<button type="button" data-text-library-tab="color">COLOR FX <em>125</em></button>
 </div>
 <div data-text-library-panel="styles">
 <div class="tool-section tanim-section tanim-mogrt-shell" style="margin:10px;">
@@ -1215,6 +1282,40 @@
 <div class="hint tanim-apply-hint">Click any card to apply. If no text layer is selected, a demo text layer will be created automatically.</div>
 <div class="library grid tanim-card-grid" id="tanimList">
 <div class="studio-empty">Loading text styles…</div>
+</div>
+</div>
+</div>
+<div class="cfx-panel" data-text-library-panel="color" hidden>
+<div class="tool-section cfx-shell" id="cfxShell">
+<div class="tool-section-head">
+<div><div class="tool-section-title">COLOR FX</div><div class="cfx-subtitle">125 viral text colour styles · 21 motions × colour combos · text stays editable</div></div>
+<span class="tool-help" title="Select one or more text layers and click a style. With nothing selected, a demo text layer is made. Colour A is the base, colour B the accent. Both colours and the speed land in Effect Controls as CompX Color FX A / B / Speed, so you can change them later. Applying another style replaces the last one; Clean removes it.">?</span>
+</div>
+<div class="cfx-controls">
+<div class="cfx-colors">
+<label class="cfx-color" title="Base colour"><span>A · BASE</span><input type="color" id="cfxColorA" value="#ffffff"/></label>
+<button type="button" class="cfx-swap" id="cfxSwap" title="Swap A and B"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></button>
+<label class="cfx-color" title="Accent colour"><span>B · ACCENT</span><input type="color" id="cfxColorB" value="#ffd400"/></label>
+<label class="cfx-color" title="Third colour, used by the multi-colour styles"><span>C · THIRD</span><input type="color" id="cfxColorC" value="#ff2e88"/></label>
+</div>
+<div class="cfx-palette-col">
+<label class="cfx-mine" title="On: every style uses the A / B / C colours above. Off: each style keeps its own palette."><input type="checkbox" id="cfxUseMine"/><span>Use my colours on every style</span></label>
+<div class="cfx-palettes" id="cfxPalettes" role="group" aria-label="Colour palettes"></div>
+</div>
+<div class="cfx-fields">
+<label class="cfx-field" title="Loop speed of the looping styles (1 = normal)"><span>SPEED</span><input type="number" id="cfxSpeed" min="0.1" max="5" step="0.1" value="1"/></label>
+<label class="cfx-field" title="Length of the one-pass styles (Karaoke, Wipe, Pop) in frames"><span>FRAMES</span><input type="number" id="cfxFrames" min="2" max="600" step="1" value="30"/></label>
+</div>
+</div>
+<div class="cfx-filter">
+<input type="text" class="cfx-search" id="cfxSearch" placeholder="Search 125 styles… (karaoke, neon, tiktok)"/>
+<select class="cfx-family" id="cfxFamily" title="Filter by family"><option value="all">All families</option></select>
+<span class="cfx-count" id="cfxCount"></span>
+</div>
+<div class="cfx-grid" id="cfxGrid"></div>
+<div class="cfx-foot">
+<button type="button" class="cfx-clean" id="cfxClean" title="Remove Color FX animators and controls from the selected text layers">CLEAN COLOR FX</button>
+<span class="cfx-status" id="cfxStatus" aria-live="polite"></span>
 </div>
 </div>
 </div>
@@ -1532,8 +1633,19 @@
 <span class="sfxd-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2.4l1.8-6 2.6 12 2.6-15 2.4 9 1.6-3H21"/></svg></span>
 <span class="sfxd-title"><strong>SOUND DESIGNER</strong><small>Library workspace</small></span>
 <span class="sfxd-host" id="sfxdHost" title="Which Adobe host this panel is talking to"><i></i>After Effects</span>
+<button type="button" class="sfxd-hicon" id="sfxdUndock" title="Undock: open Sound Designer in its own panel" aria-label="Undock Sound Designer"><svg class="sfxd-ico-undock" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M13 3h8v8M21 3l-9 9"/></svg><svg class="sfxd-ico-dock" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M17 9l-4 3 4 3"/></svg></button>
 <button type="button" class="sfxd-hicon" id="sfxdTogglePreview" aria-pressed="true" title="Show or hide the spectrum preview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.6l2-5 2.6 10 2.4-13 2.2 8 1.6-2.4H21"/></svg></button>
 <button type="button" class="sfxd-hicon" id="sfxdSettings" aria-expanded="false" title="Workspace settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.9 5.9l1.7 1.7M16.4 16.4l1.7 1.7M18.1 5.9l-1.7 1.7M7.6 16.4l-1.7 1.7"/></svg></button>
+</div>
+
+<div class="sfxd-away" id="sfxdAway" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M13 3h8v8M21 3l-9 9"/></svg>
+<strong>Sound Designer is in its own panel</strong>
+<span>It is open as <b>Orbit Studio SFX</b>. Folders, favourites, labels and pins stay in sync between the two.</span>
+<div class="sfxd-away-actions">
+<button type="button" class="tool-btn primary" id="sfxdAwayFocus">SHOW PANEL</button>
+<button type="button" class="tool-btn" id="sfxdAwayHere">USE HERE</button>
+</div>
 </div>
 
 <div class="sfxd-settings" id="sfxdSettingsPanel" hidden>
@@ -2041,16 +2153,18 @@
 <script src="js/diagnostics.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/compx-license.js?v=65"></script>
-<script src="js/compx-loader.js?v=118"></script>
+<script src="js/compx-loader.js?v=121"></script>
 <script src="js/license-gate.js"></script>
-<script src="js/orbit-global-dock.js?v=1"></script>
+<script src="js/orbit-global-dock.js?v=2"></script>
 <script src="js/orbit-library-ui.js?v=1"></script>
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
-<script src="js/orbit-sfx.js?v=1"></script>
+<script src="js/orbit-arrow.js?v=1"></script>
+<script src="js/orbit-colorfx.js?v=2"></script>
+<script src="js/orbit-sfx.js?v=2"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>
-<script src="js/orbit-polish.js?v=2"></script>
+<script src="js/orbit-polish.js?v=3"></script>
 <!-- main.js, advanced_features.js, graph20.js, colorplate.js, composition-library.js injected by compx-loader.js after licence verified. -->
 </body>
 </html>
