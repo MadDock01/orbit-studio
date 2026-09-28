@@ -10593,9 +10593,12 @@ function compxTravelPathPolyInComp(picked, time) {
     if (!shapeVal || !shapeVal.vertices || shapeVal.vertices.length < 2) return null;
     var flat = _cmFlatten(shapeVal, 12);
     if (!flat || flat.length < 2) return null;
+    // Layer.toComp() is expression-only; it threw here every time, so the
+    // travel path always came back empty.
     var layer = picked.layer, out = [], i, pt;
+    var m = compxMorphMatrix(layer, time);
     for (i = 0; i < flat.length; i++) {
-      pt = layer.toComp([flat[i][0], flat[i][1]]);
+      pt = compxMorphApply(m, [flat[i][0], flat[i][1]]);
       out.push([pt[0], pt[1]]);
     }
     return out;
@@ -19116,28 +19119,74 @@ function compxMorphRect(layer, time) {
   return null;
 }
 
-// A layer's Position is expressed in its parent's space, so the target's
-// comp-space point has to be converted before it can be keyed on a child.
-function compxMorphToParentSpace(layer, compPoint) {
+// Layer.toComp()/fromComp() exist only in expressions, not in ExtendScript,
+// so the transforms are composed here as 2D affine matrices
+// [a, b, c, d, tx, ty]:  x' = a*x + c*y + tx,  y' = b*x + d*y + ty
+// (a 3D layer is flattened to its X/Y and Z rotation).
+function compxMorphMul(m, n) {
+  return [
+    m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+    m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+    m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]
+  ];
+}
+function compxMorphApply(m, p) {
+  return [p[0] * m[0] + p[1] * m[2] + m[4], p[0] * m[1] + p[1] * m[3] + m[5]];
+}
+function compxMorphInvert(m) {
+  var det = m[0] * m[3] - m[1] * m[2];
+  if (Math.abs(det) < 1e-12) return [1, 0, 0, 1, 0, 0];
+  var ia = m[3] / det, ib = -m[1] / det, ic = -m[2] / det, id = m[0] / det;
+  return [ia, ib, ic, id, -(ia * m[4] + ic * m[5]), -(ib * m[4] + id * m[5])];
+}
+function compxMorphPosAt(layer, time) {
+  var tr = compxMorphTransform(layer), pos = tr.property("ADBE Position");
+  if (pos.dimensionsSeparated) {
+    return [tr.property("ADBE Position_0").valueAtTime(time, false), tr.property("ADBE Position_1").valueAtTime(time, false),
+      layer.threeDLayer ? tr.property("ADBE Position_2").valueAtTime(time, false) : 0];
+  }
+  var v = pos.valueAtTime(time, false);
+  return [v[0], v[1], v.length > 2 ? v[2] : 0];
+}
+// Layer space -> comp space, through every parent.
+function compxMorphMatrix(layer, time) {
+  var tr = compxMorphTransform(layer);
+  var pos = compxMorphPosAt(layer, time);
+  var ap = tr.property("ADBE Anchor Point").valueAtTime(time, false);
+  var sc = tr.property("ADBE Scale").valueAtTime(time, false);
+  var rot = 0;
+  try { rot = tr.property("ADBE Rotate Z").valueAtTime(time, false); } catch (eR) { rot = 0; }
+  var r = rot * Math.PI / 180, sx = sc[0] / 100, sy = sc[1] / 100;
+  var a = Math.cos(r) * sx, b = Math.sin(r) * sx, c = -Math.sin(r) * sy, d = Math.cos(r) * sy;
+  var m = [a, b, c, d, pos[0] - (ap[0] * a + ap[1] * c), pos[1] - (ap[0] * b + ap[1] * d)];
+  var parent = null;
+  try { parent = layer.parent; } catch (eP) { parent = null; }
+  return parent ? compxMorphMul(compxMorphMatrix(parent, time), m) : m;
+}
+function compxMorphWorldRot(m) { return Math.atan2(m[1], m[0]) * 180 / Math.PI; }
+function compxMorphWorldScale(m) { return [Math.sqrt(m[0] * m[0] + m[1] * m[1]), Math.sqrt(m[2] * m[2] + m[3] * m[3])]; }
+function compxMorphParentMatrix(layer, time) {
   var parent = null;
   try { parent = layer.parent; } catch (e) { parent = null; }
-  if (!parent) return compPoint;
-  try {
-    var p = parent.fromComp(compPoint);
-    return [p[0], p[1], p.length > 2 ? p[2] : 0];
-  } catch (e) {
-    compxAuditFallback("HOST_MORPH_PARENTSPACE_001", e);
-    return compPoint;
-  }
+  return parent ? compxMorphMatrix(parent, time) : [1, 0, 0, 1, 0, 0];
+}
+// The middle of what the layer draws, in comp space.
+function compxMorphVisualCenter(layer, time) {
+  var r = compxMorphRect(layer, time);
+  var local = r ? [r.left + r.width / 2, r.top + r.height / 2] : compxMorphTransform(layer).property("ADBE Anchor Point").valueAtTime(time, false);
+  return compxMorphApply(compxMorphMatrix(layer, time), local);
 }
 
-function compxMorphCompPoint(layer, time) {
-  try {
-    var p = layer.toComp([0, 0, 0], time);
-    return [p[0], p[1], p.length > 2 ? p[2] : 0];
-  } catch (e) { compxAuditFallback("HOST_MORPH_COMPPOINT_001", e); }
-  var v = compxMorphTransform(layer).property("ADBE Position").valueAtTime(time, false);
-  return [v[0], v[1], v.length > 2 ? v[2] : 0];
+// Joining X/Y(/Z) back into one Position, when nothing is keyed on them.
+function compxMorphJoinPosition(layer) {
+  var tr = compxMorphTransform(layer), pos = tr.property("ADBE Position");
+  if (!pos.dimensionsSeparated) return true;
+  var names = ["ADBE Position_0", "ADBE Position_1", "ADBE Position_2"], i;
+  for (i = 0; i < names.length; i++) {
+    var p = tr.property(names[i]);
+    if (p && (p.numKeys > 0 || p.expressionEnabled)) return false;
+  }
+  try { pos.dimensionsSeparated = false; return true; } catch (e) { return false; }
 }
 
 function compxMorphFitValue(prop, vec) {
@@ -19198,28 +19247,17 @@ function compxMorphShortestRotation(from, to) {
   return from + delta;
 }
 
-function compxMorphScaleToMatch(source, target, time) {
-  var sRect = compxMorphRect(source, time);
-  var tRect = compxMorphRect(target, time);
-  var sScale = compxMorphTransform(source).property("ADBE Scale").value;
-  if (!sRect || !tRect) return null;
-  if (sRect.width < 0.01 || sRect.height < 0.01) return null;
-  var tScale = [100, 100];
-  try { tScale = compxMorphTransform(target).property("ADBE Scale").value; } catch (e) { compxAuditFallback("HOST_MORPH_TSCALE_001", e); }
-  var sx = (tScale[0] * tRect.width) / sRect.width;
-  var sy = (tScale[1] * tRect.height) / sRect.height;
-  if (!isFinite(sx) || !isFinite(sy)) return null;
-  var out = [sx, sy];
-  if (sScale.length > 2) out.push(sScale[2]);
-  return out;
-}
-
 function compxMorphKey(prop, time, value) {
   try { prop.setValueAtTime(time, value); return true; }
   catch (e) { compxAuditFallback("HOST_MORPH_KEY_001", e); return false; }
 }
 
 // 1. MORPH — every selected layer travels into the target
+//
+// Each source ends with its visual middle on the target's visual middle,
+// the target's on-screen rotation and a scale that makes the two the same
+// size on screen — worked out through parents, anchors and scale, so it
+// holds for parented layers and off-centre anchors too.
 function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, centerAnchors) {
   var undoOpen = false;
   try {
@@ -19244,44 +19282,77 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
     undoOpen = true;
 
     if (centerAnchors) compxMorphCenterAnchor(target, t0);
-    var targetPoint = compxMorphCompPoint(target, t0);
-    var targetRot = 0;
-    try { targetRot = compxMorphTransform(target).property("ADBE Rotate Z").valueAtTime(t0, false); } catch (eT) { targetRot = 0; }
+    var tM = compxMorphMatrix(target, t0);
+    var tCenter = compxMorphVisualCenter(target, t0);
+    var tRot = compxMorphWorldRot(tM);
+    var tScale = compxMorphWorldScale(tM);
+    var tRect = compxMorphRect(target, t0);
+    var tZ = compxMorphPosAt(target, t0)[2];
 
-    var moved = 0, skipped = 0, locked = 0, i;
+    var moved = 0, skipped = 0, locked = 0, keyed = [], i;
     for (i = 0; i < sources.length; i++) {
       var layer = sources[i];
       if (layer.locked) { locked++; continue; }
-      if (layer === target) continue;
-
-      var start = t0 + i * stagger;
-      var end = start + dur;
-
-      if (centerAnchors) compxMorphCenterAnchor(layer, start);
 
       var tr = compxMorphTransform(layer);
       var posProp = tr.property("ADBE Position");
       var scaleProp = tr.property("ADBE Scale");
       var rotProp = tr.property("ADBE Rotate Z");
+      var opProp = tr.property("ADBE Opacity");
 
-      if (!posProp || posProp.expressionEnabled) { skipped++; continue; }
-      // Separated dimensions have no single Position to key.
-      if (posProp.numKeys === 0 && posProp.value === undefined) { skipped++; continue; }
+      // A layer this tab morphed before gets its keys replaced; one the user
+      // animated themselves is left alone rather than mixed with new keys.
+      var ours = String(layer.comment || "").indexOf(COMPX_MORPH_TAG) === 0;
+      var animated = posProp.numKeys > 1 || scaleProp.numKeys > 1 || (rotProp && rotProp.numKeys > 1);
+      if (animated && !ours) { keyed.push(layer.name); continue; }
+      if (!compxMorphJoinPosition(layer) || posProp.expressionEnabled) { skipped++; continue; }
+      if (ours) {
+        var props = [posProp, scaleProp, rotProp, opProp], q;
+        for (q = 0; q < props.length; q++) {
+          if (!props[q] || props[q].expressionEnabled) continue;
+          var keep = props[q].numKeys ? props[q].keyValue(1) : null;
+          while (props[q].numKeys > 0) props[q].removeKey(props[q].numKeys);
+          if (keep !== null) props[q].setValue(keep);
+        }
+      }
 
+      var start = t0 + i * stagger;
+      var end = start + dur;
+      if (centerAnchors) compxMorphCenterAnchor(layer, start);
+
+      var sRect = compxMorphRect(layer, start);
+      var pM = compxMorphParentMatrix(layer, start);
+      var pRot = compxMorphWorldRot(pM), pScale = compxMorphWorldScale(pM);
+
+      // Rotation: the target's on-screen angle, in this layer's parent space.
+      var startRot = rotProp ? rotProp.valueAtTime(start, false) : 0;
+      var endRot = compxMorphShortestRotation(startRot, tRot - pRot);
+
+      // Scale: same on-screen size as the target.
+      var startScale = scaleProp.valueAtTime(start, false);
+      var endScale = null;
+      if (sRect && tRect && sRect.width > 0.01 && sRect.height > 0.01) {
+        var wx = tScale[0] * tRect.width / sRect.width, wy = tScale[1] * tRect.height / sRect.height;
+        endScale = [100 * wx / Math.max(1e-6, pScale[0]), 100 * wy / Math.max(1e-6, pScale[1])];
+        if (startScale.length > 2) endScale.push(startScale[2]);
+      }
+      var endSF = endScale ? [endScale[0] / 100, endScale[1] / 100] : [startScale[0] / 100, startScale[1] / 100];
+
+      // Position: put this layer's visual middle on the target's.
+      var ap = tr.property("ADBE Anchor Point").valueAtTime(start, false);
+      var off = sRect ? [sRect.left + sRect.width / 2 - ap[0], sRect.top + sRect.height / 2 - ap[1]] : [0, 0];
+      var er = endRot * Math.PI / 180;
+      var ox = off[0] * endSF[0], oy = off[1] * endSF[1];
+      var offParent = [ox * Math.cos(er) - oy * Math.sin(er), ox * Math.sin(er) + oy * Math.cos(er)];
+      var centerParent = compxMorphApply(compxMorphInvert(pM), tCenter);
       var startPos = posProp.valueAtTime(start, false);
-      var endVec = compxMorphToParentSpace(layer, targetPoint);
-      var endPos = compxMorphFitValue(posProp, endVec);
+      var endPos = compxMorphFitValue(posProp, [centerParent[0] - offParent[0], centerParent[1] - offParent[1],
+        startPos.length > 2 ? (layer.threeDLayer && target.threeDLayer ? tZ : startPos[2]) : 0]);
 
       compxMorphKey(posProp, start, startPos);
       if (overshoot > 0) {
-        var peakT = start + dur * 0.72;
-        var peak = [];
-        var d;
-        var startArr = (startPos instanceof Array) ? startPos : [startPos];
-        var endArr = (endPos instanceof Array) ? endPos : [endPos];
-        for (d = 0; d < endArr.length; d++) {
-          peak.push(endArr[d] + (endArr[d] - startArr[d]) * overshoot * 0.25);
-        }
+        var peakT = start + dur * 0.72, peak = [], d;
+        for (d = 0; d < endPos.length; d++) peak.push(endPos[d] + (endPos[d] - startPos[d]) * overshoot * 0.25);
         compxMorphKey(posProp, peakT, compxMorphFitValue(posProp, peak));
         compxMorphEaseAt(posProp, peakT, 70, 70);
       }
@@ -19289,33 +19360,26 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
       compxMorphEaseAt(posProp, start, 33, 85);
       compxMorphEaseAt(posProp, end, 85, 33);
 
-      if (scaleProp && !scaleProp.expressionEnabled) {
-        var endScale = compxMorphScaleToMatch(layer, target, start);
-        if (endScale) {
-          compxMorphKey(scaleProp, start, scaleProp.valueAtTime(start, false));
-          compxMorphKey(scaleProp, end, compxMorphFitValue(scaleProp, endScale));
-          compxMorphEaseAt(scaleProp, start, 33, 85);
-          compxMorphEaseAt(scaleProp, end, 85, 33);
-        }
+      if (endScale && !scaleProp.expressionEnabled) {
+        compxMorphKey(scaleProp, start, startScale);
+        compxMorphKey(scaleProp, end, compxMorphFitValue(scaleProp, endScale));
+        compxMorphEaseAt(scaleProp, start, 33, 85);
+        compxMorphEaseAt(scaleProp, end, 85, 33);
       }
 
       if (rotProp && !rotProp.expressionEnabled) {
-        var startRot = rotProp.valueAtTime(start, false);
         compxMorphKey(rotProp, start, startRot);
-        compxMorphKey(rotProp, end, compxMorphShortestRotation(startRot, targetRot));
+        compxMorphKey(rotProp, end, endRot);
         compxMorphEaseAt(rotProp, start, 33, 85);
         compxMorphEaseAt(rotProp, end, 85, 33);
       }
 
-      if (fadeOut) {
-        var opProp = tr.property("ADBE Opacity");
-        if (opProp && !opProp.expressionEnabled) {
-          var fadeStart = Math.max(start, end - fd * 3);
-          compxMorphKey(opProp, fadeStart, opProp.valueAtTime(fadeStart, false));
-          compxMorphKey(opProp, end, 0);
-          compxMorphEaseAt(opProp, fadeStart, 50, 50);
-          compxMorphEaseAt(opProp, end, 50, 50);
-        }
+      if (fadeOut && opProp && !opProp.expressionEnabled) {
+        var fadeStart = Math.max(start, end - fd * 3);
+        compxMorphKey(opProp, fadeStart, opProp.valueAtTime(fadeStart, false));
+        compxMorphKey(opProp, end, 0);
+        compxMorphEaseAt(opProp, fadeStart, 50, 50);
+        compxMorphEaseAt(opProp, end, 50, 50);
       }
 
       compxMorphTag(layer, COMPX_MORPH_TAG);
@@ -19325,18 +19389,19 @@ function ae_morphLayers(durationFrames, staggerFrames, overshootPct, fadeOut, ce
     app.endUndoGroup();
     undoOpen = false;
 
-    if (moved === 0) return toolResult(false, "Nothing to morph — every selected layer was locked or already expression driven.");
-    var msg = moved + " layer" + (moved === 1 ? "" : "s") + " morphing into " + target.name + ".";
-    if (locked) msg += " " + locked + " locked skipped.";
-    if (skipped) msg += " " + skipped + " skipped (expression on Position).";
-    return toolResult(true, msg);
+    var tail = "";
+    if (locked) tail += " " + locked + " locked skipped.";
+    if (skipped) tail += " " + skipped + " skipped (Position has an expression, or separated dimensions with keys).";
+    if (keyed.length) tail += " Already animated, left alone: " + keyed.slice(0, 4).join(", ") + (keyed.length > 4 ? "…" : "") + ".";
+    if (moved === 0) return toolResult(false, "Nothing to morph." + tail);
+    return toolResult(true, moved + " layer" + (moved === 1 ? "" : "s") + " morphing into " + target.name + "." + tail);
   } catch (e) {
     if (undoOpen) try { app.endUndoGroup(); } catch (eEnd) { compxAuditFallback("HOST_MORPH_UNDO_001", eEnd); }
     return toolResult(false, "Morph error: " + String(e));
   }
 }
 
-// 2. STRETCH — squash along travel, stretch across it, driven by speed
+// 2. STRETCH — stretch along travel, squash across it, driven by speed
 function ae_morphStretch(amountPct) {
   var undoOpen = false;
   try {
@@ -19359,15 +19424,20 @@ function ae_morphStretch(amountPct) {
       if (!scaleProp) continue;
       // Speed is normalised against a reference of 1800 px/s, so the effect
       // tops out instead of turning a fast move into a sliver.
+      // Stretch along the main direction of travel, squash across it, and
+      // keep Z on a 3D layer (a 2-value result there is an expression error).
       scaleProp.expression =
         "// COMPX_MORPH_STRETCH\n" +
         "try {\n" +
         "  var amt = " + amount + ";\n" +
         "  var ref = 1800;\n" +
-        "  var v = length(thisLayer.transform.position.velocityAtTime(time));\n" +
-        "  var k = Math.min(v / ref, 1) * amt;\n" +
+        "  var vel = thisLayer.transform.position.velocityAtTime(time);\n" +
+        "  var k = Math.min(length(vel) / ref, 1) * amt;\n" +
+        "  var across = Math.abs(vel[0]) >= Math.abs(vel[1]);\n" +
         "  var s = value;\n" +
-        "  [ s[0] * (1 - k), s[1] * (1 + k) ];\n" +
+        "  var sx = s[0] * (across ? 1 + k : 1 - k);\n" +
+        "  var sy = s[1] * (across ? 1 - k : 1 + k);\n" +
+        "  s.length > 2 ? [sx, sy, s[2]] : [sx, sy];\n" +
         "} catch (err) {\n" +
         "  value;\n" +
         "}";
@@ -19496,6 +19566,11 @@ function ae_morphSlice(count, vertical) {
         var mask = copy.property("ADBE Mask Parade").addProperty("ADBE Mask Atom");
         mask.name = "Slice " + (s + 1);
         mask.property("ADBE Mask Shape").setValue(shape);
+        // With masks already on the layer, Add would merge the strip into
+        // them; Intersect cuts the strip out of what the layer already shows.
+        if (copy.property("ADBE Mask Parade").numProperties > 1) {
+          try { mask.maskMode = MaskMode.INTERSECT; } catch (eMode) { compxAuditFallback("HOST_MORPH_SLICE_MODE_001", eMode); }
+        }
         compxMorphTag(copy, COMPX_MORPH_GEN);
         made++;
       }
@@ -19532,7 +19607,9 @@ function ae_morphClean() {
       layer = comp.layer(i);
       tag = "";
       try { tag = String(layer.comment || ""); } catch (eC) { tag = ""; }
-      if (tag.indexOf(COMPX_MORPH_GEN) < 0) continue;
+      // Only this tab's copies: the grid rig and the guide grid also carry
+      // COMPX_MORPH_GEN inside their tags and used to be deleted here.
+      if (tag.indexOf(COMPX_MORPH_GEN) !== 0) continue;
       try { layer.locked = false; } catch (eL) { compxAuditFallback("HOST_MORPH_CLEAN_LOCK_001", eL); }
       try { layer.remove(); removed++; } catch (eR) { compxAuditFallback("HOST_MORPH_CLEAN_RM_001", eR); }
     }
@@ -19544,7 +19621,7 @@ function ae_morphClean() {
       layer = comp.layer(i);
       tag = "";
       try { tag = String(layer.comment || ""); } catch (eC2) { tag = ""; }
-      if (tag.indexOf(COMPX_MORPH_TAG) < 0) continue;
+      if (tag !== COMPX_MORPH_TAG) continue;
       try {
         var scaleProp = compxMorphTransform(layer).property("ADBE Scale");
         if (scaleProp && scaleProp.expressionEnabled &&
