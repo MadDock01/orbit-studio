@@ -1604,3 +1604,126 @@
 #app #panel-sfxdesign #sfxdRestoreDropped[hidden] {
   display: none !important;
 }
+
+/* ---- Search tabs ---- */
+#app #panel-sfxdesign .sfxd-tabs {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 2px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-bottom: 1px solid var(--sx-line-soft) !important;
+  scrollbar-width: none !important;
+}
+#app #panel-sfxdesign .sfxd-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+#app #panel-sfxdesign .sfxd-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 150px !important;
+  border-bottom: 2px solid transparent !important;
+}
+#app #panel-sfxdesign .sfxd-tab.is-on {
+  border-bottom-color: var(--sx-accent) !important;
+}
+#app #panel-sfxdesign .sfxd-tabbtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  height: 26px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 7px !important;
+  border: 0 !important;
+  border-radius: 6px 6px 0 0 !important;
+  background: transparent !important;
+  color: var(--sx-dim) !important;
+  font: 600 10px/1 "Segoe UI", sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+#app #panel-sfxdesign .sfxd-tabbtn span {
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+#app #panel-sfxdesign .sfxd-tabbtn svg {
+  flex: 0 0 auto !important;
+  width: 11px !important;
+  height: 11px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+}
+#app #panel-sfxdesign .sfxd-tab.is-on .sfxd-tabbtn {
+  color: var(--sx-text) !important;
+  background: #0d150f !important;
+}
+#app #panel-sfxdesign .sfxd-tabbtn:hover {
+  color: var(--sx-text) !important;
+}
+#app #panel-sfxdesign .sfxd-tabbtn:focus-visible,
+#app #panel-sfxdesign .sfxd-tabclose:focus-visible,
+#app #panel-sfxdesign .sfxd-tabnew:focus-visible {
+  outline: 1px solid var(--sx-accent) !important;
+  outline-offset: -1px !important;
+}
+#app #panel-sfxdesign .sfxd-tabclose,
+#app #panel-sfxdesign .sfxd-tabnew {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 2px 4px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--sx-faint) !important;
+  font: 500 9px/1 "Segoe UI", sans-serif !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+#app #panel-sfxdesign .sfxd-tabnew {
+  margin-left: auto !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 15px !important;
+}
+#app #panel-sfxdesign .sfxd-tabclose:hover,
+#app #panel-sfxdesign .sfxd-tabnew:hover {
+  background: #13221a !important;
+  color: var(--sx-text) !important;
+}
+#app #panel-sfxdesign .sfxd-tabnew:disabled {
+  opacity: 0.35 !important;
+  cursor: default !important;
+}
+
+#app #panel-sfxdesign .sfxd-kbd {
+  flex: 0 0 auto !important;
+  padding: 2px 5px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 4px !important;
+  color: var(--sx-faint) !important;
+  font: 600 8px/1 "Segoe UI", sans-serif !important;
+  white-space: nowrap !important;
+}
+@media (max-width: 420px) {
+  #app #panel-sfxdesign .sfxd-kbd {
+    display: none !important;
+  }
+}

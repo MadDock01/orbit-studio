@@ -260,6 +260,7 @@
 
       search: document.getElementById("sfxdSearch"),
       searchClear: document.getElementById("sfxdSearchClear"),
+      tabs: document.getElementById("sfxdTabs"),
       filters: document.getElementById("sfxdFilters"),
       favCount: document.getElementById("sfxdFavCount"),
       density: document.getElementById("sfxdDensity"),
@@ -322,6 +323,10 @@
     var dropped = readJson("dropped", {});          // path -> 1, removed from the index (file kept)
     var labelFilter = read("labelFilter", "");      // "" is every label
     var lockPitch = read("lockPitch", "0") === "1";
+    // Search tabs: each keeps its own query and filter chip.
+    var tabs = readJson("tabs", null);
+    if (!tabs || !tabs.length) tabs = [{ q: "", filter: filter }];
+    var tabIdx = Math.min(tabs.length - 1, Math.max(0, Number(read("tabIdx", 0)) || 0));
     var items = [];                                 // the whole index
     var view = [];                                  // what the list is showing
     var activeFolder = read("activeFolder", "");    // "" is every folder
@@ -846,9 +851,87 @@
       if (ev.target && ev.target.id === "sfxdImportOld") importOldLibrary();
     });
 
-    if (el.search) el.search.addEventListener("input", render);
+    // ---------- search tabs ----------
+    var MAX_TABS = 8;
+    function saveTabs() { writeJson("tabs", tabs); write("tabIdx", tabIdx); }
+
+    function paintTabs() {
+      if (!el.tabs) return;
+      var html = "";
+      for (var i = 0; i < tabs.length; i++) {
+        var on = i === tabIdx;
+        var label = tabs[i].q ? tabs[i].q : (i === 0 ? "All sounds" : "New search");
+        html += '<span class="sfxd-tab' + (on ? " is-on" : "") + '">' +
+          '<button type="button" role="tab" class="sfxd-tabbtn" data-sfxd-tab="' + i + '" aria-selected="' + on + '" tabindex="' + (on ? "0" : "-1") + '" title="' + escapeAttr(label) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>' +
+          "<span>" + escapeHtml(label) + "</span></button>" +
+          (tabs.length > 1 ? '<button type="button" class="sfxd-tabclose" data-sfxd-tabclose="' + i + '" title="Close search" aria-label="Close search">✕</button>' : "") +
+          "</span>";
+      }
+      html += '<button type="button" class="sfxd-tabnew" id="sfxdTabNew" title="Open a new search tab" aria-label="New search"' + (tabs.length >= MAX_TABS ? " disabled" : "") + '>+</button>';
+      el.tabs.innerHTML = html;
+    }
+
+    function useTab(i, focus) {
+      tabIdx = Math.max(0, Math.min(tabs.length - 1, i));
+      var t = tabs[tabIdx];
+      if (el.search) el.search.value = t.q || "";
+      filter = t.filter || "all";
+      write("filter", filter);
+      saveTabs();
+      paintTabs();
+      paintFilters();
+      render();
+      if (focus && el.search) el.search.focus();
+    }
+
+    if (el.tabs) {
+      el.tabs.addEventListener("click", function (ev) {
+        var close = ev.target.closest("[data-sfxd-tabclose]");
+        if (close) {
+          var ci = Number(close.getAttribute("data-sfxd-tabclose"));
+          tabs.splice(ci, 1);
+          if (tabIdx > ci || tabIdx >= tabs.length) tabIdx = Math.max(0, tabIdx - 1);
+          useTab(tabIdx);
+          return;
+        }
+        if (ev.target.closest("#sfxdTabNew")) {
+          if (tabs.length >= MAX_TABS) return;
+          tabs.push({ q: "", filter: "all" });
+          useTab(tabs.length - 1, true);
+          return;
+        }
+        var b = ev.target.closest("[data-sfxd-tab]");
+        if (b) useTab(Number(b.getAttribute("data-sfxd-tab")));
+      });
+      el.tabs.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        if (!ev.target.closest("[data-sfxd-tab]")) return;
+        ev.preventDefault();
+        useTab((tabIdx + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length);
+        var on = el.tabs.querySelector('[data-sfxd-tab="' + tabIdx + '"]');
+        if (on) on.focus();
+      });
+    }
+
+    var tabNameTimer = 0;
+    if (el.search) el.search.addEventListener("input", function () {
+      tabs[tabIdx].q = el.search.value.trim();
+      saveTabs();
+      clearTimeout(tabNameTimer);
+      tabNameTimer = setTimeout(paintTabs, 250);
+      render();
+    });
     if (el.searchClear) el.searchClear.addEventListener("click", function () {
-      el.search.value = ""; render(); el.search.focus();
+      el.search.value = ""; tabs[tabIdx].q = ""; saveTabs(); paintTabs(); render(); el.search.focus();
+    });
+
+    // Ctrl/Cmd+K jumps to the search while the workspace is on screen.
+    document.addEventListener("keydown", function (ev) {
+      if (!(ev.ctrlKey || ev.metaKey) || String(ev.key).toLowerCase() !== "k") return;
+      if (!panel.offsetParent) return;
+      ev.preventDefault();
+      if (el.search) { el.search.focus(); el.search.select(); }
     });
 
     if (el.filters) el.filters.addEventListener("click", function (ev) {
@@ -856,6 +939,8 @@
       if (!chip) return;
       filter = chip.getAttribute("data-sfxd-filter");
       write("filter", filter);
+      tabs[tabIdx].filter = filter;
+      saveTabs();
       paintFilters();
       render();
     });
@@ -1755,6 +1840,9 @@
     }
     if (el.host && window.CompXHostBridge) el.host.classList.add("is-live");
 
+    if (el.search) el.search.value = tabs[tabIdx].q || "";
+    filter = tabs[tabIdx].filter || filter;
+    paintTabs();
     paintLockPitch();
     paintLabelFilter();
     paintDropped();
