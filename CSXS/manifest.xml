@@ -4,6 +4,7 @@
     xmlns:ExtensionBundleId="http://ns.adobe.com/extension">
   <ExtensionList>
     <Extension Id="com.compxorbit.studio.main" Version="2.6.0" />
+    <Extension Id="com.compxorbit.studio.sfx" Version="2.6.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -47,6 +48,46 @@
             <MaxSize>
               <Height>2000</Height>
               <Width>900</Width>
+            </MaxSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./icons/icon-normal.png</Icon>
+            <Icon Type="RollOver">./icons/icon-rollover.png</Icon>
+            <Icon Type="Darkest">./icons/icon-darkest.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Sound Designer on its own, opened from the SFX tab's Undock button or
+         Window > Extensions > Orbit Studio SFX. Same page as the main panel;
+         js/orbit-solo.js sees this id and shows only the Sound Designer. -->
+    <Extension Id="com.compxorbit.studio.sfx">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Orbit Studio SFX</Menu>
+          <Geometry>
+            <Size>
+              <Height>560</Height>
+              <Width>340</Width>
+            </Size>
+            <MinSize>
+              <Height>320</Height>
+              <Width>260</Width>
+            </MinSize>
+            <MaxSize>
+              <Height>2000</Height>
+              <Width>1400</Width>
             </MaxSize>
           </Geometry>
           <Icons>

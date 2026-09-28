@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: file:; script-src 'self' 'wasm-unsafe-eval' http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; connect-src 'self' https://esiiawfjzmuqplzzdoog.supabase.co https://esiiawfjzmuqplzzdoog.functions.supabase.co http://127.0.0.1:*; object-src 'none'; base-uri 'none'; frame-src 'none'; worker-src 'self' blob:;"/>
 <title>Orbit Studio</title>
+<script src="js/orbit-solo.js?v=1"></script>
 <link href="css/style.css?v=12" rel="stylesheet"/>
 <link href="css/library-visual.css?v=7" rel="stylesheet"/>
 <link href="css/graph20.css?v=9" rel="stylesheet"/>
@@ -35,7 +36,7 @@
 <link href="css/orbit-stagger.css?v=3" rel="stylesheet"/>
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=3" rel="stylesheet"/>
-<link href="css/orbit-sfx.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-sfx.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
@@ -1532,8 +1533,19 @@
 <span class="sfxd-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h2.4l1.8-6 2.6 12 2.6-15 2.4 9 1.6-3H21"/></svg></span>
 <span class="sfxd-title"><strong>SOUND DESIGNER</strong><small>Library workspace</small></span>
 <span class="sfxd-host" id="sfxdHost" title="Which Adobe host this panel is talking to"><i></i>After Effects</span>
+<button type="button" class="sfxd-hicon" id="sfxdUndock" title="Undock: open Sound Designer in its own panel" aria-label="Undock Sound Designer"><svg class="sfxd-ico-undock" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M13 3h8v8M21 3l-9 9"/></svg><svg class="sfxd-ico-dock" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M17 9l-4 3 4 3"/></svg></button>
 <button type="button" class="sfxd-hicon" id="sfxdTogglePreview" aria-pressed="true" title="Show or hide the spectrum preview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2.6l2-5 2.6 10 2.4-13 2.2 8 1.6-2.4H21"/></svg></button>
 <button type="button" class="sfxd-hicon" id="sfxdSettings" aria-expanded="false" title="Workspace settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.9 5.9l1.7 1.7M16.4 16.4l1.7 1.7M18.1 5.9l-1.7 1.7M7.6 16.4l-1.7 1.7"/></svg></button>
+</div>
+
+<div class="sfxd-away" id="sfxdAway" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M13 3h8v8M21 3l-9 9"/></svg>
+<strong>Sound Designer is in its own panel</strong>
+<span>It is open as <b>Orbit Studio SFX</b>. Folders, favourites, labels and pins stay in sync between the two.</span>
+<div class="sfxd-away-actions">
+<button type="button" class="tool-btn primary" id="sfxdAwayFocus">SHOW PANEL</button>
+<button type="button" class="tool-btn" id="sfxdAwayHere">USE HERE</button>
+</div>
 </div>
 
 <div class="sfxd-settings" id="sfxdSettingsPanel" hidden>
@@ -2047,10 +2059,10 @@
 <script src="js/orbit-library-ui.js?v=1"></script>
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
-<script src="js/orbit-sfx.js?v=1"></script>
+<script src="js/orbit-sfx.js?v=2"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>
-<script src="js/orbit-polish.js?v=2"></script>
+<script src="js/orbit-polish.js?v=3"></script>
 <!-- main.js, advanced_features.js, graph20.js, colorplate.js, composition-library.js injected by compx-loader.js after licence verified. -->
 </body>
 </html>

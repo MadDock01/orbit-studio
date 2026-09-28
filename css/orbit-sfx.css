@@ -1860,3 +1860,69 @@
     flex: 1 1 100% !important;
   }
 }
+
+/* ============================================================
+   Undock: button, the "in its own panel" card, and solo layout
+   ============================================================ */
+#app #panel-sfxdesign #sfxdUndock .sfxd-ico-dock { display: none !important; }
+#app #panel-sfxdesign #sfxdUndock.is-dock .sfxd-ico-dock { display: block !important; }
+#app #panel-sfxdesign #sfxdUndock.is-dock .sfxd-ico-undock { display: none !important; }
+
+/* While the SFX panel is open, the main panel's tab shows only this card. */
+#app #panel-sfxdesign .sfxd-shell.is-away > :not(.sfxd-head):not(.sfxd-away) { display: none !important; }
+#app #panel-sfxdesign .sfxd-away[hidden] { display: none !important; }
+#app #panel-sfxdesign .sfxd-away {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin-top: 10px !important;
+  padding: 22px 16px !important;
+  border: 1px dashed #2f4a39 !important;
+  border-radius: 10px !important;
+  background: var(--sx-card) !important;
+  text-align: center !important;
+}
+#app #panel-sfxdesign .sfxd-away > svg {
+  width: 26px !important;
+  height: 26px !important;
+  fill: none !important;
+  stroke: var(--sx-accent) !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  filter: drop-shadow(0 0 6px rgba(60, 255, 95, 0.35)) !important;
+}
+#app #panel-sfxdesign .sfxd-away strong {
+  color: var(--sx-text) !important;
+  font: 700 12px/1.3 "Segoe UI", sans-serif !important;
+}
+#app #panel-sfxdesign .sfxd-away > span {
+  max-width: 300px !important;
+  color: var(--sx-dim) !important;
+  font: 500 10px/1.45 "Segoe UI", sans-serif !important;
+}
+#app #panel-sfxdesign .sfxd-away b { color: var(--sx-text) !important; font-weight: 700 !important; }
+#app #panel-sfxdesign .sfxd-away-actions {
+  display: flex !important;
+  gap: 6px !important;
+  margin-top: 4px !important;
+}
+#app #panel-sfxdesign .sfxd-away-actions .tool-btn {
+  min-width: 96px !important;
+  font-size: 9px !important;
+}
+
+/* Solo panel (com.compxorbit.studio.sfx): Sound Designer and nothing else. */
+html.orbit-solo-sfx #app .cx-title-bar,
+html.orbit-solo-sfx #app #appTabsRow,
+html.orbit-solo-sfx #app #orbitGlobalDock,
+html.orbit-solo-sfx #app #orbitBottomDock,
+html.orbit-solo-sfx #app .app-panel:not(#panel-sfxdesign) {
+  display: none !important;
+}
+html.orbit-solo-sfx #app #panel-sfxdesign {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}

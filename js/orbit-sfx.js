@@ -74,6 +74,7 @@
 
   function write(key, value) {
     try { localStorage.setItem(STORE + key, String(value)); } catch (e) { /* sandboxed storage */ }
+    if (SHARED[key]) shareSoon();
   }
 
   function readJson(key, fallback) {
@@ -85,7 +86,84 @@
 
   function writeJson(key, value) {
     try { localStorage.setItem(STORE + key, JSON.stringify(value)); } catch (e) { /* quota or sandbox */ }
+    if (SHARED[key]) shareSoon();
   }
+
+  // ---------- shared library (main panel + undocked SFX panel) ----------
+  // The library itself (folders, favourites, labels, pins, removed sounds,
+  // Freesound key) lives in one file both panels read, because two CEP
+  // panels are not guaranteed to share localStorage. localStorage stays the
+  // working copy; the file is loaded over it at start and rewritten after
+  // every change, and the other panel is told to reload through a CEP event
+  // (or the storage event, when the two do share storage).
+  // Layout prefs (view, sort, widths) stay per panel on purpose.
+  var SHARED = { folders: "json", favs: "json", labels: "json", pins: "json", dropped: "json", fsKey: "text" };
+  var SYNC_EVENT = "com.compxorbit.sfx.sync";
+  var INSTANCE = String(Date.now()) + Math.random().toString(36).slice(2, 8);
+  var shareTimer = 0;
+
+  function sharedPath() {
+    if (!fsMod || !pathMod || !osMod) return "";
+    try {
+      var base = process.platform === "win32"
+        ? (process.env.APPDATA || pathMod.join(osMod.homedir(), "AppData", "Roaming"))
+        : pathMod.join(osMod.homedir(), "Library", "Application Support");
+      return pathMod.join(base, "CompX Orbit", "sfx-library.json");
+    } catch (e) { return ""; }
+  }
+
+  function loadShared() {
+    var file = sharedPath();
+    if (!file) return false;
+    var doc;
+    try { doc = JSON.parse(fsMod.readFileSync(file, "utf8")); } catch (e) { return false; }
+    var data = doc && doc.data;
+    if (!data || typeof data !== "object") return false;
+    Object.keys(SHARED).forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(data, key)) return;
+      var value = SHARED[key] === "json" ? JSON.stringify(data[key]) : String(data[key]);
+      try { localStorage.setItem(STORE + key, value); } catch (e) { /* sandboxed storage */ }
+    });
+    return true;
+  }
+
+  function saveShared() {
+    var file = sharedPath();
+    if (!file) return false;
+    var data = {};
+    Object.keys(SHARED).forEach(function (key) {
+      var raw = null;
+      try { raw = localStorage.getItem(STORE + key); } catch (e) { raw = null; }
+      if (raw === null) return;
+      if (SHARED[key] === "json") { try { data[key] = JSON.parse(raw); } catch (e2) { /* skip a bad value */ } }
+      else data[key] = raw;
+    });
+    try {
+      fsMod.mkdirSync(pathMod.dirname(file), { recursive: true });
+      var tmp = file + ".tmp";
+      fsMod.writeFileSync(tmp, JSON.stringify({ v: 1, rev: Date.now(), by: INSTANCE, data: data }), "utf8");
+      fsMod.renameSync(tmp, file);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function shareSoon() {
+    clearTimeout(shareTimer);
+    shareTimer = setTimeout(function () {
+      saveShared();
+      if (window.OrbitSolo) window.OrbitSolo.emit(SYNC_EVENT, { from: INSTANCE });
+    }, 80);
+  }
+
+  // Before init() reads anything: the file wins if there is one, otherwise
+  // this panel's current library seeds it.
+  (function primeShared() {
+    if (!sharedPath()) return;
+    var exists = false;
+    try { exists = fsMod.existsSync(sharedPath()); } catch (e) { exists = false; }
+    if (exists) loadShared();
+    else saveShared();
+  })();
 
   function baseName(p) {
     var s = String(p || "").replace(/[\\/]+$/, "");
@@ -2097,6 +2175,94 @@
         queueRowWaves();
       }, 140);
     });
+
+    // ---------- shared library: take the other panel's changes ----------
+    function applyShared(fromFile) {
+      if (fromFile && !loadShared()) return;
+      var nextFolders = readJson("folders", []);
+      var nextDropped = readJson("dropped", {});
+      var reindex = JSON.stringify(nextFolders) !== JSON.stringify(folders) ||
+        JSON.stringify(nextDropped) !== JSON.stringify(dropped);
+      folders = nextFolders;
+      dropped = nextDropped;
+      favs = readJson("favs", {});
+      labels = readJson("labels", {});
+      pins = readJson("pins", {});
+      fsKey = read("fsKey", "");
+      if (el.fsKey && document.activeElement !== el.fsKey) el.fsKey.value = fsKey;
+      if (reindex) rescan(true);
+      else { paintDropped(); paintFolders(); render(); }
+      paintFilters();
+    }
+
+    var syncTimer = 0;
+    function applySoon(fromFile) {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(function () { applyShared(fromFile); }, 60);
+    }
+
+    if (window.OrbitSolo) {
+      window.OrbitSolo.on(SYNC_EVENT, function (data) {
+        if (data.from !== INSTANCE) applySoon(true);
+      });
+    }
+    window.addEventListener("storage", function (ev) {
+      var key = ev.key || "";
+      if (key.indexOf(STORE) === 0 && SHARED[key.slice(STORE.length)]) applySoon(false);
+    });
+
+    // ---------- undock ----------
+    // The main panel's Undock button opens the SFX panel; while that panel
+    // is open the tab here shows a card instead of a second live copy.
+    // The SFX panel's Dock button hands back and closes itself.
+    var solo = window.OrbitSolo || null;
+    var SOLO_EVENT = "com.compxorbit.sfx.solo";
+    var undockBtn = document.getElementById("sfxdUndock");
+    var awayCard = document.getElementById("sfxdAway");
+
+    function showAway(on) {
+      if (!awayCard) return;
+      awayCard.hidden = !on;
+      if (el.shell) el.shell.classList.toggle("is-away", on);
+      if (on) stop();
+    }
+
+    if (solo && solo.mode === "sfx") {
+      if (undockBtn) {
+        undockBtn.title = "Dock back into Orbit Studio";
+        undockBtn.setAttribute("aria-label", undockBtn.title);
+        undockBtn.classList.add("is-dock");
+      }
+      solo.emit(SOLO_EVENT, { open: true });
+      solo.on(SOLO_EVENT, function (data) { if (data.ping) solo.emit(SOLO_EVENT, { open: true }); });
+      window.addEventListener("beforeunload", function () { solo.emit(SOLO_EVENT, { open: false }); });
+      if (undockBtn) undockBtn.addEventListener("click", function () {
+        stop();
+        solo.emit(SOLO_EVENT, { open: false, dock: true });
+        if (!solo.closeSelf()) say("Close this panel from its menu to dock it back.");
+      });
+    } else if (solo) {
+      solo.on(SOLO_EVENT, function (data) {
+        if (data.ping) return;
+        showAway(!!data.open);
+        if (!data.open) applySoon(true);
+        if (data.dock) {
+          var tabBtn = document.querySelector('[data-apptab="sfxdesign"]');
+          if (tabBtn) tabBtn.click();
+        }
+      });
+      solo.emit(SOLO_EVENT, { ping: true });
+      if (undockBtn) undockBtn.addEventListener("click", function () {
+        if (!solo.inHost) { say("Undock works inside After Effects: Window > Extensions > Orbit Studio SFX."); return; }
+        stop();
+        if (solo.openPanel(solo.SFX_ID)) showAway(true);
+        else say("Could not open the SFX panel. Try Window > Extensions > Orbit Studio SFX.", "error");
+      });
+      var focusBtn = document.getElementById("sfxdAwayFocus");
+      var hereBtn = document.getElementById("sfxdAwayHere");
+      if (focusBtn) focusBtn.addEventListener("click", function () { solo.openPanel(solo.SFX_ID); });
+      if (hereBtn) hereBtn.addEventListener("click", function () { showAway(false); applyShared(true); });
+    }
 
     // ---------- restore ----------
     if (el.sort) el.sort.value = sortBy;

@@ -412,10 +412,12 @@
 
   document.addEventListener("keydown", function (ev) {
     var mod = ev.ctrlKey || ev.metaKey;
-    if (!typing(ev.target) && !mod && !ev.altKey && ev.key === "/") {
+    // The undocked SFX panel has no other tabs to find.
+    var solo = document.documentElement.classList.contains("orbit-solo");
+    if (!solo && !typing(ev.target) && !mod && !ev.altKey && ev.key === "/") {
       ev.preventDefault(); open(); return;
     }
-    if (mod && ev.shiftKey && String(ev.key).toLowerCase() === "f") {
+    if (!solo && mod && ev.shiftKey && String(ev.key).toLowerCase() === "f") {
       ev.preventDefault(); open(); return;
     }
     if (mod && !ev.shiftKey && !ev.altKey) {
