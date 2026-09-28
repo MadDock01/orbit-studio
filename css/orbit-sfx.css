@@ -1753,3 +1753,110 @@
 #app #panel-sfxdesign .sfxd-folder.sfxd-cloud svg {
   stroke: #4dabf7 !important;
 }
+
+/* ---- Result view: list / cards ----
+   Same row markup either way; .is-cards turns the list into a grid of
+   cards with the waveform on top. Density still applies: compact cards
+   are smaller and carry a shorter wave. */
+#app #panel-sfxdesign .sfxd-viewtoggle {
+  display: inline-flex !important;
+  gap: 2px !important;
+  padding: 2px !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 7px !important;
+}
+#app #panel-sfxdesign .sfxd-viewtoggle .sfxd-hicon {
+  border-color: transparent !important;
+}
+#app #panel-sfxdesign .sfxd-viewtoggle svg {
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.7 !important;
+  stroke-linecap: round !important;
+}
+#app #panel-sfxdesign .sfxd-viewtoggle circle {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+#app #panel-sfxdesign .sfxd-results.is-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)) !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
+  gap: 6px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+  gap: 4px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards > .sfxd-empty {
+  grid-column: 1 / -1 !important;
+}
+
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-row {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  grid-template-areas: "mid mid mid" "play info end" !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  padding: 6px !important;
+  border-radius: 10px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowmid {
+  grid-area: mid !important;
+  flex-direction: column-reverse !important;
+  gap: 5px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowwave,
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact .sfxd-rowwave {
+  display: block !important;
+  height: 44px !important;
+  padding: 0 !important;
+  border: 1px solid var(--sx-line-soft) !important;
+  border-radius: 7px !important;
+  background: #050906 !important;
+  box-sizing: border-box !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact .sfxd-rowwave {
+  height: 26px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowname b {
+  font-size: 9.5px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowplay {
+  grid-area: play !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowinfo {
+  grid-area: info !important;
+  align-items: flex-start !important;
+  min-width: 0 !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowmeta {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards .sfxd-rowend {
+  grid-area: end !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact .sfxd-row {
+  padding: 5px !important;
+  gap: 4px !important;
+}
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact .sfxd-rowmeta,
+#app #panel-sfxdesign .sfxd-results.is-cards.is-compact .sfxd-score {
+  display: none !important;
+}
+@media (max-width: 440px) {
+  #app #panel-sfxdesign .sfxd-filters {
+    flex-wrap: wrap !important;
+    row-gap: 5px !important;
+  }
+  #app #panel-sfxdesign .sfxd-filters .sfxd-chiprow {
+    flex: 1 1 100% !important;
+  }
+}
