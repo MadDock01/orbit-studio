@@ -1,0 +1,20 @@
+{
+  "env": {
+    "COMPX_PLAYWRIGHT": "",
+    "COMPX_CHROME": ""
+  },
+  "resolvable": {
+    "playwright": null,
+    "playwright-core": null,
+    "puppeteer": null,
+    "puppeteer-core": null
+  },
+  "browsers": {
+    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe": true,
+    "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe": false,
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe": true,
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe": false,
+    "C:\\Users\\sonjo\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe": false
+  },
+  "globalRoot": "C:\\Users\\sonjo\\AppData\\Roaming\\npm\\node_modules"
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="aurora">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Orbit Studio — Theme Preview</title>
+<link rel="stylesheet" href="themes.css"/>
+<link rel="stylesheet" href="preview.css"/>
+</head>
+<body>
+<div class="stage">
+  <header class="stage-head">
+    <div class="stage-title">CompX <b>Orbit Studio</b> — UI Theme Preview</div>
+    <div class="theme-switch" id="themeSwitch">
+      <button data-theme="aurora" class="active">🌌 Aurora Glass</button>
+      <button data-theme="ember">🔥 Ember Studio</button>
+      <button data-theme="neon">⚡ Neon Pulse</button>
+      <button data-theme="minimal">🤍 Minimal Pro</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <!-- Title bar -->
+    <div class="cx-title-bar">
+      <div class="brand">
+        <img src="../assets/compx-mark.png" alt="" onerror="this.style.display='none'"/>
+        <div class="brand-copy"><strong>Orbit Studio</strong><em>Creative Control Center</em></div>
+      </div>
+      <div class="title-actions">
+        <span class="host-pill"><i></i>HOST READY</span>
+        <button class="icon-btn" title="Settings">⚙</button>
+        <button class="icon-btn" title="Sign out">⇥</button>
+      </div>
+    </div>
+
+    <!-- Tab strip -->
+    <nav class="tabs">
+      <button class="tab active">Tools</button>
+      <button class="tab">Studio</button>
+      <button class="tab">Toolkit</button>
+      <button class="tab">Orbit 3D</button>
+      <button class="tab">Motion Lab</button>
+      <button class="tab">Colors</button>
+      <button class="tab">Tracker</button>
+      <button class="tab">Comps</button>
+      <button class="tab">Library</button>
+      <button class="tab">Purge</button>
+    </nav>
+
+    <!-- Content -->
+    <div class="scroll">
+      <section class="card">
+        <header class="card-head"><span class="card-title">ALIGN</span><span class="help">?</span></header>
+        <div class="grid3">
+          <button class="tbtn">⊢</button><button class="tbtn">⊹</button><button class="tbtn">⊣</button>
+          <button class="tbtn">⊤</button><button class="tbtn">⊹</button><button class="tbtn">⊥</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card-head"><span class="card-title">AUTO CAPTIONS</span><span class="help">?</span></header>
+        <select class="input"><option>Bangla · Hind Siliguri Bold</option></select>
+        <div class="slider-row"><span>Speed</span><input type="range" value="47" style="--fill:47%"/><b>47%</b></div>
+        <div class="slider-row"><span>Intensity</span><input type="range" value="60" style="--fill:60%"/><b>60%</b></div>
+        <div class="swatches">
+          <label>COLORS</label>
+          <i class="sw" style="--c:#ffffff"></i>
+          <i class="sw active" style="--c:#7b61ff"></i>
+          <i class="sw" style="--c:#22ff6f"></i>
+          <button class="sw-add">+</button>
+        </div>
+        <button class="cta">✨ GENERATE CAPTIONS</button>
+      </section>
+
+      <section class="card">
+        <header class="card-head"><span class="card-title">LIBRARY</span><span class="help">?</span></header>
+        <div class="cards">
+          <div class="mini-card"><div class="thumb t1"></div><b>Deep Whoosh</b><span>0:02 · SFX</span><button class="apply">APPLY</button></div>
+          <div class="mini-card"><div class="thumb t2"></div><b>Ocean Rise</b><span>0:04 · SFX</span><button class="apply">APPLY</button></div>
+          <div class="mini-card"><div class="thumb t3"></div><b>Soft Pop</b><span>0:01 · SFX</span><button class="apply">APPLY</button></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <p class="note">এটা mockup preview — তুমি যেটা বাছবে, সেই থিম তোমার আসল panel-এ apply হবে।<br/>কোনো functionality বদলাবে না, শুধু চেহারা।</p>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem("orbit-preview-theme"); } catch (e) {}
+  if (saved) root.setAttribute("data-theme", saved);
+  var sw = document.getElementById("themeSwitch");
+  function sync() {
+    var t = root.getAttribute("data-theme");
+    for (var i = 0; i < sw.children.length; i++) {
+      sw.children[i].classList.toggle("active", sw.children[i].getAttribute("data-theme") === t);
+    }
+  }
+  sw.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-theme]");
+    if (!b) return;
+    root.setAttribute("data-theme", b.getAttribute("data-theme"));
+    try { localStorage.setItem("orbit-preview-theme", b.getAttribute("data-theme")); } catch (err) {}
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

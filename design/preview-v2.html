@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="orbital">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Orbit Studio — Unique Theme Concepts</title>
+<link rel="stylesheet" href="themes-v2.css"/>
+<link rel="stylesheet" href="preview-v2.css"/>
+</head>
+<body>
+<div class="stage">
+  <header class="stage-head">
+    <div class="stage-title">CompX <b>Orbit Studio</b> — Unique Concept Themes</div>
+    <div class="theme-switch" id="themeSwitch">
+      <button data-theme="orbital" class="active">🛰 Orbital Hologram</button>
+      <button data-theme="cinematic">🎞 Cinematic Reel</button>
+      <button data-theme="obsidian">⬛ Obsidian Luxe</button>
+      <button data-theme="blueprint">📐 Blueprint Engine</button>
+      <button data-theme="console">🎚 Console Pro</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="film-strip" aria-hidden="true"></div>
+
+    <!-- Title bar -->
+    <div class="cx-title-bar">
+      <div class="brand">
+        <span class="brand-logo"><img src="../assets/compx-mark.png" alt="" onerror="this.parentElement.textContent='◈'"/></span>
+        <div class="brand-copy"><strong>Orbit Studio</strong><em>Creative Control Center</em></div>
+      </div>
+      <div class="title-actions">
+        <span class="host-pill"><i></i><span>HOST READY</span></span>
+        <button class="icon-btn" title="Settings">◈</button>
+        <button class="icon-btn" title="Sign out">⇤</button>
+      </div>
+    </div>
+
+    <!-- Tab strip -->
+    <nav class="tabs">
+      <button class="tab active">Tools</button>
+      <button class="tab">Studio</button>
+      <button class="tab">Toolkit</button>
+      <button class="tab">3D Orbit</button>
+      <button class="tab">Motion Lab</button>
+      <button class="tab">Colors</button>
+      <button class="tab">Tracker</button>
+      <button class="tab">Comps</button>
+      <button class="tab">Library</button>
+      <button class="tab rail-purge">Purge</button>
+    </nav>
+
+    <!-- Content -->
+    <div class="scroll">
+      <section class="card">
+        <header class="card-head"><span class="card-title">ALIGN</span><span class="help">?</span></header>
+        <div class="grid3">
+          <button class="tbtn">⊢</button><button class="tbtn">⊹</button><button class="tbtn">⊣</button>
+          <button class="tbtn">⊤</button><button class="tbtn">⊹</button><button class="tbtn">⊥</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card-head"><span class="card-title">AUTO CAPTIONS</span><span class="help">?</span></header>
+        <select class="input"><option>Bangla · Hind Siliguri Bold</option></select>
+        <div class="slider-row"><span class="sl-label">Speed</span><input type="range" value="47"><b class="sl-val">47%</b></div>
+        <div class="slider-row"><span class="sl-label">Intensity</span><input type="range" value="60"><b class="sl-val">60%</b></div>
+        <div class="swatches">
+          <span class="sw-label">COLORS</span>
+          <i class="sw" style="--c:#ffffff"></i>
+          <i class="sw active" style="--c:#7b61ff"></i>
+          <i class="sw" style="--c:#22ff6f"></i>
+          <button class="sw-add">+</button>
+        </div>
+        <button class="cta">✨ GENERATE CAPTIONS</button>
+      </section>
+
+      <section class="card">
+        <header class="card-head"><span class="card-title">LIBRARY</span><span class="help">?</span></header>
+        <div class="cards">
+          <div class="mini-card"><div class="thumb t1"></div><b>Deep Whoosh</b><span>0:02 · SFX</span><button class="apply">APPLY</button></div>
+          <div class="mini-card"><div class="thumb t2"></div><b>Ocean Rise</b><span>0:04 · SFX</span><button class="apply">APPLY</button></div>
+          <div class="mini-card"><div class="thumb t3"></div><b>Soft Pop</b><span>0:01 · SFX</span><button class="apply">APPLY</button></div>
+        </div>
+      </section>
+
+      <section class="status-card">
+        <span class="st-pulse"></span>
+        <span class="st-text">Active comp ready</span>
+        <span class="st-side">TS 00:00:14:12</span>
+      </section>
+    </div>
+  </div>
+
+  <p class="note">৫টা concept-এর লাইভ mockup — উপরে ক্লিক করে দেখো কোনটা ভালো লাগে।<br/>বাছাই করা থিম পরে আসল panel-এ apply করবো।</p>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem("orbit-preview-theme-v2"); } catch (e) {}
+  if (saved) root.setAttribute("data-theme", saved);
+  var sw = document.getElementById("themeSwitch");
+  function sync() {
+    var t = root.getAttribute("data-theme");
+    for (var i = 0; i < sw.children.length; i++) {
+      sw.children[i].classList.toggle("active", sw.children[i].getAttribute("data-theme") === t);
+    }
+  }
+  sw.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-theme]");
+    if (!b) return;
+    root.setAttribute("data-theme", b.getAttribute("data-theme"));
+    try { localStorage.setItem("orbit-preview-theme-v2", b.getAttribute("data-theme")); } catch (err) {}
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+/* ============================================================
+   ORBIT LIBRARY UI — SFX / MOGRT shelf, retuned to the green system
+   Loaded last, after orbit-rail.css.
+
+   Same vocabulary as the global rails: #3cff5f accent,
+   #22322a hairlines, 6px radii, 0.15s easing.
+   ============================================================ */
+
+/* ---- Toolbar buttons: one shared skin ---- */
+#app #panel-sfx .library-action-strip .btn.compact-icon-btn,
+#app #panel-sfx .lib-status-btn,
+#app #panel-sfx .lib-view-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #cfe0d5 !important;
+  font: 600 12px/1 "Segoe UI", sans-serif !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #panel-sfx .library-action-strip .btn.compact-icon-btn:hover,
+#app #panel-sfx .lib-status-btn:hover,
+#app #panel-sfx .lib-view-btn:hover {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  color: #eafff0 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.16) !important;
+}
+
+#app #panel-sfx .library-action-strip .btn.compact-icon-btn.primary,
+#app #panel-sfx .lib-view-btn.active,
+#app #panel-sfx #btnLibMore.is-open {
+  border-color: #3cff5f !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: #eafff0 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.24) !important;
+}
+
+#app #panel-sfx .library-action-strip .btn:focus-visible,
+#app #panel-sfx .lib-status-btn:focus-visible,
+#app #panel-sfx .lib-view-btn:focus-visible {
+  outline: 2px solid #3cff5f !important;
+  outline-offset: 1px !important;
+}
+
+/* ---- Reset reads as destructive without shouting ---- */
+#app #panel-sfx #btnReset.lib-danger-btn.compact-icon-btn {
+  border-color: #4a2b2b !important;
+  background: linear-gradient(150deg, #1d1414, #120c0c) !important;
+  color: #e9b6b6 !important;
+  font-size: 14px !important;
+}
+
+#app #panel-sfx #btnReset.lib-danger-btn.compact-icon-btn:hover {
+  border-color: #c2504f !important;
+  background: #2a1414 !important;
+  color: #ffdede !important;
+  box-shadow: 0 0 10px rgba(194, 80, 79, 0.28) !important;
+}
+
+/* ---- Grouping: the action strip reads as clusters, not a pile ---- */
+#app #panel-sfx .library-action-strip .actions-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+}
+
+/* a hairline before the destructive / overflow cluster */
+#app #panel-sfx .library-action-strip #btnBatchMode {
+  margin-left: 4px !important;
+  position: relative !important;
+}
+
+#app #panel-sfx .library-action-strip #btnBatchMode::before {
+  content: "" !important;
+  position: absolute !important;
+  left: -5px !important;
+  top: 4px !important;
+  bottom: 4px !important;
+  width: 1px !important;
+  background: linear-gradient(180deg, transparent, #2a3c31 30%, #2a3c31 70%, transparent) !important;
+}
+
+/* ---- The ⋯ popover ---- */
+#app #panel-sfx .lib-more-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+#app #panel-sfx .lib-more-menu {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 60;
+  width: 218px;
+  padding: 4px;
+  border: 1px solid #2c4034;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #0d150f, #080e0a);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(60, 255, 95, 0.07);
+  animation: libMoreIn 0.14s ease-out;
+}
+
+#app #panel-sfx .lib-more-menu[hidden] {
+  display: none;
+}
+
+#app #panel-sfx .lib-more-menu::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  background: #0d150f;
+  border-left: 1px solid #2c4034;
+  border-top: 1px solid #2c4034;
+  transform: rotate(45deg);
+}
+
+@keyframes libMoreIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+#app #panel-sfx .lib-more-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 6px 7px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #cfe0d5 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: background 0.14s ease, color 0.14s ease !important;
+}
+
+#app #panel-sfx .lib-more-item:hover {
+  background: #12231a !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-sfx .lib-more-ico {
+  flex: 0 0 16px;
+  font: 400 13px/1.2 "Segoe UI", sans-serif;
+  color: #57a86b;
+  text-align: center;
+}
+
+#app #panel-sfx .lib-more-item:hover .lib-more-ico {
+  color: #3cff5f;
+}
+
+#app #panel-sfx .lib-more-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+#app #panel-sfx .lib-more-text strong {
+  font: 600 10.5px/1.2 "Segoe UI", sans-serif;
+  color: inherit;
+}
+
+#app #panel-sfx .lib-more-text small {
+  font: 400 8.5px/1.25 "Segoe UI", sans-serif;
+  color: #8ba295;
+  white-space: normal;
+}
+
+#app #panel-sfx .lib-more-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: linear-gradient(90deg, transparent, #2a3c31, transparent);
+}
+
+/* ---- Sidebar folder rows: hover reveals a delete control ---- */
+#app #panel-sfx #folderTree .folder-row {
+  position: relative !important;
+  border-radius: 6px !important;
+  transition: background 0.14s ease, color 0.14s ease !important;
+}
+
+#app #panel-sfx #folderTree .folder-row:hover {
+  background: #101a13 !important;
+}
+
+#app #panel-sfx #folderTree .folder-row.active {
+  background: linear-gradient(90deg, rgba(60, 255, 95, 0.13), rgba(60, 255, 95, 0.03)) !important;
+  box-shadow: inset 2px 0 0 #3cff5f !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-sfx #folderTree .folder-row.marked {
+  box-shadow: inset 2px 0 0 #ffca65 !important;
+}
+
+/* hidden until the row is hovered, focused, or the folder is marked */
+#app #panel-sfx #folderTree .folder-remove-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-left: 4px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: #8ba295 !important;
+  font: 600 10px/1 "Segoe UI", sans-serif !important;
+  cursor: pointer !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.14s ease, color 0.14s ease, border-color 0.14s ease, background 0.14s ease !important;
+}
+
+#app #panel-sfx #folderTree .folder-row:hover .folder-remove-btn,
+#app #panel-sfx #folderTree .folder-row.marked .folder-remove-btn,
+#app #panel-sfx #folderTree .folder-remove-btn:focus-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#app #panel-sfx #folderTree .folder-remove-btn:hover {
+  color: #ffdede !important;
+  background: #2a1414 !important;
+  border-color: #c2504f !important;
+}
+
+#app #panel-sfx #folderTree .folder-remove-btn:focus-visible {
+  outline: 2px solid #3cff5f !important;
+  outline-offset: 1px !important;
+}
+
+/* the count slides out of the way so the ✕ never overlaps it */
+#app #panel-sfx #folderTree .folder-row:hover .folder-count {
+  opacity: 0.45 !important;
+}
+
+/* ---- Sidebar chrome ---- */
+#app #panel-sfx #sidebar {
+  background: linear-gradient(180deg, #0d140f, #080d0a) !important;
+  border-right: 1px solid #22322a !important;
+}
+
+#app #panel-sfx .lib-sidebar-subhead,
+#app #panel-sfx .sidebar-header .title {
+  color: #8ba295 !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* ---- Shelf chips (MOGRT / TEXT / MOTIONS / SFX / FFX) ---- */
+#app #panel-sfx #assetTypeRow .shelf {
+  border: 1px solid #2a382f !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #a8bcae !important;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #panel-sfx #assetTypeRow .shelf:hover:not(.active) {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  color: #eafff0 !important;
+}
+
+#app #panel-sfx #assetTypeRow .shelf.active {
+  border-color: #3cff5f !important;
+  background: linear-gradient(150deg, #16301f, #0c1a11) !important;
+  color: #eafff0 !important;
+  box-shadow: inset 0 -2px 0 #3cff5f, 0 0 12px rgba(60, 255, 95, 0.18) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #panel-sfx .lib-more-menu {
+    animation: none !important;
+  }
+  #app #panel-sfx .library-action-strip .btn.compact-icon-btn,
+  #app #panel-sfx .lib-status-btn,
+  #app #panel-sfx .lib-view-btn,
+  #app #panel-sfx #folderTree .folder-row,
+  #app #panel-sfx #folderTree .folder-remove-btn,
+  #app #panel-sfx .lib-more-item {
+    transition: none !important;
+  }
+}

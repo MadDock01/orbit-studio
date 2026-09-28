@@ -1,0 +1,432 @@
+/* ============================================================
+   ORBIT GLOBAL DOCK — compact single rail
+   Anchor pad · Align · Trim · Quick FX flyout, pinned above
+   every tab. Loaded last so it wins over orbit-dashboard.css.
+
+   Layout chain:
+     #app > .cx-app-main (row)
+        ├─ nav#appTabsRow          (left icon rail, full height)
+        └─ .cx-work-col (column)
+             ├─ .cx-global-dock    (fixed, survives every tab switch)
+             └─ .cx-panel-host     (scrolling .app-panel host)
+
+   Rail height: 41px expanded, 16px collapsed.
+   Fits a 330px panel on one row; below that it scrolls sideways.
+   ============================================================ */
+
+.cx-work-col {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.cx-panel-host {
+  display: flex !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ---- Rail shell ---- */
+#app .cx-global-dock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 5px 4px 5px 6px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #0d140f 0%, #080d0a 100%);
+  border-bottom: 1px solid #22322a;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  z-index: 8;
+}
+
+/* hairline highlight along the top edge — the "premium" catch of light */
+#app .cx-global-dock::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(60, 255, 95, 0.16) 35%, rgba(60, 255, 95, 0.16) 65%, transparent);
+  pointer-events: none;
+}
+
+#app .cx-global-dock .gdock-inner {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  gap: 5px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+}
+
+#app .cx-global-dock .gdock-inner::-webkit-scrollbar {
+  height: 0;
+}
+
+/* JS adds .is-scrollable when the rail overflows — fade the right edge so
+   it is obvious there is more to reach. */
+#app .cx-global-dock.is-scrollable .gdock-inner {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+}
+
+#app .cx-global-dock .gdock-sep {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(180deg, transparent, #2a3c31 30%, #2a3c31 70%, transparent);
+}
+
+/* ---- Shared button skin ---- */
+#app #orbitGlobalDock .tool-grid {
+  display: grid !important;
+  gap: 3px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  flex: 0 0 auto;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn {
+  display: flex !important;
+  position: relative !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 26px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  border: 1px solid #2a382f !important;
+  border-radius: 6px !important;
+  background: linear-gradient(150deg, #151f18, #0a100c) !important;
+  color: #e0e9e2 !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025) !important;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn::before {
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  background: var(--orbit-icon) center/contain no-repeat !important;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn::after {
+  content: none !important;
+  display: none !important;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn:hover {
+  border-color: #47935a !important;
+  background: #12231a !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.18), inset 0 1px rgba(255, 255, 255, 0.04) !important;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn:active {
+  background: #0c1710 !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+#app #orbitGlobalDock .tool-grid .tool-btn:focus-visible {
+  outline: 2px solid var(--od-green, #3cff5f);
+  outline-offset: 1px;
+}
+
+/* ---- ALIGN — one row of six ---- */
+#app #orbitGlobalDock .gdock-align-grid {
+  grid-template-columns: repeat(6, 26px) !important;
+}
+
+/* ---- TRIM — one row of two ---- */
+#app #orbitGlobalDock .gdock-trim-grid {
+  grid-template-columns: repeat(2, 26px) !important;
+}
+
+/* ---- ANCHOR — micro 3 × 3 pad, the rail's tallest element ---- */
+#app #orbitGlobalDock .gdock-anchor-grid {
+  grid-template-columns: repeat(3, 8px) !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 2px !important;
+  gap: 1px !important;
+  border: 1px solid #2a3c31 !important;
+  border-radius: 7px !important;
+  background: radial-gradient(circle at 50% 40%, #122016, #080e0a 75%) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.03) !important;
+}
+
+#app #orbitGlobalDock .gdock-anchor-grid .tool-btn {
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app #orbitGlobalDock .gdock-anchor-grid .tool-btn:hover {
+  background: rgba(60, 255, 95, 0.14) !important;
+  box-shadow: none !important;
+}
+
+#app #orbitGlobalDock .anchor-dot {
+  display: block !important;
+  width: 4px !important;
+  height: 4px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #55695c !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#app #orbitGlobalDock .anchor-dot-btn:hover .anchor-dot {
+  background: #9fd6ac !important;
+}
+
+#app #orbitGlobalDock .anchor-dot-btn.active .anchor-dot {
+  width: 6px !important;
+  height: 6px !important;
+  background: #36f85c !important;
+  box-shadow: 0 0 6px rgba(54, 248, 92, 0.75) !important;
+}
+
+/* ---- QUICK FX — one trigger, flyout on demand ---- */
+#app .cx-global-dock .gdock-fx {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+}
+
+#app .cx-global-dock .gdock-fx-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 38px;
+  height: 26px;
+  margin: 0;
+  padding: 0 4px 0 3px;
+  border: 1px solid #2a382f;
+  border-radius: 6px;
+  background: linear-gradient(150deg, #151f18, #0a100c);
+  color: #b8d3c0;
+  cursor: pointer;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+#app .cx-global-dock .gdock-fx-btn::before {
+  content: "";
+  display: block;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  background: var(--orbit-icon) center/contain no-repeat;
+}
+
+#app .cx-global-dock .gdock-fx-tag {
+  font: 700 8px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.1em;
+}
+
+#app .cx-global-dock .gdock-fx-btn:hover {
+  border-color: #47935a;
+  background: #12231a;
+  color: #dcf7e2;
+}
+
+#app .cx-global-dock .gdock-fx-btn[aria-expanded="true"] {
+  border-color: var(--od-green, #3cff5f);
+  background: #12231a;
+  color: #dcf7e2;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.28);
+}
+
+/* Lives outside .gdock-inner so the sideways-scroll container cannot clip it;
+   anchored to the rail, tucked just left of the collapse chevron. */
+#app .cx-global-dock .gdock-fx-flyout {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 22px;
+  z-index: 40;
+  padding: 4px;
+  border: 1px solid #2c4034;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #0d150f, #080e0a);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(60, 255, 95, 0.07);
+  animation: gdockFxIn 0.14s ease-out;
+}
+
+#app .cx-global-dock .gdock-fx-flyout[hidden] {
+  display: none;
+}
+
+/* little pointer back up to the FX button */
+#app .cx-global-dock .gdock-fx-flyout::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 15px;
+  width: 7px;
+  height: 7px;
+  background: #0d150f;
+  border-left: 1px solid #2c4034;
+  border-top: 1px solid #2c4034;
+  transform: rotate(45deg);
+}
+
+#app #orbitGlobalDock .gdock-fx-grid {
+  grid-template-columns: repeat(5, 26px) !important;
+}
+
+@keyframes gdockFxIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---- Collapse toggle ---- */
+#app .cx-global-dock .gdock-toggle {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #22322a;
+  border-radius: 6px;
+  background: #0a110d;
+  color: #7f9488;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#app .cx-global-dock .gdock-toggle:hover {
+  color: #c8ffd0;
+  border-color: #47935a;
+}
+
+#app .cx-global-dock .gdock-toggle svg {
+  transition: transform 0.2s ease;
+}
+
+/* ---- Collapsed: a 16px seam with a re-open chevron ---- */
+#app .cx-global-dock.is-collapsed {
+  padding: 2px 4px;
+}
+
+#app .cx-global-dock.is-collapsed .gdock-inner {
+  display: none;
+}
+
+#app .cx-global-dock.is-collapsed .gdock-toggle {
+  flex: 1 1 auto;
+  width: auto;
+  height: 12px;
+  border-color: transparent;
+  background: transparent;
+}
+
+#app .cx-global-dock.is-collapsed .gdock-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* ---- Narrow panels: two shrink tiers, then sideways scroll ---- */
+@media (max-width: 400px) {
+  #app .cx-global-dock {
+    gap: 4px;
+    padding: 5px 3px 5px 4px;
+  }
+  #app .cx-global-dock .gdock-inner { gap: 4px; }
+  #app #orbitGlobalDock .tool-grid { gap: 2px !important; }
+  #app #orbitGlobalDock .tool-grid .tool-btn {
+    width: 23px !important;
+    height: 23px !important;
+    max-height: 23px !important;
+  }
+  #app #orbitGlobalDock .tool-grid .tool-btn::before {
+    flex-basis: 13px !important;
+    width: 13px !important;
+    height: 13px !important;
+  }
+  #app #orbitGlobalDock .gdock-align-grid { grid-template-columns: repeat(6, 23px) !important; }
+  #app #orbitGlobalDock .gdock-trim-grid  { grid-template-columns: repeat(2, 23px) !important; }
+  #app #orbitGlobalDock .gdock-fx-grid    { grid-template-columns: repeat(5, 23px) !important; }
+  #app #orbitGlobalDock .gdock-anchor-grid .tool-btn {
+    width: 8px !important;
+    height: 8px !important;
+    max-height: 8px !important;
+  }
+  #app .cx-global-dock .gdock-fx-btn { width: 32px; height: 23px; }
+  #app .cx-global-dock .gdock-toggle { height: 23px; }
+  #app .cx-global-dock .gdock-sep { height: 19px; }
+}
+
+@media (max-width: 340px) {
+  #app .cx-global-dock { gap: 3px; padding: 4px 3px; }
+  #app .cx-global-dock .gdock-inner { gap: 3px; }
+  #app #orbitGlobalDock .tool-grid .tool-btn {
+    width: 20px !important;
+    height: 20px !important;
+    max-height: 20px !important;
+    border-radius: 5px !important;
+  }
+  #app #orbitGlobalDock .tool-grid .tool-btn::before {
+    flex-basis: 12px !important;
+    width: 12px !important;
+    height: 12px !important;
+  }
+  #app #orbitGlobalDock .gdock-align-grid { grid-template-columns: repeat(6, 20px) !important; }
+  #app #orbitGlobalDock .gdock-trim-grid  { grid-template-columns: repeat(2, 20px) !important; }
+  #app #orbitGlobalDock .gdock-fx-grid    { grid-template-columns: repeat(5, 22px) !important; }
+  #app #orbitGlobalDock .gdock-anchor-grid { grid-template-columns: repeat(3, 7px) !important; }
+  #app #orbitGlobalDock .gdock-anchor-grid .tool-btn {
+    width: 7px !important;
+    height: 7px !important;
+    max-height: 7px !important;
+  }
+  #app #orbitGlobalDock .anchor-dot { width: 3px !important; height: 3px !important; }
+  #app #orbitGlobalDock .anchor-dot-btn.active .anchor-dot { width: 5px !important; height: 5px !important; }
+  #app .cx-global-dock .gdock-fx-btn { width: 28px; height: 20px; gap: 2px; padding: 0 3px 0 2px; }
+  #app .cx-global-dock .gdock-fx-btn::before { flex-basis: 12px; width: 12px; height: 12px; }
+  #app .cx-global-dock .gdock-fx-tag { font-size: 7px; }
+  #app .cx-global-dock .gdock-toggle { height: 20px; flex-basis: 12px; width: 12px; }
+  #app .cx-global-dock .gdock-fx-flyout { right: 18px; padding: 3px; }
+  #app .cx-global-dock .gdock-sep { height: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app #orbitGlobalDock .tool-grid .tool-btn,
+  #app .cx-global-dock .gdock-fx-btn,
+  #app .cx-global-dock .gdock-toggle,
+  #app .cx-global-dock .gdock-toggle svg,
+  #app #orbitGlobalDock .anchor-dot {
+    transition: none !important;
+  }
+  #app .cx-global-dock .gdock-fx-flyout {
+    animation: none !important;
+  }
+}

@@ -1,0 +1,5 @@
+URL: file:///d:/app/Compx%20adobe%20after%20effect/Extension/Compx%20Engine/CompX-Orbit-Studio/design/showcase.html
+OUT: d:/app/Compx adobe after effect/Extension/Compx Engine/CompX-Orbit-Studio/design/showcase-nebula.png
+EXIT: 0
+
+338412 bytes written to file d:/app/Compx adobe after effect/Extension/Compx Engine/CompX-Orbit-Studio/design/showcase-nebula.png

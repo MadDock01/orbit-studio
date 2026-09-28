@@ -1,0 +1,30 @@
+[
+  {
+    "name": "nebula",
+    "ok": true,
+    "size": 338570,
+    "exit": 0,
+    "err": "338570 bytes written to file d:\\app\\Compx adobe after effect\\Extension\\Compx Engine\\CompX-Orbit-Studio\\design\\showcase-nebula.png\r\n"
+  },
+  {
+    "name": "ember",
+    "ok": true,
+    "size": 343521,
+    "exit": 0,
+    "err": "343521 bytes written to file d:\\app\\Compx adobe after effect\\Extension\\Compx Engine\\CompX-Orbit-Studio\\design\\showcase-ember.png\r\n"
+  },
+  {
+    "name": "ocean",
+    "ok": true,
+    "size": 346971,
+    "exit": 0,
+    "err": "346971 bytes written to file d:\\app\\Compx adobe after effect\\Extension\\Compx Engine\\CompX-Orbit-Studio\\design\\showcase-ocean.png\r\n"
+  },
+  {
+    "name": "rose",
+    "ok": true,
+    "size": 354617,
+    "exit": 0,
+    "err": "354617 bytes written to file d:\\app\\Compx adobe after effect\\Extension\\Compx Engine\\CompX-Orbit-Studio\\design\\showcase-rose.png\r\n"
+  }
+]

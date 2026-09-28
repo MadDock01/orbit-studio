@@ -1,0 +1,279 @@
+/* ============================================================
+   Orbit Studio — UNIQUE theme concepts (preview v2)
+   Each theme is a distinct creative direction, not just a recolor.
+   ============================================================ */
+
+/* ── 🛰 ORBITAL HOLOGRAM ❘ sci-fi HUD, orbital rings, star field ── */
+[data-theme="orbital"] {
+  --shell-bg:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,.6), transparent),
+    radial-gradient(1.5px 1.5px at 35% 72%, rgba(150,200,255,.9), transparent),
+    radial-gradient(1px 1px at 62% 38%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1.5px 1.5px at 88% 68%, rgba(200,180,255,.8), transparent),
+    radial-gradient(1px 1px at 24% 44%, rgba(255,255,255,.4), transparent),
+    radial-gradient(100% 70% at 50% -20%, rgba(53,224,255,.16), transparent 55%),
+    radial-gradient(140% 100% at 50% 120%, rgba(124,92,255,.22), transparent 60%),
+    #070a14;
+  --title-bg: rgba(10,14,24,.82);
+  --tabs-bg: rgba(8,11,19,.88);
+  --panel: rgba(18,26,46,.62);
+  --raised: rgba(30,42,72,.55);
+  --line: rgba(90,180,255,.18);
+  --line-strong: rgba(120,210,255,.35);
+  --text: #e8f4ff;
+  --muted: #8fa8c4;
+  --faint: #5b718f;
+  --accent: #34e0ff;
+  --cta-bg: linear-gradient(135deg, #22c8ff, #8f5bff);
+  --cta-ink: #04141c;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --label-font: Consolas, "Courier New", monospace;
+  --ok: #34e0ff;
+  --warn: #ff9d66;
+  --track: rgba(120,180,255,.15);
+  --thumb-bg: #0a1424;
+  --logo-bg: linear-gradient(135deg, #0e2a44, #2a1a4a);
+}
+
+[data-theme="orbital"] .panel {
+  box-shadow: 0 30px 70px rgba(0,0,0,.7), 0 0 32px rgba(80,160,255,.12);
+}
+[data-theme="orbital"] .tab { clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 100%, 0 100%); }
+[data-theme="orbital"] .tab.active {
+  background: linear-gradient(135deg, rgba(52,224,255,.22), rgba(143,91,255,.20));
+  color: #d9f6ff; border-color: rgba(120,210,255,.45);
+  box-shadow: 0 0 14px rgba(52,224,255,.25); text-shadow: 0 0 8px rgba(52,224,255,.5);
+}
+[data-theme="orbital"] .tab:hover:not(.active) { background: rgba(120,200,255,.08); }
+[data-theme="orbital"] .card {
+  background: linear-gradient(160deg, rgba(24,34,56,.72), rgba(10,15,26,.78));
+  box-shadow: inset 0 1px 0 rgba(160,220,255,.08), inset 0 0 0 1px rgba(52,224,255,.05);
+}
+[data-theme="orbital"] .card-title::before { background: linear-gradient(180deg, #34e0ff, #9b6bff); box-shadow: 0 0 8px rgba(52,224,255,.5); }
+[data-theme="orbital"] .help { box-shadow: inset 0 0 8px rgba(52,224,255,.12); }
+[data-theme="orbital"] .tbtn { background: rgba(20,30,52,.6); border-color: rgba(100,180,255,.16); }
+[data-theme="orbital"] .tbtn:hover { box-shadow: inset 0 0 12px rgba(52,224,255,.12); border-color: rgba(120,210,255,.4); }
+[data-theme="orbital"] .cta { box-shadow: 0 6px 20px rgba(60,130,255,.35); }
+[data-theme="orbital"] .input { background: rgba(6,10,18,.7); }
+[data-theme="orbital"] .sl-val { text-shadow: 0 0 8px rgba(52,224,255,.4); }
+[data-theme="orbital"] .host-pill { color: #9fd8ff; }
+[data-theme="orbital"] .sw.active { outline-color: #34e0ff; }
+
+/* ── 🎞 CINEMATIC REEL ❘ film frame, timecode, editing console ── */
+[data-theme="cinematic"] {
+  --shell-bg: radial-gradient(120% 90% at 50% 0%, #2a2a24, #101010 60%);
+  --title-bg: #0c0c0a;
+  --tabs-bg: #0c0c0a;
+  --panel: #161614;
+  --raised: #1f1f1c;
+  --line: #2e2c26;
+  --line-strong: #4a463c;
+  --text: #f0ede4;
+  --muted: #a09c8e;
+  --faint: #6b675c;
+  --accent: #e8a33d;
+  --cta-bg: linear-gradient(135deg, #ffb84d, #e8872a);
+  --cta-ink: #241200;
+  --radius: 3px;
+  --radius-sm: 2px;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --label-font: Consolas, "Courier New", monospace;
+  --ok: #e8a33d;
+  --warn: #ff8f5a;
+  --track: #2c2a22;
+  --thumb-bg: #f5e3c1;
+  --logo-bg: #241d12;
+}
+[data-theme="cinematic"] .film-strip {
+  display: block; position: absolute; inset: 0 0 auto 0; height: 9px; z-index: 3;
+  background-color: #080808;
+  background-image: repeating-linear-gradient(90deg, transparent 0 4px, #050505 4px 6px, transparent 6px 10px);
+  border-bottom: 1px solid #26241e;
+}
+[data-theme="cinematic"] .tab { border-radius: 0; }
+[data-theme="cinematic"] .tab.active {
+  background: #161614; color: #ffc36b; border: 1px solid #3a362c;
+  box-shadow: inset 0 -2px 0 #ffb84d;
+}
+[data-theme="cinematic"] .tab:hover:not(.active) { color: #ffd9a0; }
+[data-theme="cinematic"] .card {
+  border: 1px solid #2e2c26; border-radius: 2px;
+  box-shadow: 0 0 0 1px #101010, 0 0 0 2px #33302a, inset 0 1px 0 rgba(255,255,255,.04);
+}
+[data-theme="cinematic"] .card-title::before { background: #e8a33d; }
+[data-theme="cinematic"] .tbtn { border-radius: 2px; background: #1c1c19; border-color: #36332b; }
+[data-theme="cinematic"] .tbtn:hover { color: #ffd9a0; border-color: #5a5038; }
+[data-theme="cinematic"] .cta { box-shadow: 0 2px 10px rgba(232,163,61,.25); letter-spacing: .14em; }
+[data-theme="cinematic"] .input { background: #0e0e0c; border-color: #33302a; }
+[data-theme="cinematic"] .sl-val { color: #e8a33d; }
+[data-theme="cinematic"] .status-card { border: 0; background: #0c0c0a; border-radius: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+[data-theme="cinematic"] .st-side { letter-spacing: .12em; }
+[data-theme="cinematic"] .host-pill { border-radius: 0; }
+
+/* ── ⬛ OBSIDIAN LUXE ❘ editorial black + gold, serif display ── */
+[data-theme="obsidian"] {
+  --shell-bg: radial-gradient(90% 70% at 50% 0%, #232018, #0c0b09 65%);
+  --title-bg: #0e0d0a;
+  --tabs-bg: #0e0d0a;
+  --panel: #15130f;
+  --raised: #1c1a15;
+  --line: #2a2620;
+  --line-strong: #4a443a;
+  --text: #f2ede2;
+  --muted: #9c9584;
+  --faint: #615b4e;
+  --accent: #d3b074;
+  --cta-bg: linear-gradient(135deg, #e6c98e, #c9a253);
+  --cta-ink: #191203;
+  --radius: 4px;
+  --radius-sm: 4px;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --label-font: "Segoe UI", system-ui, sans-serif;
+  --ok: #d3b074;
+  --warn: #d98f4e;
+  --track: #221e17;
+  --thumb-bg: #f4e8c9;
+  --logo-bg: #2a2113;
+}
+[data-theme="obsidian"] .brand-copy strong { font-family: Georgia, "Times New Roman", serif; letter-spacing: .05em; }
+[data-theme="obsidian"] .brand-copy em { letter-spacing: .28em; }
+[data-theme="obsidian"] .tab { font-weight: 500; letter-spacing: .14em; }
+[data-theme="obsidian"] .tab.active { color: #e8cf96; box-shadow: inset 0 -1px 0 #d3b074; text-shadow: 0 0 12px rgba(211,176,116,.25); }
+[data-theme="obsidian"] .tab:hover:not(.active) { color: #d8c595; }
+[data-theme="obsidian"] .card {
+  background: linear-gradient(180deg, rgba(211,176,116,.05), rgba(0,0,0,0) 40%), var(--panel);
+  border-color: #2c2820;
+}
+[data-theme="obsidian"] .card-title::before { background: #d3b074; width: 2px; }
+[data-theme="obsidian"] .card-title { letter-spacing: .2em; }
+[data-theme="obsidian"] .help { border-radius: 0; }
+[data-theme="obsidian"] .tbtn { border-radius: 2px; background: #121009; border-color: #2e2a21; }
+[data-theme="obsidian"] .tbtn:hover { border-color: #6a5f43; color: #efe0bd; }
+[data-theme="obsidian"] .input { background: #0d0c08; border-color: #2e2a21; }
+[data-theme="obsidian"] .cta { border: 1px solid rgba(50,40,15,.5); box-shadow: 0 2px 14px rgba(0,0,0,.5); letter-spacing: .2em; }
+[data-theme="obsidian"] .sl-val { color: #d3b074; }
+[data-theme="obsidian"] .sw.active { outline-color: #d3b074; }
+[data-theme="obsidian"] .mini-card { border-radius: 2px; }
+[data-theme="obsidian"] .apply { border-radius: 2px; }
+[data-theme="obsidian"] .host-pill { border-radius: 2px; letter-spacing: .18em; }
+
+/* ── 📐 BLUEPRINT ENGINE ❘ drafting grid, dashed drawings, technical ── */
+[data-theme="blueprint"] {
+  --shell-bg:
+    linear-gradient(rgba(70,150,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70,150,255,.05) 1px, transparent 1px),
+    radial-gradient(100% 80% at 50% 0%, rgba(30,90,180,.25), transparent 60%),
+    #07122e;
+  --shell-size: 22px 22px;
+  --title-bg: #081530;
+  --tabs-bg: #081530;
+  --panel: #0a1a3a;
+  --raised: #0e2147;
+  --line: #1e4a7a;
+  --line-strong: #3a7cc8;
+  --text: #d8ecff;
+  --muted: #7fa6d9;
+  --faint: #4a6d94;
+  --accent: #49c0ff;
+  --cta-bg: #49c0ff;
+  --cta-ink: #03121f;
+  --radius: 2px;
+  --radius-sm: 1px;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --label-font: Consolas, "Courier New", monospace;
+  --ok: #3ab6ff;
+  --warn: #ffb04d;
+  --track: rgba(80,160,255,.12);
+  --thumb-bg: #03121f;
+  --logo-bg: #0c2547;
+}
+[data-theme="blueprint"] .panel {
+  box-shadow: 0 0 0 1px rgba(73,192,255,.15), 0 24px 60px rgba(0,0,0,.6);
+  background-size: 22px 22px, 22px 22px, 100% 100%, 100% 100%;
+}
+[data-theme="blueprint"] .tab.active {
+  background: #49c0ff; color: #041324; font-weight: 800;
+  box-shadow: 0 0 10px rgba(73,192,255,.35); border-color: #9adcff; border-radius: 1px;
+}
+[data-theme="blueprint"] .tab:hover:not(.active) { color: #bfe2ff; background: rgba(73,192,255,.08); }
+[data-theme="blueprint"] .card { border-style: dashed; }
+[data-theme="blueprint"] .card-title::before { background: #49c0ff; transform: rotate(45deg); }
+[data-theme="blueprint"] .card-title { letter-spacing: .22em; }
+[data-theme="blueprint"] .tbtn {
+  border-radius: 1px; background: #0a1a36; border-color: #1e4a7a;
+  font-family: var(--label-font); font-size: 12px;
+}
+[data-theme="blueprint"] .tbtn:hover { box-shadow: 0 0 8px rgba(73,192,255,.25); color: #e6f6ff; }
+[data-theme="blueprint"] .help { border-radius: 1px; }
+[data-theme="blueprint"] .cta { border: 1px solid #8fd4ff; letter-spacing: .16em; }
+[data-theme="blueprint"] .input { background: #060f24; border-color: #1e4a7a; }
+[data-theme="blueprint"] .sl-val { color: #49c0ff; }
+[data-theme="blueprint"] .status-card { border-style: dashed; }
+[data-theme="blueprint"] .st-side { letter-spacing: .14em; }
+[data-theme="blueprint"] input[type="range"]::-webkit-slider-thumb { border-radius: 1px; width: 13px; height: 13px; }
+[data-theme="blueprint"] .sw.active { outline-color: #49c0ff; }
+
+/* ── 🎚 CONSOLE PRO ❘ mixing-desk hardware, recessed controls, LEDs ── */
+[data-theme="console"] {
+  --shell-bg: linear-gradient(180deg, #24211d, #161412);
+  --title-bg: linear-gradient(180deg, #262320, #1c1a17);
+  --tabs-bg: linear-gradient(180deg, #201e1b, #171512);
+  --panel: #1d1b18;
+  --raised: #24211d;
+  --line: #33302a;
+  --line-strong: #4d4840;
+  --text: #f2ede5;
+  --muted: #a39d90;
+  --faint: #686257;
+  --accent: #ff7a2f;
+  --cta-bg: linear-gradient(135deg, #ff8a3d, #f0601a);
+  --cta-ink: #1f0c01;
+  --radius: 6px;
+  --radius-sm: 5px;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --label-font: "Segoe UI", system-ui, sans-serif;
+  --ok: #39e07a;
+  --warn: #ffb04d;
+  --track: #3a352c;
+  --thumb-bg: #ffe9d6;
+  --logo-bg: #382a1c;
+}
+[data-theme="console"] .panel { box-shadow: 0 24px 60px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.06); }
+[data-theme="console"] .tab.active {
+  background: linear-gradient(180deg, #3a332a, #2b2620);
+  color: #ffd9b3; border-color: #5a4c3c;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 12px rgba(255,122,47,.15);
+}
+[data-theme="console"] .tab:hover:not(.active) { color: #ffb27a; }
+[data-theme="console"] .card {
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 30%), #1d1b18;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+[data-theme="console"] .card-title::before { background: #ff7a2f; box-shadow: 0 0 6px rgba(255,122,47,.6); }
+[data-theme="console"] .tbtn {
+  border-radius: 5px;
+  background: linear-gradient(180deg, #262319, #201d19);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06), inset 0 -1px 3px rgba(0,0,0,.4);
+  border-color: #38342c;
+}
+[data-theme="console"] .tbtn:hover { color: #ffd5ae; border-color: #6b5539; }
+[data-theme="console"] .cta {
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 3px 12px rgba(255,90,0,.25);
+}
+[data-theme="console"] .input {
+  border-radius: 5px; background: #13110e;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.5); border-color: #3a362e;
+}
+[data-theme="console"] .sl-val { color: #ffb27a; }
+[data-theme="console"] .status-card { background: linear-gradient(180deg, #232019, #1b1916); }
+[data-theme="console"] .st-side { letter-spacing: .16em; }
+[data-theme="console"] .mini-card { border-radius: 5px; }
+[data-theme="console"] .apply { border-radius: 5px; color: #ffb27a; }
+[data-theme="console"] input[type="range"]::-webkit-slider-thumb { border-radius: 2px; width: 13px; height: 13px; }
+[data-theme="console"] .sw.active { outline-color: #ff7a2f; }
+[data-theme="console"] .help { border-radius: 50%; }
+[data-theme="console"] .host-pill { border-radius: 3px; }
