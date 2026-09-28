@@ -23864,3 +23864,269 @@ function ae_arrowBuild(payload) {
     return toolResult(false, "Arrow Creator: " + String(e));
   }
 }
+
+// ============================================================
+// COLOR FX (Animation tab > COLOR FX)
+// Viral text colour animations built live from text animators, so the
+// text stays editable. Every style starts with a Base animator that
+// paints the text Color FX A; the style's own animators then bring in
+// Color FX B (or shift the hue). Colours and speed are effect controls
+// on the layer, so they can be changed afterwards in Effect Controls.
+// Applying again replaces the previous Color FX; Clean removes it.
+// ============================================================
+var COMPX_CFX_PREFIX = "CompX Color FX";
+
+var COMPX_CFX_STYLES = {
+  rainbow: "Rainbow Wave",
+  confetti: "Confetti Letters",
+  karaoke: "Karaoke Fill",
+  activeWord: "Active Word",
+  shine: "Shine Sweep",
+  wipe: "Color Wipe",
+  blink: "Duotone Blink",
+  neon: "Neon Flicker",
+  pop: "Pop Highlight",
+  pulse: "Color Pulse"
+};
+
+function compxCfxColor(c, def) {
+  if (!c || c.length < 3) return def;
+  var out = [];
+  for (var i = 0; i < 3; i++) { var n = Number(c[i]); out.push(isFinite(n) ? Math.max(0, Math.min(1, n)) : def[i]); }
+  return out;
+}
+
+// Hue shifting does nothing to white or grey, so hue styles get a vivid base.
+function compxCfxVivid(c) {
+  var mx = Math.max(c[0], c[1], c[2]), mn = Math.min(c[0], c[1], c[2]);
+  return (mx - mn) < 0.25 ? [1, 0.22, 0.42] : c;
+}
+
+function compxCfxSelectedText(comp) {
+  var out = [], sel = getSelectedLayers(comp);
+  for (var i = 0; i < sel.length; i++) {
+    try { if (sel[i].property("ADBE Text Properties")) out.push(sel[i]); } catch (e) { compxAuditFallback("HOST_CFX_TEXTCHECK_001", e); }
+  }
+  return out;
+}
+
+function compxCfxClear(layer) {
+  var removed = 0, i;
+  try {
+    var animators = layer.property("ADBE Text Properties").property("ADBE Text Animators");
+    for (i = animators.numProperties; i >= 1; i--) {
+      if (String(animators.property(i).name).indexOf(COMPX_CFX_PREFIX) === 0) { animators.property(i).remove(); removed++; }
+    }
+  } catch (e1) { compxAuditFallback("HOST_CFX_CLEAR_ANIM_001", e1); }
+  try {
+    var fx = layer.property("ADBE Effect Parade");
+    for (i = fx.numProperties; i >= 1; i--) {
+      if (String(fx.property(i).name).indexOf(COMPX_CFX_PREFIX) === 0) { fx.property(i).remove(); removed++; }
+    }
+  } catch (e2) { compxAuditFallback("HOST_CFX_CLEAR_FX_001", e2); }
+  return removed;
+}
+
+function compxCfxControl(layer, matchName, name, value) {
+  var fx = layer.property("ADBE Effect Parade").addProperty(matchName);
+  fx.name = name;
+  fx.property(1).setValue(value);
+  return fx;
+}
+
+function compxCfxAnimator(layer, label) {
+  var a = layer.property("ADBE Text Properties").property("ADBE Text Animators").addProperty("ADBE Text Animator");
+  a.name = COMPX_CFX_PREFIX + " - " + label;
+  return a;
+}
+
+// A fresh range selector (0-100, i.e. every character unless told otherwise).
+function compxCfxRange(animator, name, basedOn, shape) {
+  var sels = animator.property("ADBE Text Selectors");
+  var s = null;
+  for (var i = 1; i <= sels.numProperties; i++) if (sels.property(i).matchName === "ADBE Text Selector") { s = sels.property(i); break; }
+  if (!s) s = sels.addProperty("ADBE Text Selector");
+  if (name) s.name = name;
+  var adv = s.property("ADBE Text Range Advanced");
+  if (adv) {
+    if (basedOn) { try { adv.property("ADBE Text Range Type2").setValue(basedOn); } catch (e1) { compxAuditFallback("HOST_CFX_BASEDON_001", e1); } }
+    if (shape) { try { adv.property("ADBE Text Range Shape").setValue(shape); } catch (e2) { compxAuditFallback("HOST_CFX_SHAPE_001", e2); } }
+    if (shape === 1) { try { adv.property("ADBE Text Range Smoothness").setValue(0); } catch (e3) { compxAuditFallback("HOST_CFX_SMOOTH_001", e3); } }
+  }
+  return s;
+}
+
+// Expression selector only: a default range selector would add every
+// character at 100% and swamp it, so any range selector is removed first.
+function compxCfxExprSelector(animator, basedOn, expr) {
+  var sels = animator.property("ADBE Text Selectors");
+  for (var i = sels.numProperties; i >= 1; i--) if (sels.property(i).matchName === "ADBE Text Selector") sels.property(i).remove();
+  var s = sels.addProperty("ADBE Text Expressible Selector");
+  if (basedOn) { try { s.property("ADBE Text Range Type2").setValue(basedOn); } catch (e1) { compxAuditFallback("HOST_CFX_EXPR_BASEDON_001", e1); } }
+  var amount = s.property("ADBE Text Expressible Amount") || s.property(1);
+  amount.expression = expr;
+  return s;
+}
+
+function compxCfxFill(animator, which) {
+  var p = animator.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color");
+  p.setValue([1, 1, 1]);
+  p.expression = 'effect("' + COMPX_CFX_PREFIX + ' ' + which + '")(1);';
+  return p;
+}
+
+function compxCfxEaseKeys(prop) {
+  var e = [new KeyframeEase(0, 60)];
+  for (var k = 1; k <= prop.numKeys; k++) {
+    try { prop.setTemporalEaseAtKey(k, e, e); } catch (err) { compxAuditFallback("HOST_CFX_EASE_001", err); }
+  }
+}
+
+function compxCfxBuild(layer, id, comp, frames) {
+  var SPEED = 'effect("' + COMPX_CFX_PREFIX + ' Speed")(1)';
+  var t0 = comp.time, t1 = comp.time + frames * comp.frameDuration;
+  var a, s;
+
+  // Base: the whole text in colour A.
+  a = compxCfxAnimator(layer, "Base");
+  compxCfxFill(a, "A");
+  compxCfxRange(a, "All", 1, 1);
+
+  if (id === "rainbow" || id === "confetti") {
+    a = compxCfxAnimator(layer, id === "rainbow" ? "Hue Wave" : "Confetti Hue");
+    a.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Hue").setValue(360);
+    compxCfxExprSelector(a, 1, id === "rainbow"
+      ? "var s = " + SPEED + ";\n((time * s * 0.5 + (textIndex - 1) / Math.max(1, textTotal)) % 1) * 100;"
+      : "var s = " + SPEED + ";\nvar step = Math.floor(time * 6 * s);\nseedRandom(textIndex * 13 + step * 7, true);\nrandom(0, 100);");
+  } else if (id === "karaoke" || id === "wipe") {
+    a = compxCfxAnimator(layer, id === "karaoke" ? "Karaoke" : "Wipe");
+    compxCfxFill(a, "B");
+    s = compxCfxRange(a, "Fill", id === "karaoke" ? 3 : 1, id === "karaoke" ? 1 : 6);
+    var end = s.property("ADBE Text Percent End");
+    end.setValueAtTime(t0, 0);
+    end.setValueAtTime(t1, 100);
+    if (id === "wipe") compxCfxEaseKeys(end);
+  } else if (id === "activeWord") {
+    a = compxCfxAnimator(layer, "Active Word");
+    compxCfxFill(a, "B");
+    a.property("ADBE Text Animator Properties").addProperty("ADBE Text Scale 3D").setValue([112, 112, 100]);
+    compxCfxExprSelector(a, 3, "var s = " + SPEED + ";\nvar cur = Math.floor(time * 2 * s) % Math.max(1, textTotal);\n(textIndex - 1) == cur ? 100 : 0;");
+  } else if (id === "shine") {
+    a = compxCfxAnimator(layer, "Shine");
+    compxCfxFill(a, "B");
+    s = compxCfxRange(a, "Band", 1, 6);
+    s.property("ADBE Text Percent Start").setValue(0);
+    s.property("ADBE Text Percent End").setValue(28);
+    s.property("ADBE Text Percent Offset").expression = "var s = " + SPEED + ";\nvar t = (time * s * 0.6) % 1;\n-28 + t * 156;";
+  } else if (id === "blink") {
+    a = compxCfxAnimator(layer, "Blink");
+    compxCfxFill(a, "B");
+    compxCfxExprSelector(a, 1, "var s = " + SPEED + ";\nMath.floor(time * 4 * s) % 2 == 0 ? 0 : 100;");
+  } else if (id === "neon") {
+    a = compxCfxAnimator(layer, "Flicker");
+    compxCfxFill(a, "B");
+    compxCfxExprSelector(a, 1, "var s = " + SPEED + ";\nvar step = Math.floor(time * 12 * s);\nseedRandom(textIndex * 31 + step, true);\nrandom() < 0.22 ? 0 : 100;");
+    var glow = layer.property("ADBE Effect Parade").addProperty("ADBE Glo2");
+    glow.name = COMPX_CFX_PREFIX + " Glow";
+  } else if (id === "pop") {
+    // Words pop in (scale + opacity), and the words that just landed flash
+    // colour B for a moment before settling back to A.
+    a = compxCfxAnimator(layer, "Pop");
+    var popProps = a.property("ADBE Text Animator Properties");
+    popProps.addProperty("ADBE Text Scale 3D").setValue([0, 0, 100]);
+    popProps.addProperty("ADBE Text Opacity").setValue(0);
+    s = compxCfxRange(a, "Pop Range", 3, 1);
+    var start = s.property("ADBE Text Percent Start");
+    start.setValueAtTime(t0, 0);
+    start.setValueAtTime(t1, 100);
+    compxCfxEaseKeys(start);
+    a = compxCfxAnimator(layer, "Flash");
+    compxCfxFill(a, "B");
+    s = compxCfxRange(a, "Flash Range", 3, 1);
+    var popRef = 'text.animator("' + COMPX_CFX_PREFIX + ' - Pop").selector("Pop Range").start';
+    s.property("ADBE Text Percent Start").expression = "Math.max(0, " + popRef + " - 20);";
+    s.property("ADBE Text Percent End").expression = popRef + ";";
+  } else if (id === "pulse") {
+    a = compxCfxAnimator(layer, "Pulse");
+    compxCfxFill(a, "B");
+    compxCfxExprSelector(a, 1, "var s = " + SPEED + ";\nvar x = (textIndex - 1) / Math.max(1, textTotal);\n50 + 50 * Math.sin((x * 2 - time * s) * Math.PI * 2);");
+  }
+}
+
+function ae_textColorFx(styleId, payload) {
+  var undoOpen = false;
+  try {
+    if (!isAfterEffects()) return toolResult(false, "Color FX is available in After Effects only.");
+    var comp = getActiveComp();
+    if (!comp) return toolResult(false, "Open a composition first.");
+    var id = String(styleId || "");
+    var label = COMPX_CFX_STYLES[id];
+    if (!label) return toolResult(false, "Unknown Color FX style: " + id);
+    var cfg = {};
+    try { cfg = JSON.parse(String(payload || "{}")); } catch (pErr) { cfg = {}; }
+    var colorA = compxCfxColor(cfg.a, [1, 1, 1]);
+    var colorB = compxCfxColor(cfg.b, [1, 0.85, 0.1]);
+    if (id === "rainbow" || id === "confetti") colorA = compxCfxVivid(colorA);
+    var speed = Number(cfg.speed); if (!isFinite(speed) || speed <= 0) speed = 1;
+    var frames = Math.round(Number(cfg.frames)); if (!isFinite(frames) || frames < 2) frames = 30;
+
+    app.beginUndoGroup("Color FX: " + label);
+    undoOpen = true;
+
+    var layers = compxCfxSelectedText(comp), created = false;
+    if (!layers.length) {
+      var demo = comp.layers.addText(cfg.sample ? String(cfg.sample) : "GO VIRAL");
+      try {
+        var doc = demo.property("ADBE Text Properties").property("ADBE Text Document").value;
+        doc.fontSize = Math.round(comp.height * 0.11);
+        doc.fillColor = [1, 1, 1];
+        doc.applyFill = true;
+        doc.justification = ParagraphJustification.CENTER_JUSTIFY;
+        demo.property("ADBE Text Properties").property("ADBE Text Document").setValue(doc);
+      } catch (dErr) { compxAuditFallback("HOST_CFX_DEMO_001", dErr); }
+      try {
+        var r = demo.sourceRectAtTime(comp.time, false);
+        demo.property("ADBE Transform Group").property("ADBE Anchor Point").setValue([r.left + r.width / 2, r.top + r.height / 2]);
+        demo.property("ADBE Transform Group").property("ADBE Position").setValue([comp.width / 2, comp.height / 2]);
+      } catch (cErr) { compxAuditFallback("HOST_CFX_DEMO_002", cErr); }
+      layers = [demo];
+      created = true;
+    }
+
+    for (var i = 0; i < layers.length; i++) {
+      compxCfxClear(layers[i]);
+      compxCfxControl(layers[i], "ADBE Color Control", COMPX_CFX_PREFIX + " A", colorA);
+      compxCfxControl(layers[i], "ADBE Color Control", COMPX_CFX_PREFIX + " B", colorB);
+      compxCfxControl(layers[i], "ADBE Slider Control", COMPX_CFX_PREFIX + " Speed", speed);
+      compxCfxBuild(layers[i], id, comp, frames);
+      try { layers[i].selected = true; } catch (sErr) { compxAuditFallback("HOST_CFX_SELECT_001", sErr); }
+    }
+
+    app.endUndoGroup();
+    undoOpen = false;
+    return toolResult(true, label + " applied to " + (created ? "a new demo text layer" : layers.length + " text layer" + (layers.length === 1 ? "" : "s")) + ". Colours and speed are in Effect Controls.");
+  } catch (e) {
+    if (undoOpen) { try { app.endUndoGroup(); } catch (ue) { compxAuditFallback("HOST_CFX_UNDO_001", ue); } }
+    return toolResult(false, "Color FX: " + String(e));
+  }
+}
+
+function ae_textColorFxClean() {
+  var undoOpen = false;
+  try {
+    var comp = getActiveComp();
+    if (!comp) return toolResult(false, "Open a composition first.");
+    var layers = compxCfxSelectedText(comp);
+    if (!layers.length) return toolResult(false, "Select the text layers to clean.");
+    app.beginUndoGroup("Color FX: Clean");
+    undoOpen = true;
+    var removed = 0;
+    for (var i = 0; i < layers.length; i++) removed += compxCfxClear(layers[i]);
+    app.endUndoGroup();
+    undoOpen = false;
+    return toolResult(removed > 0, removed > 0 ? "Color FX removed from " + layers.length + " layer" + (layers.length === 1 ? "" : "s") + "." : "No Color FX on the selected layers.");
+  } catch (e) {
+    if (undoOpen) { try { app.endUndoGroup(); } catch (ue) { compxAuditFallback("HOST_CFX_UNDO_002", ue); } }
+    return toolResult(false, "Color FX: " + String(e));
+  }
+}

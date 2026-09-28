@@ -37,6 +37,7 @@
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=3" rel="stylesheet"/>
 <link href="css/orbit-arrow.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-colorfx.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-sfx.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
@@ -1264,6 +1265,7 @@
 <div class="cx-textlib-tabs" id="textLibraryTabs" role="tablist" aria-label="Text library mode">
 <button class="active" type="button" data-text-library-tab="styles">PREMIUM STYLES</button>
 <button type="button" data-text-library-tab="textfx">TEXT FX <em>125</em></button>
+<button type="button" data-text-library-tab="color">COLOR FX <em>10</em></button>
 </div>
 <div data-text-library-panel="styles">
 <div class="tool-section tanim-section tanim-mogrt-shell" style="margin:10px;">
@@ -1280,6 +1282,31 @@
 <div class="hint tanim-apply-hint">Click any card to apply. If no text layer is selected, a demo text layer will be created automatically.</div>
 <div class="library grid tanim-card-grid" id="tanimList">
 <div class="studio-empty">Loading text styles…</div>
+</div>
+</div>
+</div>
+<div class="cfx-panel" data-text-library-panel="color" hidden>
+<div class="tool-section cfx-shell" id="cfxShell">
+<div class="tool-section-head">
+<div><div class="tool-section-title">COLOR FX</div><div class="cfx-subtitle">Viral text colour animations · built live, text stays editable</div></div>
+<span class="tool-help" title="Select one or more text layers and click a style. With nothing selected, a demo text layer is made. Colour A is the base, colour B the accent. Both colours and the speed land in Effect Controls as CompX Color FX A / B / Speed, so you can change them later. Applying another style replaces the last one; Clean removes it.">?</span>
+</div>
+<div class="cfx-controls">
+<div class="cfx-colors">
+<label class="cfx-color" title="Base colour"><span>A · BASE</span><input type="color" id="cfxColorA" value="#ffffff"/></label>
+<button type="button" class="cfx-swap" id="cfxSwap" title="Swap A and B"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></button>
+<label class="cfx-color" title="Accent colour"><span>B · ACCENT</span><input type="color" id="cfxColorB" value="#ffd400"/></label>
+</div>
+<div class="cfx-palettes" id="cfxPalettes" role="group" aria-label="Colour palettes"></div>
+<div class="cfx-fields">
+<label class="cfx-field" title="Loop speed of the looping styles (1 = normal)"><span>SPEED</span><input type="number" id="cfxSpeed" min="0.1" max="5" step="0.1" value="1"/></label>
+<label class="cfx-field" title="Length of the one-pass styles (Karaoke, Wipe, Pop) in frames"><span>FRAMES</span><input type="number" id="cfxFrames" min="2" max="600" step="1" value="30"/></label>
+</div>
+</div>
+<div class="cfx-grid" id="cfxGrid"></div>
+<div class="cfx-foot">
+<button type="button" class="cfx-clean" id="cfxClean" title="Remove Color FX animators and controls from the selected text layers">CLEAN COLOR FX</button>
+<span class="cfx-status" id="cfxStatus" aria-live="polite"></span>
 </div>
 </div>
 </div>
@@ -2117,13 +2144,14 @@
 <script src="js/diagnostics.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/compx-license.js?v=65"></script>
-<script src="js/compx-loader.js?v=119"></script>
+<script src="js/compx-loader.js?v=120"></script>
 <script src="js/license-gate.js"></script>
 <script src="js/orbit-global-dock.js?v=2"></script>
 <script src="js/orbit-library-ui.js?v=1"></script>
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
 <script src="js/orbit-arrow.js?v=1"></script>
+<script src="js/orbit-colorfx.js?v=1"></script>
 <script src="js/orbit-sfx.js?v=2"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>
