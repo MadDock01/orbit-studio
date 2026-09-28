@@ -68,8 +68,16 @@
     invert: false,
     libTab: 'def',
     drag: null,
-    selectedPoint: -1
+    selectedPoint: -1,
+    graph: 'value',     // editor view: 'value' curve or its 'speed' (AE Speed Graph)
+    applyAs: 'speed'    // 'speed' = ease the keys you have, 'value' = bake the exact curve
   };
+  try {
+    var savedGraph = localStorage.getItem('compxGraph20View');
+    var savedAs = localStorage.getItem('compxGraph20ApplyAs');
+    if (savedGraph === 'speed' || savedGraph === 'value') state.graph = savedGraph;
+    if (savedAs === 'speed' || savedAs === 'value') state.applyAs = savedAs;
+  } catch (prefErr) { /* sandboxed storage */ }
   var view = { yMin: -0.35, yMax: 1.35 };
   var PAD = { l: 30, r: 14, t: 16, b: 22 };
   var VB = { w: 320, h: 220 };
@@ -137,9 +145,67 @@
     return state.invert ? 1 - y : y;
   }
 
+  /* ── speed (the AE Speed Graph view of the same curve) ──
+     Speed here is dy/dx of the normalised curve, so 1 is the average
+     speed of the move and 0 is standing still. Bezier and spline curves
+     are sampled along their own parameter for an exact derivative; the
+     procedural models are differentiated numerically. */
+  function bezPts() {
+    var b = state.bezier;
+    return [{ x: 0, y: 0, cx1: 0, cy1: 0, cx2: b.p1x, cy2: b.p1y }, { x: 1, y: 1, cx1: b.p2x, cy1: b.p2y, cx2: 1, cy2: 1 }];
+  }
+  var SPEED_CAP = 6;
+  function speedSeries() {
+    var out = [], i, k;
+    if (state.model === 'bezier' || state.model === 'custom') {
+      var P = state.model === 'bezier' ? bezPts() : state.points;
+      for (i = 0; i < P.length - 1; i++) {
+        var a = P[i], z = P[i + 1];
+        var X = [a.x, a.cx2, z.cx1, z.x], Y = [a.y, a.cy2, z.cy1, z.y];
+        for (k = (i ? 1 : 0); k <= 40; k++) {
+          var t = k / 40, mt = 1 - t;
+          var x = mt * mt * mt * X[0] + 3 * mt * mt * t * X[1] + 3 * mt * t * t * X[2] + t * t * t * X[3];
+          var dx = 3 * mt * mt * (X[1] - X[0]) + 6 * mt * t * (X[2] - X[1]) + 3 * t * t * (X[3] - X[2]);
+          var dy = 3 * mt * mt * (Y[1] - Y[0]) + 6 * mt * t * (Y[2] - Y[1]) + 3 * t * t * (Y[3] - Y[2]);
+          var sp = Math.abs(dx) < 1e-5 ? (dy >= 0 ? SPEED_CAP : -SPEED_CAP) : dy / dx;
+          out.push([x, clamp(sp, -SPEED_CAP, SPEED_CAP)]);
+        }
+      }
+      if (state.invert) out = out.map(function (q) { return [1 - q[0], q[1]]; }).reverse();
+    } else {
+      var N = 160, h = 1 / 640;
+      for (i = 0; i <= N; i++) {
+        var xx = i / N, x0 = Math.max(0, xx - h), x1 = Math.min(1, xx + h);
+        out.push([xx, clamp((evalCurve(x1) - evalCurve(x0)) / (x1 - x0), -SPEED_CAP, SPEED_CAP)]);
+      }
+    }
+    return out;
+  }
+  function speedAt(series, x) {
+    for (var i = 1; i < series.length; i++) {
+      if (series[i][0] >= x) {
+        var a = series[i - 1], b = series[i], span = b[0] - a[0];
+        return span > 1e-6 ? a[1] + (b[1] - a[1]) * (x - a[0]) / span : b[1];
+      }
+    }
+    return series.length ? series[series.length - 1][1] : 0;
+  }
+  // Bezier speeds at the two keys, exactly as AE stores them (x average).
+  function bezSpeeds() {
+    var b = state.bezier;
+    return { out: b.p1x > 0.001 ? b.p1y / b.p1x : 0, inn: b.p2x < 0.999 ? (1 - b.p2y) / (1 - b.p2x) : 0 };
+  }
+
   /* ── coordinate mapping ── */
-  function fitView() {
+  function fitView(series) {
     var lo = 0, hi = 1, i, y;
+    if (state.graph === 'speed' && series) {
+      hi = 1.2;
+      for (i = 0; i < series.length; i++) { y = series[i][1]; if (y < lo) lo = y; if (y > hi) hi = y; }
+      if (state.model === 'bezier' && !state.invert) { var bs = bezSpeeds(); hi = Math.max(hi, bs.out, bs.inn); lo = Math.min(lo, bs.out, bs.inn); }
+      view.yMin = lo - (hi - lo) * 0.08; view.yMax = hi + (hi - lo) * 0.12;
+      return;
+    }
     for (i = 0; i <= 96; i++) { y = evalCurve(i / 96); if (y < lo) lo = y; if (y > hi) hi = y; }
     var pad = (hi - lo) * 0.12 + 0.05; view.yMin = lo - pad; view.yMax = hi + pad;
   }
@@ -152,7 +218,15 @@
   var dom = {};
   var previewRaf = 0, previewT = -1;
 
+  // VALUE mode sends the curve itself: 241 evenly spaced y samples with
+  // Invert already applied, which the host bakes one key per frame.
+  function valueSamples() {
+    var out = [];
+    for (var i = 0; i <= 240; i++) out.push(fmt(evalCurve(i / 240), 5));
+    return out.join(',');
+  }
   function buildPayload() {
+    if (state.applyAs === 'value') return state.model + '|value|0||' + valueSamples();
     var graphMode, params = '', pts = '';
     if (state.model === 'bezier') { graphMode = 'ease'; var b = state.bezier; params = [b.p1x, b.p1y, b.p2x, b.p2y].map(function (n) { return fmt(n, 5); }).join(','); }
     else if (state.model === 'custom') { graphMode = 'bake'; pts = state.points.map(function (p) { return [p.x, p.y, p.cx1, p.cy1, p.cx2, p.cy2].map(function (n) { return fmt(n, 5); }).join(','); }).join(';'); }
@@ -168,6 +242,7 @@
 
   /* ── render curve + handles ── */
   function render() {
+    if (state.graph === 'speed') { renderSpeed(); return; }
     fitView();
     var svg = dom.svg; if (!svg) return;
     while (svg.firstChild) svg.removeChild(svg.firstChild);
@@ -218,6 +293,64 @@
       svg.appendChild(svgEl('circle', { cx: sx(previewT), cy: sy(evalCurve(previewT)), r: 5, 'class': 'fx20-previewdot' }));
     }
     readout();
+  }
+
+  function renderSpeed() {
+    var svg = dom.svg; if (!svg) return;
+    var series = speedSeries();
+    fitView(series);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var g = svgEl('g', { 'class': 'fx20-grid' }), i;
+    for (i = 0; i <= 4; i++) { var gx = PAD.l + i / 4 * (VB.w - PAD.l - PAD.r); g.appendChild(svgEl('line', { x1: gx, y1: PAD.t, x2: gx, y2: VB.h - PAD.b })); }
+    for (i = 0; i <= 4; i++) { var gy = PAD.t + i / 4 * (VB.h - PAD.t - PAD.b); g.appendChild(svgEl('line', { x1: PAD.l, y1: gy, x2: VB.w - PAD.r, y2: gy })); }
+    svg.appendChild(g);
+    svg.appendChild(svgEl('line', { x1: PAD.l, y1: sy(0), x2: VB.w - PAD.r, y2: sy(0), 'class': 'fx20-grid-strong' }));
+    svg.appendChild(svgEl('line', { x1: PAD.l, y1: sy(1), x2: VB.w - PAD.r, y2: sy(1), 'class': 'fx20-speed-avg' }));
+    var avg = svgEl('text', { x: PAD.l + 3, y: sy(1) - 3, 'class': 'fx20-axis-label' }); avg.textContent = 'avg'; svg.appendChild(avg);
+    var zl = svgEl('text', { x: PAD.l + 3, y: sy(0) - 3, 'class': 'fx20-axis-label' }); zl.textContent = '0'; svg.appendChild(zl);
+    var dline = '', aline = 'M' + sx(series[0][0]).toFixed(2) + ' ' + sy(0).toFixed(2);
+    for (i = 0; i < series.length; i++) {
+      var px = sx(series[i][0]).toFixed(2), py = sy(series[i][1]).toFixed(2);
+      dline += (i === 0 ? 'M' : 'L') + px + ' ' + py; aline += 'L' + px + ' ' + py;
+    }
+    aline += 'L' + sx(series[series.length - 1][0]).toFixed(2) + ' ' + sy(0).toFixed(2) + 'Z';
+    svg.appendChild(svgEl('path', { d: aline, 'class': 'fx20-curvearea fx20-speedarea' }));
+    svg.appendChild(svgEl('path', { d: dline, 'class': 'fx20-curve fx20-speedcurve' }));
+    // Bezier: AE-style speed handles. Height is the key's speed, length its influence.
+    if (state.model === 'bezier' && !state.invert) {
+      var b = state.bezier, bs = bezSpeeds();
+      var k0 = { x: sx(0), y: sy(bs.out) }, k1 = { x: sx(1), y: sy(bs.inn) };
+      var h1 = { x: sx(b.p1x), y: sy(bs.out) }, h2 = { x: sx(b.p2x), y: sy(bs.inn) };
+      svg.appendChild(svgEl('line', { x1: k0.x, y1: k0.y, x2: h1.x, y2: h1.y, 'class': 'fx20-armline' }));
+      svg.appendChild(svgEl('line', { x1: k1.x, y1: k1.y, x2: h2.x, y2: h2.y, 'class': 'fx20-armline' }));
+      svg.appendChild(svgEl('rect', { x: k0.x - 3.5, y: k0.y - 3.5, width: 7, height: 7, 'class': 'fx20-anchor-fixed' }));
+      svg.appendChild(svgEl('rect', { x: k1.x - 3.5, y: k1.y - 3.5, width: 7, height: 7, 'class': 'fx20-anchor-fixed' }));
+      svg.appendChild(svgEl('circle', { cx: h1.x, cy: h1.y, r: 5.5, 'class': 'fx20-handle', 'data-h': '1' }));
+      svg.appendChild(svgEl('circle', { cx: h2.x, cy: h2.y, r: 5.5, 'class': 'fx20-handle', 'data-h': '2' }));
+    }
+    if (previewT >= 0 && previewT <= 1) {
+      svg.appendChild(svgEl('circle', { cx: sx(previewT), cy: sy(speedAt(series, previewT)), r: 5, 'class': 'fx20-previewdot' }));
+    }
+    readout();
+  }
+
+  /* ── view + apply-as toggles ── */
+  var APPLY_HINTS = {
+    value: 'VALUE · BAKE — the exact curve becomes one keyframe per frame between the first and last selected key (keys in between are replaced). Every curve type works, no expression; the Value Graph shows it exactly.',
+    bezier: 'SPEED · EASE — keeps your keyframes and only sets their ease handles (speed + influence). You see it in the Speed Graph; the Value Graph follows.',
+    custom: 'SPEED · EASE — each spline point becomes a keyframe eased from its handles.',
+    steps: 'SPEED · EASE — steps become hold keyframes.',
+    expr: 'SPEED · EASE — this curve cannot be a plain ease, so it runs as an expression between the first and last selected key. Pick VALUE for real keyframes instead.'
+  };
+  function syncModes() {
+    if (dom.viewSeg) { var vb = dom.viewSeg.querySelectorAll('button'); for (var i = 0; i < vb.length; i++) vb[i].classList.toggle('active', vb[i].getAttribute('data-view') === state.graph); }
+    if (dom.asSeg) { var ab = dom.asSeg.querySelectorAll('button'); for (var j = 0; j < ab.length; j++) ab[j].classList.toggle('active', ab[j].getAttribute('data-as') === state.applyAs); }
+    if (dom.applyHint) {
+      var key = state.applyAs === 'value' ? 'value' : (state.model === 'bezier' || state.model === 'custom' || state.model === 'steps') ? state.model : 'expr';
+      dom.applyHint.textContent = APPLY_HINTS[key];
+    }
+    if (dom.apply) dom.apply.textContent = state.applyAs === 'value' ? '✓ APPLY AS VALUE (BAKE KEYS)' : '✓ APPLY AS SPEED (EASE)';
+    if (dom.canvasLabel) dom.canvasLabel.textContent = state.graph === 'speed' ? 'SPEED GRAPH · 1 = average speed' : 'VALUE GRAPH · 0 = first key, 1 = last key';
   }
 
   /* ── keyframe row (numbered badge + slider + value + copy/trash) ── */
@@ -311,6 +444,7 @@
   }
 
   function syncModelStrip() {
+    syncModes();
     var btns = dom.strip ? dom.strip.querySelectorAll('.fx20-model') : [];
     for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-model') === state.model);
   }
@@ -320,7 +454,7 @@
     status('Applying…', '');
     hostRaw('ae_graph20Apply("' + buildPayload() + '")', function (res) {
       if (res.indexOf('ERR') === 0 || res.indexOf('"ok":false') >= 0 || res.indexOf('"success":false') >= 0) status(res.replace(/^ERR:\s*/, ''), 'error');
-      else status('Applied to selected keyframes.', 'success');
+      else status(res.replace(/^SUCCESS:\s*/, '') || 'Applied to selected keyframes.', 'success');
     });
   }
   function readCurve() {
@@ -382,6 +516,7 @@
   function onDown(evt) {
     var t = evt.target; if (!t || !t.getAttribute) return;
     if (state.model === 'bezier' && t.classList.contains('fx20-handle')) state.drag = { type:'bezier', handle:t.getAttribute('data-h') };
+    else if (state.graph === 'speed' && state.model !== 'bezier') { status('Edit this curve in the VALUE view; SPEED shows the result.', ''); return; }
     else if (state.model === 'custom' && (t.classList.contains('fx20-handle') || t.classList.contains('fx20-spline-point'))) {
       state.selectedPoint = parseInt(t.getAttribute('data-point'), 10);
       state.drag = { type:'custom', point:state.selectedPoint, role:t.getAttribute('data-role') };
@@ -392,7 +527,12 @@
   function onMove(evt) {
     if (!state.drag) return; var uv = pointerUV(evt); var b = state.bezier;
     var x = clamp(uv.x, 0, 1), y = clamp(uv.y, -0.6, 1.6);
-    if (state.drag.type === 'bezier') {
+    if (state.drag.type === 'bezier' && state.graph === 'speed') {
+      // Horizontal = influence, vertical = speed at that key (x average).
+      var spd = clamp(uv.y, -SPEED_CAP, SPEED_CAP);
+      if (state.drag.handle === '1') { b.p1x = clamp(uv.x, 0.01, 1); b.p1y = clamp(spd * b.p1x, -0.6, 1.6); }
+      else { b.p2x = clamp(uv.x, 0, 0.99); b.p2y = clamp(1 - spd * (1 - b.p2x), -0.6, 1.6); }
+    } else if (state.drag.type === 'bezier') {
       if (state.drag.handle === '1') { b.p1x = x; b.p1y = y; } else { b.p2x = x; b.p2y = y; }
     } else {
       var p = state.points[state.drag.point]; if (!p) return;
@@ -407,7 +547,7 @@
   }
   function onUp() { state.drag = null; }
   function addSplinePoint(evt) {
-    if (state.model !== 'custom') return;
+    if (state.model !== 'custom' || state.graph === 'speed') return;
     var uv=pointerUV(evt), x=clamp(uv.x,.02,.98), y=clamp(uv.y,-.6,1.6), span=.09;
     state.points.push({x:x,y:y,cx1:Math.max(0,x-span),cy1:y,cx2:Math.min(1,x+span),cy2:y});
     state.points.sort(function(a,b){return a.x-b.x;});
@@ -430,6 +570,7 @@
         '</div>' +
         '<div class="fx20-meta">' +
           '<select id="fx20-modelselect" class="fx20-modelselect" title="Curve type">' + modelOptions + '</select>' +
+          '<div class="fx20-seg" id="fx20-view" role="group" aria-label="Graph view"><button data-view="value" title="Value Graph: where the property is over time">VALUE</button><button data-view="speed" title="Speed Graph: how fast it moves, like AE\'s Speed Graph">SPEED</button></div>' +
           '<button id="fx20-play" class="fx20-chip" title="Preview animation">▶ PLAY</button>' +
           '<button id="fx20-invert" class="fx20-chip" title="Invert curve">INV</button>' +
           '<div class="fx20-libtabs" id="fx20-libtabs"><button data-lib="def" class="active">DEF</button><button data-lib="base">BASE</button><button data-lib="user">MINE</button></div>' +
@@ -437,11 +578,13 @@
         '</div>' +
       '</div>' +
       '<div class="fx20-modelstrip" id="fx20-strip"></div>' +
-      '<div class="fx20-canvas-wrap"><svg id="fx20-svg" viewBox="0 0 ' + VB.w + ' ' + VB.h + '" preserveAspectRatio="none"></svg></div>' +
+      '<div class="fx20-canvas-wrap"><span class="fx20-canvas-label" id="fx20-canvaslabel"></span><svg id="fx20-svg" viewBox="0 0 ' + VB.w + ' ' + VB.h + '" preserveAspectRatio="none"></svg></div>' +
       '<div class="fx20-spline-actions"><button id="fx20-addpoint" title="Switch to Spline; double-click the graph to add points">＋ POINT</button><button id="fx20-delpoint">− POINT</button></div>' +
       '<div class="fx20-keyshead"><span class="fx20-keys-title">KEYFRAME COORDINATES</span><span class="fx20-keys-hint" id="fx20-keyshint"></span></div>' +
       '<div class="fx20-params" id="fx20-params"></div>' +
       '<div class="fx20-actions"><button id="fx20-read">⌨ READ KEYS</button><button id="fx20-remove">🗑 REMOVE COMPX EXPR</button></div>' +
+      '<div class="fx20-applyas"><span class="fx20-applyas-label">APPLY AS</span><div class="fx20-seg fx20-seg-wide" id="fx20-applyas" role="group" aria-label="Apply as"><button data-as="speed" title="Keep the keyframes; set their ease (Speed Graph)">SPEED · EASE</button><button data-as="value" title="Bake the exact curve into value keyframes (Value Graph)">VALUE · BAKE</button></div></div>' +
+      '<div class="fx20-applyhint" id="fx20-applyhint"></div>' +
       '<button id="fx20-apply" class="fx20-apply">✓ APPLY TO SELECTED KEYS</button>' +
       '<div class="fx20-statusbar"><div class="fx20-status" id="fx20-status">Select a property and two adjacent keyframes.</div><button id="fx20-how" class="fx20-howbtn" title="How it works">? HOW IT WORKS</button></div>' +
       '<div class="fx20-howto" id="fx20-howto" hidden><b>How it works</b><span>Select a property in AE with two adjacent keyframes, click <b>⌨ READ KEYS</b> to load its motion, sculpt the curve here, then <b>✓ APPLY TO SELECTED KEYS</b>. Double-click a spline to add points; drag the green handles. Presets are one-click — double-click a preset to load and apply.</span></div>' +
@@ -454,6 +597,23 @@
     dom.status = root.querySelector('#fx20-status');
     dom.info = root.querySelector('#fx20-modelselect');
     dom.play = root.querySelector('#fx20-play');
+    dom.viewSeg = root.querySelector('#fx20-view');
+    dom.asSeg = root.querySelector('#fx20-applyas');
+    dom.applyHint = root.querySelector('#fx20-applyhint');
+    dom.apply = root.querySelector('#fx20-apply');
+    dom.canvasLabel = root.querySelector('#fx20-canvaslabel');
+    dom.viewSeg.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-view]'); if (!btn) return;
+      state.graph = btn.getAttribute('data-view');
+      try { localStorage.setItem('compxGraph20View', state.graph); } catch (e1) { /* sandboxed storage */ }
+      syncModes(); render();
+    });
+    dom.asSeg.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-as]'); if (!btn) return;
+      state.applyAs = btn.getAttribute('data-as');
+      try { localStorage.setItem('compxGraph20ApplyAs', state.applyAs); } catch (e2) { /* sandboxed storage */ }
+      syncModes();
+    });
     // model strip
     MODELS.forEach(function (m) {
       var btn = document.createElement('button'); btn.className = 'fx20-model' + (m === state.model ? ' active' : ''); btn.setAttribute('data-model', m);
@@ -482,7 +642,7 @@
     var tabs = dom.libTabs.querySelectorAll('button');
     for (var i = 0; i < tabs.length; i++) tabs[i].addEventListener('click', function () { state.libTab = this.getAttribute('data-lib'); syncLibTabs(); renderLib(); });
     try { var raw = localStorage.getItem('compxGraph20UserPresets'); if (raw) userPresets = JSON.parse(raw) || []; } catch (e) { if (window.CompXDiagnostics) window.CompXDiagnostics.fallback("GRAPH20_BUILD_001", e); }
-    renderParams(); renderLib(); render();
+    renderParams(); renderLib(); syncModes(); render();
   }
 
   function syncModelSelect() {

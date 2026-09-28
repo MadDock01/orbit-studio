@@ -156,3 +156,27 @@
 #cxSuperMorphCard .cx-smorph-count .counter-input{width:100%;height:26px;box-sizing:border-box}
 #cxSuperMorphCard .cx-smorph-toggles{display:flex;flex-wrap:wrap;gap:10px 14px}
 #cxSuperMorphCard[data-mode="travel"] .cx-smorph-liquid-only{display:none}
+
+/* ── Graph view (VALUE / SPEED) and APPLY AS ── */
+.fx20-seg { display:inline-flex; gap:2px; padding:2px; border:1px solid rgba(34,255,111,.2); border-radius:6px; background:rgba(4,10,7,.6); }
+.fx20-seg button { border:0; border-radius:4px; background:transparent; color:rgba(200,220,255,.5); font-size:7.5px; font-weight:800; letter-spacing:.7px; padding:3px 7px; cursor:pointer; transition:color .14s, background .14s; }
+.fx20-seg button:hover { color:#eafff0; }
+.fx20-seg button.active { background:var(--gp); color:#06120d; box-shadow:0 0 8px rgba(34,255,111,.35); }
+.fx20-seg-wide { flex:1; }
+.fx20-seg-wide button { flex:1; padding:5px 6px; font-size:8px; }
+.fx20-applyas { display:flex; align-items:center; gap:7px; margin-top:4px; }
+.fx20-applyas-label { font-size:7.5px; font-weight:800; letter-spacing:1px; color:rgba(200,220,255,.5); white-space:nowrap; }
+.fx20-applyhint { margin:4px 0 5px; font-size:8.5px; line-height:1.4; color:rgba(205,225,215,.62); }
+.fx20-canvas-label { position:absolute; top:5px; right:8px; z-index:1; font-size:7px; font-weight:800; letter-spacing:.9px; color:rgba(34,255,111,.7); pointer-events:none; }
+.fx20-speed-avg { stroke:rgba(34,255,111,.35); stroke-width:1; stroke-dasharray:4 3; vector-effect:non-scaling-stroke; }
+.fx20-axis-label { fill:rgba(200,220,255,.45); font-size:7px; font-weight:700; }
+.fx20-speedcurve { stroke:var(--gp); filter:drop-shadow(0 0 5px rgba(34,255,111,.55)); }
+.fx20-speedarea { fill:rgba(34,255,111,.08); }
+@media (min-width:800px) {
+  #cxFlow20 .fx20-applyas { grid-column:1; grid-row:8; }
+  #cxFlow20 .fx20-applyhint { grid-column:1; grid-row:9; }
+  #cxFlow20 .fx20-apply { grid-column:1; grid-row:10; }
+  #cxFlow20 .fx20-statusbar { grid-column:1; grid-row:11; }
+  #cxFlow20 .fx20-howto { grid-column:1; grid-row:12; }
+  #cxFlow20 .fx20-lib { grid-row:1 / span 12; }
+}
