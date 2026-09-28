@@ -483,3 +483,71 @@
   font-size: 14px !important;
   line-height: 1 !important;
 }
+
+/* ============================================================
+   Colors tab: same visual language as the rest of the panel
+   (line icons in the theme green, one primary-button style)
+   ============================================================ */
+#panel-colors .cx-color-card-icon {
+  background: #0d150f !important;
+  border: 1px solid #22322a !important;
+  color: #3cff5f !important;
+}
+#panel-colors .cx-color-card-icon svg,
+#panel-colors .cx-eyedropper-btn svg,
+#panel-colors .cx-stop-eyedropper svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#panel-colors .cx-color-card-icon svg circle[r=".9"] {
+  fill: currentColor;
+  stroke: none;
+}
+#panel-colors .cx-eyedropper-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #0b120d !important;
+  border: 1px solid #2a382f !important;
+  color: #79f0a2 !important;
+}
+#panel-colors .cx-eyedropper-btn:hover,
+#panel-colors .cx-eyedropper-btn.is-active {
+  border-color: #3cff5f !important;
+  color: #eafff0 !important;
+}
+#panel-colors .cx-stop-eyedropper {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #79f0a2 !important;
+}
+#panel-colors .cx-stop-eyedropper svg {
+  width: 12px;
+  height: 12px;
+}
+/* The one primary action matches the other tabs' primary buttons
+   instead of a bright gradient block. */
+#panel-colors .cx-btn.cx-btn-primary {
+  background: linear-gradient(180deg, #16301f, #0e1f14) !important;
+  border: 1px solid #3cff5f !important;
+  color: #dfffe6 !important;
+  box-shadow: 0 0 10px rgba(60, 255, 95, 0.14) !important;
+  text-shadow: none !important;
+}
+#panel-colors .cx-btn.cx-btn-primary:hover {
+  background: linear-gradient(180deg, #1c3d27, #12281a) !important;
+  color: #ffffff !important;
+}
+#panel-colors .cx-stop-eyedropper {
+  gap: 5px !important;
+}
+#panel-colors .cx-stop-eyedropper span {
+  font: 700 8.5px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.08em;
+}
