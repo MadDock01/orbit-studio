@@ -46,11 +46,8 @@
 #app .app-panel:not(#panel-tools) :is(.hint,.tool-help){color:#9bac9f!important;line-height:1.5}
 #app #panel-toolkit>.tools-scroll{display:block!important;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 #app #panel-toolkit .tools-project-row{display:block!important;height:auto;min-height:0}
-#app #panel-toolkit #toolkitRoundProSection,#app #panel-toolkit #toolkitShapeSourceSection,#app #panel-toolkit #toolkitFlexGridSection{padding:10px;margin:0;flex:none}
+#app #panel-toolkit #toolkitShapeSourceSection,#app #panel-toolkit #toolkitFlexGridSection{padding:10px;margin:0;flex:none}
 #app #panel-toolkit #toolkitShapeSourceSection,#app #panel-toolkit #toolkitFlexGridSection{margin-top:8px}
-#app #panel-toolkit .cx-roundpro-modes{margin:0 0 8px}
-#app #panel-toolkit .cx-roundpro-toggles{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 8px}
-#app #panel-toolkit #btnRoundProFit{width:100%;margin-top:6px}
 #app #panel-toolkit .cx-flexgrid-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px}
 #app #panel-toolkit .cx-flexgrid-field{display:flex;flex-direction:column;gap:3px;min-width:0}
 #app #panel-toolkit .cx-flexgrid-field span{font:600 8px/1.2 "Segoe UI",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8da195}
