@@ -36,6 +36,7 @@
 <link href="css/orbit-dock-fluid.css?v=4" rel="stylesheet"/>
 <link href="css/orbit-morph.css?v=2" rel="stylesheet"/>
 <link href="css/orbit-sfx.css?v=1" rel="stylesheet"/>
+<link href="css/orbit-sound.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-gradtext.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-mogrt.css?v=1" rel="stylesheet"/>
 <link href="css/orbit-carousel.css?v=1" rel="stylesheet"/>
@@ -151,9 +152,7 @@
 <button class="app-tab" data-apptab="tracker" title="Tracker"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.8"/><path d="M10 1.5V5M10 15v3.5M1.5 10H5M15 10h3.5"/></svg></span><span class="orbit-tab-label">Tracker</span></button>
 <button class="app-tab" data-apptab="comps" title="Comp Saver"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M4 2.5h10l2 2V17.5H4Z"/><path d="M7 2.5v5h6v-5M7 17.5v-6h6v6"/></svg></span><span class="orbit-tab-label">Comps</span></button>
 <button class="app-tab" data-apptab="carousel" title="Carousel"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><rect x="7" y="4.5" width="6" height="11" rx="1.3"/><rect x="1.5" y="6.5" width="4" height="7" rx="1" opacity=".55"/><rect x="14.5" y="6.5" width="4" height="7" rx="1" opacity=".55"/></svg></span><span class="orbit-tab-label">Carousel</span></button>
-<button class="app-tab" data-apptab="mogrt" title="MOGRT"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="1.5"/><path d="M6 8.5h8M6 11.5h5"/></svg></span><span class="orbit-tab-label">MOGRT</span></button>
-<button class="app-tab" data-apptab="sfx" title="Animation"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M2.5 14.5c3.5 0 4-9 7.5-9s4 9 7.5 9"/><circle cx="2.5" cy="14.5" r="1.4"/><circle cx="17.5" cy="14.5" r="1.4"/></svg></span><span class="orbit-tab-label">Animation</span></button>
-<button class="app-tab" data-apptab="sfxdesign" title="SFX"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M2 10h2l1.6-5 2.2 10 2.2-12 2 7.5 1.4-2.5H18"/></svg></span><span class="orbit-tab-label">SFX</span></button>
+<button class="app-tab" data-apptab="sfx" title="Library"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M2.5 5.5v10h15v-8H9.5l-2-2Z"/></svg></span><span class="orbit-tab-label">Library</span></button>
 <button class="app-tab rail-purge" data-tool="purge" title="RAM Purge — clear all AE caches" type="button"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="5" width="12" height="10" rx="2"/><path d="M7 2v3m6-3v3M7 15v3m6-3v3M1 8h3m-3 4h3m12-4h3m-3 4h3M11 7l-3 4h4l-2 3"/></svg></span><span class="orbit-tab-label">Purge</span></button>
     <button type="button" id="cx-settings-btn" class="cx-icon-btn rail-account" title="Plugin Settings">
       <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1154,11 +1153,144 @@
 
 </div>
 <div class="app-panel" id="panel-sfx">
-<div class="asset-type-row" id="assetTypeRow" aria-label="Animation types">
+<div class="asset-type-row" id="assetTypeRow" aria-label="Library shelves">
+<button class="shelf" data-type="mogrt" title="MOGRT"><span>MOGRT</span></button>
 <button class="shelf active" data-type="textanim" title="Text Animation"><span>TEXT</span></button>
 <button class="shelf" data-type="motions" title="Motion presets"><span>MOTIONS</span></button>
-<button class="shelf" data-type="ffx" title="FFX Presets"><span>FFX</span></button>
+<button class="shelf" data-type="sfx" title="Sound Effects"><span>SFX</span></button>
 </div>
+<div id="sfxMogrtView" aria-label="Drop SFX or MOGRT files and folders anywhere in this library">
+<div class="library-filter-strip">
+<div class="search-row"><input id="search" placeholder="Search assets…" type="text"/></div>
+<div class="tabs-row" id="tabsRow">
+<button class="tab active" data-view="all">All Files</button>
+<button class="tab" data-view="favorites" title="Show favorite-marked assets">Favorites</button>
+</div>
+<div class="controls-group">
+<select class="select-control" id="sortBy">
+<option value="name">Sort: Name</option>
+<option value="duration">Sort: Duration</option>
+</select>
+</div>
+</div>
+<div class="lib-toolbar">
+<div class="lib-status-bar">
+<span class="lib-item-count" id="libItemCount">0 items</span>
+<div class="lib-status-actions">
+<div class="lib-view-toggle" title="View mode">
+<button class="lib-view-btn active" id="btnGridView" title="Grid view">▦</button>
+<button class="lib-view-btn" id="btnListView" title="List view">☰</button>
+</div>
+<button class="lib-status-btn" id="btnRefreshView" title="Refresh library">↻</button>
+</div>
+</div>
+<div class="library-action-strip">
+<div class="actions-row">
+<button class="btn primary compact-icon-btn" id="btnAddFiles" title="Add files · or drag and drop into the library">+</button>
+<button class="btn compact-icon-btn" id="btnAddFolder" title="Import folder · or drag and drop into the library">F</button>
+<button class="btn compact-icon-btn" id="btnRemoveMarkedSfx" title="Remove marked files or marked folders from the library">✕★</button>
+<button class="btn compact-icon-btn" id="btnCheckMissing" title="Check missing files">!</button>
+<button class="btn compact-icon-btn" id="btnRelinkLibrary" title="Relink missing files">L</button>
+<div class="mixer-wrap mixer-top-wrap">
+<button class="btn mixer-toggle" id="btnMixer" title="Volume" aria-label="Volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"></path><path d="M16 9c1.3 1.5 1.3 4.5 0 6M19 6c3 3.2 3 8.8 0 12"></path></svg></button>
+<button class="btn mixer-toggle" id="btnPitch" title="Pitch" aria-label="Pitch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c3-7 5 3 8-5s5 3 8-5"></path><path d="M18 4v5M16 6h4"></path></svg></button>
+<div class="mixer-popover" id="mixerPopover" style="display:none;">
+<div class="slider-block" id="volumeBlock">
+<div class="slider-label"><span>VOLUME</span><span class="val" id="volumeVal">100%</span></div>
+<input id="volume" max="200" min="0" step="1" type="range" value="100"/>
+</div>
+<div class="slider-block" id="pitchBlock">
+<div class="slider-label"><span>PITCH</span><span class="val" id="pitchVal">0 st</span></div>
+<input id="pitch" max="12" min="-12" step="1" type="range" value="0"/>
+</div>
+</div>
+</div>
+
+<button class="btn compact-icon-btn" id="btnBatchMode" type="button" title="Batch select — pick several cards at once">✓</button>
+<button class="btn compact-icon-btn lib-danger-btn" id="btnReset" type="button" title="Reset library">⟲</button>
+<div class="lib-more-wrap">
+<button class="btn compact-icon-btn" id="btnLibMore" type="button" title="More library actions" aria-haspopup="true" aria-expanded="false" aria-controls="libMoreMenu">⋯</button>
+<div class="lib-more-menu" id="libMoreMenu" role="menu" aria-label="Library actions" hidden>
+<button class="lib-more-item" id="btnBackupLibrary" type="button" role="menuitem"><span class="lib-more-ico">↧</span><span class="lib-more-text"><strong>Backup library</strong><small>Save every item, tag and colour to a file</small></span></button>
+<button class="lib-more-item" id="btnRestoreLibrary" type="button" role="menuitem"><span class="lib-more-ico">↥</span><span class="lib-more-text"><strong>Restore library</strong><small>Load a backup file back in</small></span></button>
+<div class="lib-more-sep" role="separator"></div>
+<button class="lib-more-item" id="btnClearMogrtCache" type="button" role="menuitem"><span class="lib-more-ico">⌫</span><span class="lib-more-text"><strong>Clear MOGRT cache</strong><small id="mogrtCacheInfo">Cache: —</small></span></button>
+<button class="lib-more-item" id="btnCopyDiagnostics" type="button" role="menuitem"><span class="lib-more-ico">⧉</span><span class="lib-more-text"><strong>Copy diagnostics</strong><small id="diagnosticSummary">—</small></span></button>
+</div>
+</div>
+
+</div>
+<div class="card-size-row" title="Resize the sound cards">
+<span class="card-size-icon">▪</span>
+<input id="cardSizeSlider" max="220" min="90" step="5" type="range" value="130"/>
+<span class="card-size-icon big">▪</span>
+</div>
+</div>
+</div><!-- /lib-toolbar -->
+<div class="collections-row" id="collectionsRow" style="display:none;">
+<!-- collection chips injected by main.js -->
+</div>
+<div class="batch-bar" id="batchBar" style="display:none;">
+<span id="batchCount">0 selected</span>
+<div class="batch-actions">
+<button class="btn small" id="batchColor">🎨 Color</button>
+<button class="btn small" id="batchCollection">🗂 Add to…</button>
+<button class="btn small" id="batchDelete">✕ Delete</button>
+</div>
+</div>
+<div class="main-layout" id="mainLayout">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<span class="title">LIBRARY</span>
+</div>
+<div class="lib-sidebar-subhead">FOLDERS</div>
+<div class="folder-tree" id="folderTree">
+<!-- tree view injected by main.js -->
+</div>
+<div class="lib-sidebar-footer"><span id="libSidebarFooter">0 items</span></div>
+</div>
+<div class="content-view">
+<div class="toolbar">
+<div class="breadcrumb-container" style="display:flex; align-items:center; gap:6px; min-width:0;">
+<button class="btn-collapse" id="btnCollapse" style="font-size:12px; padding:2px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); color:var(--text-dim); cursor:pointer;" title="Toggle Sidebar">&#9776;</button>
+<div class="breadcrumb" id="breadcrumb">All</div>
+</div>
+
+</div>
+<div class="library grid" id="library">
+<!-- rows/cards injected by main.js -->
+</div>
+</div>
+</div>
+<div class="transport">
+<div class="snd-strip" id="sndStrip" hidden>
+<div class="snd-wrap" id="sndWrap">
+<canvas class="snd-wave" id="sndWave" aria-label="Waveform — drag the handles to pick a segment"></canvas>
+<div class="snd-playhead" id="sndPlayhead" aria-hidden="true"></div>
+<button type="button" class="snd-handle" id="sndHandleA" aria-label="Segment start" title="Drag to set where the segment starts"></button>
+<button type="button" class="snd-handle" id="sndHandleB" aria-label="Segment end" title="Drag to set where the segment ends"></button>
+</div>
+<div class="snd-bar">
+<button type="button" class="snd-fold" id="sndFold" aria-expanded="true" title="Fold the waveform away to show more cards"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
+<span class="snd-name" id="sndName">—</span>
+<span class="snd-range" id="sndRange"></span>
+<button type="button" class="snd-btn" id="sndPlaySeg" title="Play just the selected segment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg><b>SEGMENT</b></button>
+<button type="button" class="snd-btn" id="sndReset" title="Select the whole clip again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6v12M20 6v12M7 12h10M9.5 9.5 7 12l2.5 2.5M14.5 9.5 17 12l-2.5 2.5"/></svg><b>FULL</b></button>
+<button type="button" class="snd-btn snd-primary" id="sndInsert" title="Write the segment as a WAV and drop it on the active comp at the playhead"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v12M8 11.5l4 4 4-4M4.5 20h15"/></svg><b>INSERT</b></button>
+<span class="snd-status" id="sndStatus"></span>
+</div>
+</div>
+<div class="transport-main">
+<div class="now-playing" id="nowPlaying"><span class="label">Selected:</span> —</div>
+<div class="hint" id="playHint" style="margin-top:0;margin-bottom:0;">Click a sound to play · click again to stop</div>
+</div>
+<div class="tag-editor-row" id="tagEditorRow" style="display:none!important;"><input id="tagEditor" type="hidden"/></div>
+<div class="insert-row">
+
+</div>
+<div class="hint" id="hostHint">Connecting to host…</div>
+</div>
+</div><!-- /sfxMogrtView -->
 <div id="textAnimView" style="display:none;">
 <div class="cx-textlib-tabs" id="textLibraryTabs" role="tablist" aria-label="Text library mode">
 <button class="active" type="button" data-text-library-tab="styles">PREMIUM STYLES</button>
@@ -1372,123 +1504,6 @@
 
 </div>
 </div>
-<div class="app-panel" id="panel-mogrt">
-<div id="sfxMogrtView" aria-label="Drop SFX or MOGRT files and folders anywhere in this library">
-<div class="library-filter-strip">
-<div class="search-row"><input id="search" placeholder="Search assets…" type="text"/></div>
-<div class="tabs-row" id="tabsRow">
-<button class="tab active" data-view="all">All Files</button>
-<button class="tab" data-view="favorites" title="Show favorite-marked assets">Favorites</button>
-</div>
-<div class="controls-group">
-<select class="select-control" id="sortBy">
-<option value="name">Sort: Name</option>
-<option value="duration">Sort: Duration</option>
-</select>
-</div>
-</div>
-<div class="lib-toolbar">
-<div class="lib-status-bar">
-<span class="lib-item-count" id="libItemCount">0 items</span>
-<div class="lib-status-actions">
-<div class="lib-view-toggle" title="View mode">
-<button class="lib-view-btn active" id="btnGridView" title="Grid view">▦</button>
-<button class="lib-view-btn" id="btnListView" title="List view">☰</button>
-</div>
-<button class="lib-status-btn" id="btnRefreshView" title="Refresh library">↻</button>
-</div>
-</div>
-<div class="library-action-strip">
-<div class="actions-row">
-<button class="btn primary compact-icon-btn" id="btnAddFiles" title="Add files · or drag and drop into the library">+</button>
-<button class="btn compact-icon-btn" id="btnAddFolder" title="Import folder · or drag and drop into the library">F</button>
-<button class="btn compact-icon-btn" id="btnRemoveMarkedSfx" title="Remove marked files or marked folders from the library">✕★</button>
-<button class="btn compact-icon-btn" id="btnCheckMissing" title="Check missing files">!</button>
-<button class="btn compact-icon-btn" id="btnRelinkLibrary" title="Relink missing files">L</button>
-<div class="mixer-wrap mixer-top-wrap">
-<button class="btn mixer-toggle" id="btnMixer" title="Volume" aria-label="Volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"></path><path d="M16 9c1.3 1.5 1.3 4.5 0 6M19 6c3 3.2 3 8.8 0 12"></path></svg></button>
-<button class="btn mixer-toggle" id="btnPitch" title="Pitch" aria-label="Pitch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c3-7 5 3 8-5s5 3 8-5"></path><path d="M18 4v5M16 6h4"></path></svg></button>
-<div class="mixer-popover" id="mixerPopover" style="display:none;">
-<div class="slider-block" id="volumeBlock">
-<div class="slider-label"><span>VOLUME</span><span class="val" id="volumeVal">100%</span></div>
-<input id="volume" max="200" min="0" step="1" type="range" value="100"/>
-</div>
-<div class="slider-block" id="pitchBlock">
-<div class="slider-label"><span>PITCH</span><span class="val" id="pitchVal">0 st</span></div>
-<input id="pitch" max="12" min="-12" step="1" type="range" value="0"/>
-</div>
-</div>
-</div>
-
-<button class="btn compact-icon-btn" id="btnBatchMode" type="button" title="Batch select — pick several cards at once">✓</button>
-<button class="btn compact-icon-btn lib-danger-btn" id="btnReset" type="button" title="Reset library">⟲</button>
-<div class="lib-more-wrap">
-<button class="btn compact-icon-btn" id="btnLibMore" type="button" title="More library actions" aria-haspopup="true" aria-expanded="false" aria-controls="libMoreMenu">⋯</button>
-<div class="lib-more-menu" id="libMoreMenu" role="menu" aria-label="Library actions" hidden>
-<button class="lib-more-item" id="btnBackupLibrary" type="button" role="menuitem"><span class="lib-more-ico">↧</span><span class="lib-more-text"><strong>Backup library</strong><small>Save every item, tag and colour to a file</small></span></button>
-<button class="lib-more-item" id="btnRestoreLibrary" type="button" role="menuitem"><span class="lib-more-ico">↥</span><span class="lib-more-text"><strong>Restore library</strong><small>Load a backup file back in</small></span></button>
-<div class="lib-more-sep" role="separator"></div>
-<button class="lib-more-item" id="btnClearMogrtCache" type="button" role="menuitem"><span class="lib-more-ico">⌫</span><span class="lib-more-text"><strong>Clear MOGRT cache</strong><small id="mogrtCacheInfo">Cache: —</small></span></button>
-<button class="lib-more-item" id="btnCopyDiagnostics" type="button" role="menuitem"><span class="lib-more-ico">⧉</span><span class="lib-more-text"><strong>Copy diagnostics</strong><small id="diagnosticSummary">—</small></span></button>
-</div>
-</div>
-
-</div>
-<div class="card-size-row" title="Resize the sound cards">
-<span class="card-size-icon">▪</span>
-<input id="cardSizeSlider" max="220" min="90" step="5" type="range" value="130"/>
-<span class="card-size-icon big">▪</span>
-</div>
-</div>
-</div><!-- /lib-toolbar -->
-<div class="collections-row" id="collectionsRow" style="display:none;">
-<!-- collection chips injected by main.js -->
-</div>
-<div class="batch-bar" id="batchBar" style="display:none;">
-<span id="batchCount">0 selected</span>
-<div class="batch-actions">
-<button class="btn small" id="batchColor">🎨 Color</button>
-<button class="btn small" id="batchCollection">🗂 Add to…</button>
-<button class="btn small" id="batchDelete">✕ Delete</button>
-</div>
-</div>
-<div class="main-layout" id="mainLayout">
-<div class="sidebar" id="sidebar">
-<div class="sidebar-header">
-<span class="title">LIBRARY</span>
-</div>
-<div class="lib-sidebar-subhead">FOLDERS</div>
-<div class="folder-tree" id="folderTree">
-<!-- tree view injected by main.js -->
-</div>
-<div class="lib-sidebar-footer"><span id="libSidebarFooter">0 items</span></div>
-</div>
-<div class="content-view">
-<div class="toolbar">
-<div class="breadcrumb-container" style="display:flex; align-items:center; gap:6px; min-width:0;">
-<button class="btn-collapse" id="btnCollapse" style="font-size:12px; padding:2px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); color:var(--text-dim); cursor:pointer;" title="Toggle Sidebar">&#9776;</button>
-<div class="breadcrumb" id="breadcrumb">All</div>
-</div>
-
-</div>
-<div class="library grid" id="library">
-<!-- rows/cards injected by main.js -->
-</div>
-</div>
-</div>
-<div class="transport">
-<div class="transport-main">
-<div class="now-playing" id="nowPlaying"><span class="label">Selected:</span> —</div>
-<div class="hint" id="playHint" style="margin-top:0;margin-bottom:0;">Click a sound to play · click again to stop</div>
-</div>
-<div class="tag-editor-row" id="tagEditorRow" style="display:none!important;"><input id="tagEditor" type="hidden"/></div>
-<div class="insert-row">
-
-</div>
-<div class="hint" id="hostHint">Connecting to host…</div>
-</div>
-</div><!-- /sfxMogrtView -->
-</div><!-- /panel-mogrt -->
 <div class="app-panel" id="panel-sfxdesign">
 <div class="sfxd-shell">
 
@@ -2000,6 +2015,8 @@
 <script src="js/orbit-stagger.js?v=3"></script>
 <script src="js/orbit-morph.js?v=2"></script>
 <script src="js/orbit-sfx.js?v=1"></script>
+<script src="js/orbit-sound.js?v=1"></script>
+<script src="js/orbit-library-tab.js?v=1"></script>
 <script src="js/orbit-carousel.js?v=1"></script>
 <script src="js/orbit-guide.js?v=2"></script>
 <!-- main.js, advanced_features.js, graph20.js, colorplate.js, composition-library.js injected by compx-loader.js after licence verified. -->

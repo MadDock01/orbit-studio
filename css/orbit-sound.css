@@ -311,3 +311,20 @@
     transition: none !important;
   }
 }
+
+/* ---- Transport ----
+   orbit-library-redesign.css hides the whole transport bar. It comes back
+   on the SFX shelf once a sound is picked (orbit-library-tab.js sets
+   .has-sound), carrying only the waveform strip. */
+#app #panel-sfx #sfxMogrtView .transport.has-sound {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 0 auto !important;
+  gap: 4px !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#app #panel-sfx #sfxMogrtView .transport.has-sound > :not(.snd-strip) {
+  display: none !important;
+}
