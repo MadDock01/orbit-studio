@@ -1365,7 +1365,6 @@
       if (!menu.hidden && !menu.contains(ev.target) && ev.target !== el.labelFilter) closeMenu();
     }, true);
     window.addEventListener("resize", closeMenu);
-    window.addEventListener("compx:sfxd-hidden", closeMenu);
     // A scroll that lands right after opening is the one that brought the row
     // into view, not the user moving on.
     if (el.results) el.results.addEventListener("scroll", function () {
@@ -2058,10 +2057,9 @@
     var rail = document.getElementById("appTabsRow");
     if (rail) rail.addEventListener("click", function (ev) {
       var btn = ev.target.closest(".app-tab");
-      if (btn && btn.getAttribute("data-apptab") !== "sfx") stop();
+      if (btn && btn.getAttribute("data-apptab") !== "sfxdesign") stop();
+      if (btn) closeMenu();
     });
-    // So does switching the Library to another shelf.
-    window.addEventListener("compx:sfxd-hidden", stop);
 
     var resizeTimer = 0;
     window.addEventListener("resize", function () {

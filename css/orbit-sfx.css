@@ -27,20 +27,6 @@
   padding: 0 !important;
 }
 
-/* The workspace is the SFX shelf of the Library tab now, not a panel of its
-   own: it fills whatever the shelf row leaves. orbit-library-tab.js toggles
-   its inline display. */
-#app #panel-sfx > #panel-sfxdesign {
-  flex: 1 1 auto !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  min-width: 0 !important;
-}
-#app #panel-sfx > #panel-sfxdesign > .sfxd-shell {
-  flex: 1 1 auto !important;
-  height: auto !important;
-}
-
 #app #panel-sfxdesign .sfxd-shell {
   display: flex !important;
   flex-direction: column !important;
