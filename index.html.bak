@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: file:; script-src 'self' 'wasm-unsafe-eval' http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; connect-src 'self' https://esiiawfjzmuqplzzdoog.supabase.co https://esiiawfjzmuqplzzdoog.functions.supabase.co http://127.0.0.1:*; object-src 'none'; base-uri 'none'; frame-src 'none'; worker-src 'self' blob:;"/>
+<title>Orbit Studio</title>
+<link href="css/style.css?v=12" rel="stylesheet"/>
+<link href="css/library-visual.css?v=7" rel="stylesheet"/>
+<link href="css/graph20.css?v=9" rel="stylesheet"/>
+<link href="css/colorplate.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-foundation.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-shell.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-tools.css?v=7" rel="stylesheet"/>
+<link href="css/orbit-library.css?v=6" rel="stylesheet"/>
+<link href="css/composition-library.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-final.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-compact.css?v=16" rel="stylesheet"/>
+<link href="css/orbit-cards-unified.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-console-theme.css?v=10" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/license-gate.css?v=5"/>
+<link href="css/orbit-redesign.css?v=9" rel="stylesheet"/>
+<link href="css/orbit-premium.css?v=11" rel="stylesheet"/>
+<link href="css/orbit-exploder.css?v=3" rel="stylesheet"/>
+<link href="css/orbit-colors.css?v=2" rel="stylesheet"/>
+<link href="css/orbit-library-redesign.css?v=3" rel="stylesheet"/>
+<link href="css/orbit-captions.css?v=8" rel="stylesheet"/>
+<link href="css/orbit-text-fx.css?v=6" rel="stylesheet"/>
+<link href="css/orbit-premium-v2.css?v=10" rel="stylesheet"/>
+<link href="css/orbit-dashboard.css?v=10" rel="stylesheet"/>
+<link href="css/orbit-modules.css?v=15" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ===== CompX license gate (added) ===== -->
+<div id="cx-gate" class="cx-gate" hidden>
+  <div class="cx-gate__card">
+
+    <div class="cx-gate__brand">
+      <div class="cx-gate__mark" aria-hidden="true"><img src="assets/compx-mark.png" alt=""/></div>
+      <div>
+        <h1 class="cx-gate__title" id="cx-gate-title">Orbit Studio</h1>
+        <p class="cx-gate__sub">Creative Control Center</p>
+      </div>
+    </div>
+
+    <label class="cx-gate__label" for="cx-gate-key">License key</label>
+    <input id="cx-gate-key" class="cx-gate__input" type="text"
+           placeholder="CX-XXXX-XXXX-XXXX-XXXX" spellcheck="false"
+           autocomplete="off" maxlength="29" />
+
+    <p class="cx-gate__msg" id="cx-gate-msg" role="status" aria-live="polite"></p>
+
+    <button id="cx-gate-submit" class="cx-gate__btn" type="button">Activate</button>
+
+    <div class="cx-gate__device">
+      <span class="cx-gate__device-dot" aria-hidden="true"></span>
+      <span id="cx-gate-device">Detecting device…</span>
+    </div>
+
+    <p class="cx-gate__note">
+      One license activates one computer. After Effects and Premiere Pro on
+      the same machine share a single seat. Need to move to a new computer?
+      Release it here or request a reset from your account dashboard
+      — device changes are limited to once every 24 hours.
+    </p>
+
+    <div class="cx-gate__links">
+      <a href="#" id="cx-gate-buy">Buy a license</a>
+      <span aria-hidden="true">·</span>
+      <a href="#" id="cx-gate-dashboard">My account</a>
+      <span aria-hidden="true">·</span>
+      <a href="#" id="cx-gate-release">Release this device</a>
+    </div>
+  </div>
+</div>
+
+<!-- Thin banner shown inside the app while running on offline grace -->
+<div id="cx-grace" class="cx-grace" hidden>
+  <span id="cx-grace-text">Offline mode</span>
+  <button type="button" id="cx-grace-retry" class="cx-grace__retry">Reconnect</button>
+</div>
+<!-- ===== end license gate ===== -->
+
+<!-- Branded release-license confirmation; avoids CEP's native dialog and file-path title. -->
+<div class="cx-release-dialog" id="cx-release-dialog" hidden>
+  <div class="cx-release-dialog__card" role="dialog" aria-modal="true" aria-labelledby="cx-release-dialog-title" aria-describedby="cx-release-dialog-copy">
+    <div class="cx-release-dialog__icon" aria-hidden="true">⇥</div>
+    <div class="cx-release-dialog__eyebrow">LICENSE MANAGEMENT</div>
+    <h2 id="cx-release-dialog-title">Release this device?</h2>
+    <p id="cx-release-dialog-copy">This signs Orbit Studio out on this computer. You can activate another computer immediately.</p>
+    <div class="cx-release-dialog__notice">Your next device change will be available after 24 hours.</div>
+    <div class="cx-release-dialog__actions">
+      <button type="button" class="cx-release-dialog__cancel" id="cx-release-cancel">Keep this device</button>
+      <button type="button" class="cx-release-dialog__confirm" id="cx-release-confirm">Release device</button>
+    </div>
+  </div>
+</div>
+<!-- New-version notification, shown after the authenticated release check. -->
+<div class="cx-update-notice" id="cx-update-notice" hidden role="status" aria-live="polite">
+  <div class="cx-update-notice__icon" aria-hidden="true">↑</div>
+  <div class="cx-update-notice__content">
+    <div class="cx-update-notice__eyebrow">UPDATE AVAILABLE</div>
+    <strong>Version <span id="cx-update-version">—</span> is ready</strong>
+    <span class="cx-update-notice__copy">Install the latest release to get the newest improvements.</span>
+  </div>
+  <div class="cx-update-notice__actions">
+    <button type="button" class="cx-update-notice__later" id="cx-update-later">Later</button>
+    <button type="button" class="cx-update-notice__now" id="cx-update-now">Get update</button>
+  </div>
+</div>
+<div id="app">
+
+<!-- ── Top Title Bar ── -->
+<div class="cx-title-bar">
+  <div class="cx-header-brand">
+    <img class="cx-header-logo" src="assets/compx-mark.png" alt="Orbit Studio logo" width="22" height="22"/>
+    <div class="orbit-header-copy">
+      <strong>Orbit <span>Studio</span></strong>
+      <small>Motion tools for creators</small>
+    </div>
+  </div><div class="cx-brand-bar">
+    <span class="cx-brand-spacer"></span>
+    <div class="orbit-host-status"><i></i><span>HOST READY</span></div>
+
+
+  </div>
+</div>
+
+<!-- ── Main Tab Strip ── -->
+<div class="cx-app-main">
+<nav class="app-tabs-row" id="appTabsRow" aria-label="CompX modules">
+<button class="app-tab active" data-apptab="tools" title="Tools"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M4 16 16 4M12.5 3.5l4 4M3.5 12.5l4 4"/></svg></span><span class="orbit-tab-label">Tools</span></button>
+<button class="app-tab" data-apptab="studio" title="Studio"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="5.5" height="5.5"/><rect x="11.5" y="3" width="5.5" height="5.5"/><rect x="3" y="11.5" width="5.5" height="5.5"/><rect x="11.5" y="11.5" width="5.5" height="5.5"/></svg></span><span class="orbit-tab-label">Studio</span></button>
+<button class="app-tab" data-apptab="toolkit" title="Toolkit"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M3 6h14l1 2v8H2V8l1-2Z"/><path d="M7 6V4h6v2M4 10.5h3M13 10.5h3"/></svg></span><span class="orbit-tab-label">Toolkit</span></button>
+<button class="app-tab" data-apptab="advanced" title="Orbit 3D"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M2 11h3l2-6 3 11 3-9 2 4h3"/></svg></span><span class="orbit-tab-label">Orbit 3D</span></button>
+<button class="app-tab" data-apptab="pro" title="Motion Lab"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="1"/><path d="m8 7 5 3-5 3Z"/></svg></span><span class="orbit-tab-label">Motion Lab</span></button>
+<button class="app-tab" data-apptab="colors" title="Colors"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M10 3a7 7 0 1 0 0 14h1.2a1.6 1.6 0 0 0 0-3.2H10a1.3 1.3 0 0 1 0-2.6h2.5A4.5 4.5 0 0 0 17 6.7C17 4.6 14 3 10 3Z"/><circle cx="6.5" cy="7" r=".8"/><circle cx="9.5" cy="5.8" r=".8"/><circle cx="13" cy="6.7" r=".8"/></svg></span><span class="orbit-tab-label">Colors</span></button>
+<button class="app-tab" data-apptab="tracker" title="Tracker"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.8"/><path d="M10 1.5V5M10 15v3.5M1.5 10H5M15 10h3.5"/></svg></span><span class="orbit-tab-label">Tracker</span></button>
+<button class="app-tab" data-apptab="comps" title="Comp Saver"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M4 2.5h10l2 2V17.5H4Z"/><path d="M7 2.5v5h6v-5M7 17.5v-6h6v6"/></svg></span><span class="orbit-tab-label">Comps</span></button>
+<button class="app-tab" data-apptab="sfx" title="Library"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20"><path d="M2.5 5.5h6l1.5 2h7.5v9h-15Z"/><path d="M2.5 5.5v-2h6l1.5 2h6"/></svg></span><span class="orbit-tab-label">Library</span></button>
+<button class="app-tab rail-purge" data-tool="purge" title="RAM Purge — clear all AE caches" type="button"><span class="orbit-tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="5" width="12" height="10" rx="2"/><path d="M7 2v3m6-3v3M7 15v3m6-3v3M1 8h3m-3 4h3m12-4h3m-3 4h3M11 7l-3 4h4l-2 3"/></svg></span><span class="orbit-tab-label">Purge</span></button>
+    <button type="button" id="cx-settings-btn" class="cx-icon-btn rail-account" title="Plugin Settings">
+      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="8" r="2.2"></circle>
+        <path d="M8 1.5v1.6M8 12.9v1.6M14.5 8h-1.6M3.1 8H1.5M12.5 3.5l-1.1 1.1M4.6 11.4l-1.1 1.1M12.5 12.5l-1.1-1.1M4.6 4.6 3.5 3.5"></path>
+      </svg>
+    <span class="rail-account-label">Settings</span></button>
+    <button type="button" id="cx-signout-btn" class="cx-icon-btn rail-account" title="Sign Out / Release License">
+      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path>
+        <polyline points="10 12 14 8 10 4"></polyline>
+        <line x1="14" y1="8" x2="5" y2="8"></line>
+      </svg>
+    <span class="rail-account-label">Logout</span></button>
+</nav>
+<div class="app-panel active" id="panel-tools">
+<div class="tools-scroll">
+<div class="tool-dash-row tools-primary-row">
+<div class="tool-section matrix-transform">
+<div class="tool-section-head">
+<div class="tool-section-title">ALIGN &amp; ANCHOR</div>
+<span class="tool-help" title="Aligns selected layers relative to the comp (single layer) or the selection's bounding box (multiple layers).">?</span>
+</div>
+<div class="matrix-transform-body">
+<div class="matrix-align-block">
+<div class="matrix-mini-title">ALIGN</div>
+<div class="tool-grid tool-grid-3 icon-only">
+<button class="tool-btn" data-arg="left" data-tool="align" title="Align Left" data-orbit-icon="left">Left</button>
+<button class="tool-btn" data-arg="hcenter" data-tool="align" title="Align Horizontal Center" data-orbit-icon="hcenter">H Center</button>
+<button class="tool-btn" data-arg="right" data-tool="align" title="Align Right" data-orbit-icon="right">Right</button>
+<button class="tool-btn" data-arg="top" data-tool="align" title="Align Top" data-orbit-icon="top">Top</button>
+<button class="tool-btn" data-arg="vcenter" data-tool="align" title="Align Vertical Center" data-orbit-icon="vcenter">V Center</button>
+<button class="tool-btn" data-arg="bottom" data-tool="align" title="Align Bottom" data-orbit-icon="bottom">Bottom</button>
+</div>
+</div>
+<div class="matrix-anchor-block" title="Moves the anchor point within the layer's bounds without shifting it on screen.">
+<div class="matrix-mini-title">ANCHOR POINT</div>
+<div class="tool-grid tool-grid-3 cx-anchor-grid icon-only">
+<button class="tool-btn anchor-dot-btn" data-arg="tl" data-tool="anchor" title="Top Left"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="t" data-tool="anchor" title="Top"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="tr" data-tool="anchor" title="Top Right"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="l" data-tool="anchor" title="Left"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn active" data-arg="c" data-tool="anchor" title="Center"><span class="anchor-dot center-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="r" data-tool="anchor" title="Right"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="bl" data-tool="anchor" title="Bottom Left"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="b" data-tool="anchor" title="Bottom"><span class="anchor-dot"></span></button>
+<button class="tool-btn anchor-dot-btn" data-arg="br" data-tool="anchor" title="Bottom Right"><span class="anchor-dot"></span></button>
+</div>
+</div>
+<div class="matrix-flip-block">
+<div class="matrix-mini-title"><span>FLIP</span><label class="qa-switch" title="Convert pasted SVG artwork to a Shape Layer"><input id="pastaToShapes" type="checkbox"/><span class="qa-switch-track"><span class="qa-switch-dot"></span></span><span class="qa-switch-label">SVG Shape</span></label></div>
+<div class="tool-grid tool-grid-3">
+<button class="tool-btn" data-tool="flip" data-arg="horizontal" title="Flip selected layer(s) horizontally" data-orbit-icon="flip-h">H Flip</button>
+<button class="tool-btn" data-tool="flip" data-arg="vertical" title="Flip selected layer(s) vertically" data-orbit-icon="flip-v">V Flip</button>
+<button class="tool-btn" id="btnPasteFeature" title="Paste the image currently stored on the system clipboard into the active composition" data-orbit-icon="clipboard">Pasta</button>
+</div>
+</div>
+</div>
+</div>
+<div class="tool-section tools-project-row tools-project-section">
+<div class="tool-section-head">
+<div class="tool-section-title">PROJECT UTILITIES</div>
+<span class="tool-help" title="Precomp Tog: standard precompose. Precomp Sep: precomposes each selected layer into its own comp. Unprecomp: pulls a precomp's layers back out and removes it. Organize: opens a preview dialog to sort project panel items into folders (Comps, Precomps, Footage/Video/Images/Audio/3D, Solids, Unused) with Standard or Smart presets.">?</span>
+</div>
+<div class="tool-grid tool-grid-2">
+<button class="tool-btn" data-arg="true" data-tool="precompose" title="Precompose the selection" data-orbit-icon="precomp">Precomp</button>
+<button class="tool-btn" data-tool="precomposeSeparate" title="Precompose each selected layer into its own comp" data-orbit-icon="layers">Precomp Separate</button>
+<button class="tool-btn" data-tool="unprecompose" title="Copy a precomp's layers back into this composition and remove the precomp layer" data-orbit-icon="unprecomp">Unprecomp</button>
+<button class="tool-btn primary" id="btnOrganizeApply" title="Automatically organize all project panel items into categorized folders" data-orbit-icon="folder">Organize</button>
+</div>
+</div>
+</div>
+<div class="tool-dash-row tool-dash-row-2 tool-dash-row-clipboard tools-workflow-row">
+<div class="tool-section matrix-trim">
+<div class="tool-section-head"><div class="tool-section-title">QUICK MODIFY</div></div>
+<div class="tool-grid tool-grid-4" style="margin-top: 2px;">
+<button class="tool-btn" data-tool="trimBefore" title="Trim selected layers before playhead" data-orbit-icon="before">Trim Before</button>
+<button class="tool-btn" data-tool="trimAfter" title="Trim selected layers after playhead" data-orbit-icon="after">Trim After</button>
+<button class="tool-btn" id="btnFxLock" title="Freeze current effect settings while keeping the layer movable. Click again to unlock CompX FX Lock settings." data-orbit-icon="lock">FX Lock</button>
+<button class="tool-btn danger" id="btnFxRemove" title="Remove every effect from the selected layer(s)" data-orbit-icon="remove">FX Remove</button>
+</div>
+<div class="tool-grid tool-grid-2" style="margin-top: 2px;">
+<button class="tool-btn primary" id="btnPropertyBounce" title="Apply the bounce expression to every selected expression-capable property" data-orbit-icon="bounce">Bounce</button>
+<button class="tool-btn primary" id="btnNpApply-liquidglass" title="Apply the Liquid Glass effect to the selected layer(s). Install it once from the Plugin Settings menu first." data-orbit-icon="tint">Liquid Glass</button>
+</div>
+</div>
+<div class="tool-section tools-native-section">
+<div class="tool-section-head">
+<div class="tool-section-title">NATIVE EFFECTS</div>
+<span class="tool-help" title="Apply bundled native plugins to the selected layer(s). Install them once from the Plugin Settings menu first.">?</span>
+</div>
+<div class="tool-grid tool-grid-2">
+<button class="tool-btn primary" id="btnNpApply-deepglow" title="Apply Deep Glow to the selected layer(s). Install once from Plugin Settings." data-orbit-icon="glow">Deep Glow</button>
+<button class="tool-btn primary" id="btnNpApply-deepglow2" title="Apply Deep Glow 2 to the selected layer(s). Install once from Plugin Settings." data-orbit-icon="glow">Deep Glow 2</button>
+<button class="tool-btn primary" id="btnNpApply-shadow2" title="Apply Shadow Studio 2 to the selected layer(s). Install once from Plugin Settings." data-orbit-icon="shadow">Shadow Studio 2</button>
+<button class="tool-btn primary" id="btnNpApply-shadow3" title="Apply Shadow Studio 3 to the selected layer(s). Install once from Plugin Settings." data-orbit-icon="shadow">Shadow Studio 3</button>
+</div>
+</div>
+</div>
+<div class="tool-section creation-tools-section">
+<div class="tool-section-head">
+<div class="tool-section-title">CREATE &amp; QUICK TOOLS</div>
+<span class="tool-help" title="Quick layer, effect, and shape creation shortcuts.">?</span>
+</div>
+<div class="tool-subgroup subgroup-layers">
+<div class="tool-subgroup-title">
+<span>QUICK ACTIONS</span>
+<label class="qa-switch" title="Match new layer duration to the selected layer"><input type="checkbox" id="chkMatchLayerDuration"/><span class="qa-switch-track"><span class="qa-switch-dot"></span></span><span class="qa-switch-label">Match Duration</span></label>
+</div>
+<div class="tool-grid tool-grid-6">
+<button class="tool-btn" data-arg="solid" data-tool="createLayer" title="Create a solid color layer" data-orbit-icon="solid">Solid</button>
+<button class="tool-btn" data-arg="null" data-tool="createLayer" title="Create a null layer" data-orbit-icon="null">Null</button>
+<button class="tool-btn" data-arg="camera" data-tool="createLayer" title="Create a camera layer" data-orbit-icon="camera">Camera</button>
+<button class="tool-btn" data-arg="text" data-tool="createLayer" title="Create a text layer" data-orbit-icon="text">Text</button>
+<button class="tool-btn" data-arg="adjustment" data-tool="createLayer" title="Create an adjustment layer" data-orbit-icon="adjustment">Adjust</button>
+<button class="tool-btn" data-tool="createShape" title="Create a shape layer" data-orbit-icon="shape">Shape</button>
+</div>
+</div>
+<div class="tool-subgroup subgroup-effects">
+<div class="tool-subgroup-title">EFFECTS BROWSER</div>
+<div class="tool-grid tool-grid-5">
+<button class="tool-btn" data-arg="ADBE Ramp" data-tool="effect" title="Apply Gradient Ramp effect" data-orbit-icon="gradient">Gradient</button>
+<button class="tool-btn" data-arg="ADBE Glo2" data-tool="effect" title="Apply Glow effect" data-orbit-icon="glow">Glow</button>
+<button class="tool-btn" data-arg="ADBE Fill" data-tool="effect" title="Apply Fill effect" data-orbit-icon="fill">Fill</button>
+<button class="tool-btn" data-arg="ADBE Tint" data-tool="effect" title="Apply Tint effect" data-orbit-icon="tint">Tint</button>
+<button class="tool-btn" data-arg="ADBE Gaussian Blur 2" data-tool="effect" title="Apply Blur effect" data-orbit-icon="blur">Blur</button>
+</div>
+</div>
+<div class="tool-subgroup subgroup-timeline">
+<div class="tool-subgroup-title">TIMELINE UTILITIES</div>
+<div class="tool-grid tool-grid-4">
+<button class="tool-btn" data-tool="trimOut" title="Trim layer out point at playhead" data-orbit-icon="trim">Trim Out</button>
+<button class="tool-btn" data-tool="splitAtPlayhead" title="Split selected layer at playhead" data-orbit-icon="split">Split at Playhead</button>
+<button class="tool-btn" data-tool="splitMasks" title="Split multi-mask layers" data-orbit-icon="masks">Split Masks</button>
+<button class="tool-btn" data-tool="trueDuplicate" title="True-duplicate: independent source comp copy" data-orbit-icon="duplicate">True Duplicate</button>
+<button class="tool-btn" id="btnNumberCounter" type="button" aria-haspopup="dialog" aria-controls="numberCounterModal" aria-expanded="false" title="Open Number Counter" data-orbit-icon="counter">123 Counter</button>
+<button class="tool-btn" data-tool="xactCrop" title="Xact Crop: Crops the selected precomp using advanced detection over time." data-orbit-icon="crop">Xact Crop</button>
+<button class="tool-btn" data-tool="xpertCrop" title="Xpert Crop: Automatically precomposes and then crops the selected layer(s)." data-orbit-icon="xpert">Xpert Crop</button>
+<button class="tool-btn" data-tool="xCrop" title="X Crop: Crops the current comp or selected precomp at the current frame." data-orbit-icon="xcrop">X Crop</button>
+</div>
+</div>
+<div class="tool-subgroup subgroup-textmask">
+<div class="tool-subgroup-title">TEXT / MASK TOOLS</div>
+<div class="tool-grid tool-grid-2">
+<button class="tool-btn" data-tool="capitalize" title="Uppercase text layer content" data-orbit-icon="uppercase">Uppercase</button>
+<button class="tool-btn wide" id="btnExplodeTextPro" title="Split the selected text layer into one animated layer per character" data-orbit-icon="explode">Explode</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="app-panel" id="panel-studio">
+<div class="tools-scroll">
+<!-- Flex AutoCaptions -->
+<div class="tool-section cx-caption-studio-card" id="flexAutoCaptions">
+<div class="cx-simple-srt">
+<div class="cx-cap-header cx-cap-header-studio">
+<div class="cx-cap-header-icon">CC</div>
+<div class="cx-cap-header-copy"><div class="cx-cap-title">Caption Studio</div><div class="cx-cap-sub">Create • Style • Animate</div></div>
+<span class="cx-cap-ready"><i></i>SIMPLE</span>
+</div>
+<div class="cx-cap-stepbar">
+<button class="cx-cap-stepbar-step active" data-simple-caption-stage="source" type="button"><span>01</span><b>SOURCE</b><small>Choose or transcribe</small></button>
+<i class="cx-cap-stepbar-arrow">›</i>
+<button class="cx-cap-stepbar-step" data-simple-caption-stage="style" disabled type="button"><span>02</span><b>ANIMATION</b><small>Select style, then create</small></button>
+</div>
+<div class="cx-simple-stage-panel" data-simple-stage-panel="source">
+<div class="cx-cap-sources">
+<div class="cx-cap-source-card transcribe active">
+<div class="cx-cap-source-icon">▶</div>
+<strong>Transcribe Media</strong>
+<span>Video or Audio</span>
+<button class="tool-btn" id="btnSimpleMediaPick" type="button">SELECT MEDIA</button>
+<div class="cx-simple-srt-file" id="simpleMediaFileName">No media selected</div>
+</div>
+<div class="cx-cap-source-or">OR</div>
+<div class="cx-cap-source-card">
+<div class="cx-cap-source-icon">📄</div>
+<strong>Import SRT File</strong>
+<span>Drop .srt file here</span>
+<button class="tool-btn" id="btnSimpleSrtPick" type="button">BROWSE FILE</button>
+<input accept=".srt,application/x-subrip,text/plain" id="simpleSrtInput" style="display:none" type="file"/>
+<div class="cx-simple-srt-file" id="simpleSrtFileName">No SRT selected</div>
+</div>
+</div>
+<div class="cx-simple-srt-grid">
+<label class="cx-cap-field"><span>Model</span><select class="counter-select" id="simpleCaptionModel"><option value="tiny">Whisper Tiny</option><option selected value="base">Whisper Base</option><option value="small">Whisper Small</option><option value="medium">Whisper Medium</option><option value="large-v3-turbo">Fast - Large V3 Turbo</option><option value="large-v3">Accurate - Large V3 Q5</option></select></label>
+<label class="cx-cap-field"><span>Language</span><select class="counter-select" id="simpleCaptionLanguage"><option value="">Auto Language</option><option value="en">English</option><option value="bn">Bangla</option><option value="hi">Hindi</option><option value="ur">Urdu</option></select></label>
+</div>
+<button class="tool-btn wide primary" disabled id="btnSimpleTranscribe" type="button">✨ TRANSCRIBE MEDIA</button>
+<div class="cx-simple-transcribe-progress" id="simpleTranscribeProgress" hidden aria-live="polite">
+<div class="cx-simple-transcribe-progress-head">
+<span><i></i><b id="simpleTranscribeProgressText">Starting local transcription…</b></span>
+<em id="simpleTranscribeProgressPercent">WAIT</em>
+</div>
+<div class="cx-simple-transcribe-progress-track"><i id="simpleTranscribeProgressBar"></i></div>
+</div>
+</div>
+<div class="cx-simple-stage-panel" data-simple-stage-panel="style" hidden>
+<textarea class="cx-caption-editor cx-simple-srt-editor" id="simpleSrtEditor" spellcheck="true" placeholder="1&#10;00:00:00,000 --> 00:00:02,500&#10;Your caption text"></textarea>
+<div class="cx-simple-srt-count" id="simpleSrtCount">0 valid cues</div>
+<div class="cx-quickstyle-head"><span class="cx-quickstyle-title"><i></i>PREMIUM STYLES</span><button class="cx-quickstyle-advanced" id="btnSimpleAdvanced" type="button" title="Show / hide the raw SRT editor">⚙ ADVANCED</button></div>
+<div class="cx-simple-template-head"><span>TEXT ANIMATION STYLES</span><small>SELECT ONE · APPLIED TO EVERY CAPTION</small></div>
+<div class="cx-simple-template-grid tanim-card-grid" id="simpleCaptionTemplateGrid" aria-label="Caption text animations"></div>
+<div class="cx-simple-template-selected" id="simpleCaptionTemplateSelected"><strong>Select Animation</strong><span>Pick a Premium Style. It will be applied to every caption.</span><button id="btnSimpleTemplateClear" type="button" title="Clear the selected text animation">CLEAR</button></div>
+<div class="cx-quickstyle-grid">
+<label class="cx-cap-field"><span>Position</span><select class="counter-select" id="simpleSrtPosition"><option value="bottom">Bottom</option><option value="lower-third">Lower Third</option><option value="middle">Middle</option><option value="top-third">Top Third</option><option value="top">Top</option></select></label>
+<div class="cx-cap-field cx-simple-font-field"><span>System Font</span><div class="cx-simple-font-combo"><input class="counter-input" id="simpleSrtFontSearch" placeholder="Search fonts..." type="text" title="Type to filter installed fonts" autocomplete="off"/><select class="counter-select" id="simpleSrtFont" title="Installed system fonts detected from After Effects"><option value="">System default</option></select><button id="btnSimpleLoadSystemFonts" type="button" title="Refresh fonts from After Effects" aria-label="Refresh system fonts">&#8635;</button></div><datalist id="simpleSystemFontList"></datalist><small id="simpleSystemFontStatus" hidden>Reading fonts from After Effects...</small></div>
+<label class="cx-cap-field cx-simple-size-field"><span>Size</span><input class="counter-input" id="simpleSrtFontSize" min="16" max="300" type="number" value="72"/></label>
+</div>
+<div class="cx-simple-srt-options">
+<label class="caption-toggle"><input id="simpleSrtShadow" checked type="checkbox"/> Shadow</label>
+<span>Each cue becomes one editable text layer. Existing CompX captions are replaced.</span>
+</div>
+<div class="cx-simple-stage-note">These settings are applied to every generated caption layer.</div>
+<button class="tool-btn wide primary cx-simple-srt-generate" disabled id="btnSimpleSrtGenerate" type="button">✨ CREATE CAPTIONS</button>
+<div class="cx-simple-srt-status"><i></i><span class="hint" id="simpleSrtStatus">Ready to create captions</span></div>
+</div>
+</div>
+<div class="cx-cap-header">
+<div class="cx-cap-header-icon">💬</div>
+<div class="cx-cap-header-copy">
+<div class="cx-cap-title">Auto Captions</div>
+<div class="cx-cap-sub">Source → Edit → Style. One clear step at a time.</div>
+</div>
+<span class="cx-cap-ready"><i></i>READY</span>
+</div>
+<div class="cx-cap-stage-nav" id="flexCaptionStageNav" role="tablist" aria-label="Auto Captions workflow">
+<button class="active" data-caption-stage="source" data-obs type="button"><span>1</span> Source</button>
+<button data-caption-stage="edit" data-obs disabled type="button"><span>2</span> Edit</button>
+<button data-caption-stage="style" data-obs disabled type="button"><span>3</span> Style</button>
+</div>
+<div class="cx-cap-stage-summary" id="flexCaptionStageSummary">Choose media or import an SRT, then transcribe.</div>
+<div class="cx-cap-step" data-cap-stage-panel="source">
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">1</span><span class="cx-cap-step-label">SOURCE</span></div>
+<div class="cx-cap-src-btns">
+<button class="tool-btn cx-cap-src-btn" id="btnFlexMediaPick" title="Choose a local audio or video file to transcribe">📁 Choose Audio / Video</button>
+<button class="tool-btn cx-cap-src-btn" id="btnFlexSrtPick" title="Load an existing .srt caption file">📄 Load Existing SRT</button>
+<input accept="audio/*,video/*,.wav,.mp3,.m4a,.mp4,.mov,.mkv" id="flexMediaInput" style="display:none" type="file"/>
+<input accept=".srt" id="flexSrtInput" style="display:none" type="file"/>
+</div>
+<div class="cx-cap-file-row" id="flexMediaFileRow" hidden>
+<span class="cx-cap-file-icon">🎬</span>
+<span class="cx-cap-file-name" id="flexMediaHint">No media selected</span>
+<span class="cx-cap-file-check" title="Media ready">✓</span>
+<button class="cx-cap-file-clear" id="btnFlexMediaClear" title="Remove media">✕</button>
+</div>
+</div>
+<div class="cx-cap-step" data-cap-stage-panel="source">
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">2</span><span class="cx-cap-step-label">TRANSCRIPTION SETTINGS</span></div>
+<div class="cx-cap-settings-grid">
+<label class="cx-cap-field"><span>Model</span><select class="counter-select" id="flexCaptionModel"><option value="tiny">Whisper Tiny</option><option selected value="base">Whisper Base</option><option value="small">Whisper Small</option><option value="medium">Whisper Medium</option><option value="large-v3-turbo">Fast — Large V3 Turbo</option><option value="large-v3">Accurate — Large V3 Q5</option></select></label>
+<label class="cx-cap-field"><span>Language</span><select class="counter-select" id="flexCaptionLanguage"><option value="">Auto Language</option><option value="en">English</option><option value="bn">Bangla</option><option value="hi">Hindi</option><option value="ur">Urdu</option></select></label>
+<input id="flexCaptionMaxWords" min="1" max="8" type="hidden" value="3"/>
+</div>
+<div class="cx-cap-toggles">
+<label class="caption-toggle"><input checked id="flexCaptionFillGaps" type="checkbox"/> Fill gaps</label>
+<label class="caption-toggle" title="Remove noise, boost voice, and make reels sound studio-clean before transcription"><input id="flexCaptionVoiceEnhance" type="checkbox"/> 🎙️ Voice Enhance</label>
+</div>
+<div class="cx-cap-words-row cx-cap-enhance-row" id="flexEnhanceRow" hidden>
+<span class="cx-cap-words-label">ENHANCE STRENGTH</span>
+<div class="cx-cap-words-seg" id="flexEnhanceSeg">
+<button data-enhance-strength="light" data-obs type="button">Light</button>
+<button class="active" data-enhance-strength="medium" data-obs type="button">Medium</button>
+<button data-enhance-strength="strong" data-obs type="button">Strong</button>
+</div>
+</div>
+<input class="counter-input cx-cap-glossary" id="flexCaptionGlossary" type="text" placeholder="Optional corrections: teh=the, color=colour" title="Comma-separated wrong=correct replacements, saved on this computer"/>
+<button class="tool-btn wide primary cx-cap-transcribe" data-obs id="btnFlexTranscribe">✨ TRANSCRIBE</button>
+<div class="cx-cap-status-wrap"><span class="hint" id="flexCaptionStatus">Choose media or import an SRT to begin.</span></div>
+</div>
+<div class="cx-cap-step" data-cap-stage-panel="edit" hidden>
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">3</span><span class="cx-cap-step-label">CAPTION CLEANUP</span></div>
+<div class="cx-cap-clean-grid">
+<label class="caption-toggle cx-cap-clean-toggle"><input checked id="flexCleanFiller" type="checkbox"/> Remove filler words</label>
+<label class="caption-toggle cx-cap-clean-toggle"><input checked id="flexCleanPunct" type="checkbox"/> Fix punctuation</label>
+<label class="caption-toggle cx-cap-clean-toggle"><input checked id="flexCleanLinebreak" type="checkbox"/> Smart line break</label>
+</div>
+<div class="cx-cap-words-row">
+<span class="cx-cap-words-label">WORDS PER LINE</span>
+<div class="cx-cap-words-seg" id="flexCleanWordsSeg">
+<button class="active" data-clean-words="3" data-obs type="button">3</button>
+<button data-clean-words="5" data-obs type="button">5</button>
+<button data-clean-words="7" data-obs type="button">7</button>
+</div>
+</div>
+<button class="tool-btn ghost wide cx-cap-clean-btn" data-obs id="btnFlexCleanNow" type="button">🧹 Clean Transcript</button>
+<div class="hint cx-cap-clean-hint">Cleans raw transcription: drops hesitation fillers, fixes spacing/punctuation, and breaks long text into short readable caption lines.</div>
+</div>
+<div class="cx-cap-step" data-cap-stage-panel="edit" hidden>
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">4</span><span class="cx-cap-step-label">CAPTION EDITOR</span></div>
+<div class="cx-cap-editor-toolbar">
+<button class="cx-cue-list-btn" data-obs id="btnCueAdd" type="button">＋ Add Line</button>
+<button class="cx-cue-list-btn" data-obs id="btnCueRaw" type="button">📋 Raw SRT</button>
+<button class="cx-cue-list-btn" data-obs id="btnFlexFixTiming" type="button" title="Sort captions and remove overlapping time ranges">⏱ Fix Timing</button>
+<span class="cx-cue-list-hint">Click a line to preview · wrap a word in *stars* to highlight it</span>
+</div>
+<div class="cx-cue-list" id="flexCueList"><div class="cx-cue-empty">No captions yet — transcribe or load an SRT.</div></div>
+<textarea id="flexCaptionEditor" class="cx-caption-editor" spellcheck="true" placeholder="Generated or imported SRT appears here..." hidden></textarea>
+<div class="cx-cap-editor-count" id="flexCaptionEditorCount">0 characters • 0 lines</div>
+<details class="cx-cap-advanced-tools">
+<summary>Highlight &amp; Chapter Tools</summary>
+<div class="cx-cap-rules">
+<div class="cx-cap-rules-head"><span class="cx-cap-words-label">HIGHLIGHT RULES</span><button class="cx-cue-list-btn" data-obs id="btnFlexAutoEmphasis" type="button" title="Scan the transcript for power words (offers, price, free, sale…) and add them as highlight rules automatically">⚡ Auto-Emphasis</button></div>
+<div class="cx-cap-rules-add">
+<input id="flexRuleWord" class="counter-input cx-cap-rule-input" type="text" placeholder="Word to highlight…" autocomplete="off" spellcheck="false"/>
+<div class="cx-cap-rule-swatches" id="flexRuleSwatches">
+<button class="active" data-rule-color="#7b61ff" style="background:#7b61ff" title="Purple"></button>
+<button data-rule-color="#ffe600" style="background:#ffe600" title="Yellow"></button>
+<button data-rule-color="#e0303a" style="background:#e0303a" title="Red"></button>
+<button data-rule-color="#22ff6f" style="background:#22ff6f" title="Green"></button>
+<button data-rule-color="#ff4d8d" style="background:#ff4d8d" title="Pink"></button>
+</div>
+<button class="cx-cue-list-btn" data-obs id="btnFlexRuleAdd" type="button" title="Add this word to the rules">＋ Add</button>
+</div>
+<div class="cx-cap-rules-list" id="flexRuleList"></div>
+<button class="tool-btn ghost wide cx-cap-clean-btn" data-obs id="btnFlexRulesApply" type="button" title="Wrap every occurrence of each rule word in *stars* so it pops in your captions">✨ Apply Rules to Captions</button>
+<button class="cx-cue-list-btn" data-obs id="btnFlexChapterMarkers" type="button" title="Drop an AE composition marker at every long pause between captions (chapters)">📌 Chapter Markers</button>
+<div class="hint cx-cap-clean-hint">Rules auto-highlight words — *word* in the editor, pop in AE. Rules are saved on this computer.</div>
+</div>
+</details>
+<button class="tool-btn wide primary cx-cap-continue" data-obs id="btnFlexContinueStyle" type="button">CONTINUE TO STYLE →</button>
+</div>
+<div class="cx-cap-step" data-cap-stage-panel="style" hidden>
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">5</span><span class="cx-cap-step-label">STYLE PRESETS</span></div>
+<div class="cx-preset-suggest" id="flexPresetSuggest" hidden><span class="cx-preset-suggest-emoji">🎬</span><span class="cx-preset-suggest-text" id="flexPresetSuggestText"></span><button class="cx-preset-suggest-apply" data-obs id="btnFlexPresetSuggestApply" type="button">Apply</button></div>
+<div class="cx-caption-preset-grid" id="flexCaptionPresetGrid">
+<button class="cx-caption-preset active" data-obs data-caption-preset="clean"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Clean</span><span class="cx-cap-preset-dot" style="background:#7b61ff"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="capcut"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">CapCut Pop</span><span class="cx-cap-preset-dot" style="background:#ffe600"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="karaoke"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Karaoke</span><span class="cx-cap-preset-dot" style="background:#7b61ff"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="hormozi"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Hormozi</span><span class="cx-cap-preset-dot" style="background:#ffe600"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="bigword"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Big Word</span><span class="cx-cap-preset-dot" style="background:#ff4d8d"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="classy"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Classy FFX</span><span class="cx-cap-preset-dot" style="background:#7b61ff"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="beasty"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Beasty</span><span class="cx-cap-preset-dot" style="background:#ff4d8d"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="neon"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Neon</span><span class="cx-cap-preset-dot" style="background:#5fffa6"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="chrome"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Chrome</span><span class="cx-cap-preset-dot" style="background:#c9ced8"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="spotlight"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Spotlight</span><span class="cx-cap-preset-dot" style="background:#22ff6f"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="letterrise"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Letter Rise</span><span class="cx-cap-preset-dot" style="background:#7b61ff"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="banglaviral"><span class="cx-cap-preset-glyph">অ</span><span class="cx-cap-preset-name">Bangla Viral</span><span class="cx-cap-preset-dot" style="background:#ffe600"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="news"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">News Style</span><span class="cx-cap-preset-dot" style="background:#ffd166"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="podcast"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Podcast</span><span class="cx-cap-preset-dot" style="background:#7b61ff"></span></button>
+<button class="cx-caption-preset" data-obs data-caption-preset="review"><span class="cx-cap-preset-glyph">Aa</span><span class="cx-cap-preset-name">Product Review</span><span class="cx-cap-preset-dot" style="background:#22ff6f"></span></button>
+</div>
+<div class="cx-cap-more">15 styles — pick one, tweak any option, then generate.</div>
+<div class="cx-cap-save-row"><button class="cx-cap-save-preset" data-obs id="btnFlexSavePreset" type="button" title="Save the current style, colors, fonts and animation as a custom preset — it stays in this grid">＋ Save Current as Custom Preset</button></div>
+</div>
+<div class="ffx-preview-stage cx-caption-live-preview" data-cap-stage-panel="style" hidden id="flexCaptionPreviewStage"><div class="ffx-preview-word cx-caption-preview-words" id="flexCaptionPreviewWords"><span>YOUR</span><span>CAPTION</span><span>HERE</span></div><div class="ffx-preview-tag" id="flexCaptionPreviewTag">Pop · Inline</div><button class="cx-cap-preview-play" data-obs id="btnCaptionPreviewPlay" type="button" title="Replay caption preview">▶</button></div>
+<div class="cx-cap-step" data-cap-stage-panel="style" hidden>
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">6</span><span class="cx-cap-step-label">LAYOUT &amp; OUTPUT</span></div>
+<div class="cx-layout-grid" id="flexCaptionLayoutGrid"><button class="cx-layout-btn active" data-obs data-flex-layout="inline">Inline</button><button class="cx-layout-btn" data-obs data-flex-layout="stacked">Caption Stagger</button><button class="cx-layout-btn" data-obs data-flex-layout="bigword">Big Word</button><button class="cx-layout-btn" data-obs data-flex-layout="duo">Duo</button></div>
+<div class="cx-cap-words-row cx-cap-output-row">
+<span class="cx-cap-words-label">OUTPUT</span>
+<div class="cx-cap-words-seg" id="flexCaptionOutputSeg">
+<button data-caption-output="comp" data-obs type="button">Direct</button>
+<button class="active" data-caption-output="precomp" data-obs type="button">1 Precomp ✓</button>
+</div>
+</div>
+<div class="hint cx-cap-clean-hint" id="flexCaptionOutputHint">All caption layers go into one "CompX Captions" comp — your timeline stays clean with just 1 layer.</div>
+<label class="cx-cap-field cx-cap-engine-field"><span>Caption Engine</span><select class="counter-select" id="flexCaptionEngine"><option selected value="smart">Smart Active Word — Recommended</option><option value="layers">Layered Words — Advanced / Heavy</option></select><small>Smart keeps each SRT cue in one text layer and builds in responsive batches. Layered Words creates separate word layers for manual control.</small></label>
+<div class="cx-cap-settings-grid cx-cap-layout-selects">
+<label class="cx-cap-field"><span>Alignment</span><select class="counter-select" id="flexCaptionPosition"><option value="bottom">Bottom</option><option value="center">Center</option><option value="top">Top</option></select></label>
+<label class="cx-cap-field"><span>Animation</span><select class="counter-select" id="flexCaptionAnimType"><option value="pop">Pop</option><option value="whip">Whip</option><option value="scale">Scale</option><option value="bounce">Bounce</option><option value="elastic">Elastic</option><option value="drop">Drop</option><option value="slideUp">Slide Up</option><option value="slideLeft">Slide Left</option><option value="slideRight">Slide Right</option><option value="rotate">Rotate</option><option value="blurIn">Blur In</option><option value="fade">Fade</option><option value="letterRise">Letter Rise</option><option value="none">None</option></select></label>
+</div>
+</div>
+<div class="cx-cap-step" data-cap-stage-panel="style" hidden>
+<div class="cx-cap-step-head"><span class="cx-cap-step-num">7</span><span class="cx-cap-step-label">TYPOGRAPHY &amp; EFFECTS</span></div>
+<div class="cx-cap-font-row">
+<select class="counter-select" id="flexCaptionBanglaFont" title="Bundled Bangla caption font"><option value="">Font: Default / Custom</option><option value="HindSiliguriRegular" data-css-font="CompX Hind Siliguri">Bangla · Hind Siliguri Regular</option><option value="HindSiliguri-Medium" data-css-font="CompX Hind Siliguri Medium">Bangla · Hind Siliguri Medium</option><option value="HindSiliguriBold-Bold" data-css-font="CompX Hind Siliguri Bold">Bangla · Hind Siliguri Bold</option><option value="Mina-Regular" data-css-font="CompX Mina">Bangla · Mina Regular</option><option value="Mina-Bold" data-css-font="CompX Mina Bold">Bangla · Mina Bold</option><option value="CodepotroEkush" data-css-font="CompX Ekush">Bangla · Codepotro Ekush</option><option value="GaladaUnicode" data-css-font="CompX Galada">Bangla · Galada Unicode</option><option value="GaladaScriptUnicode" data-css-font="CompX Galada Script">Bangla · Galada Script</option></select>
+<span class="cx-cap-font-settings-hint" title="Bangla fonts install from Settings">🔤</span>
+</div>
+<div class="cx-cap-font-row">
+<input class="counter-input" id="flexCaptionFont" list="flexSystemFontList" placeholder="Search installed fonts..." type="text" title="Search by family, style, or PostScript name"/>
+<datalist id="flexSystemFontList"></datalist>
+<label class="cx-cap-size"><input class="counter-input small" id="flexCaptionFontSize" min="20" type="number" value="90" title="Caption font size"/><em>px</em></label>
+<button class="tool-btn cx-cap-icon-btn" id="btnLoadSystemFonts" type="button">↻ Refresh Fonts</button>
+</div>
+<div class="hint cx-cap-font-hint" id="systemFontStatus">Use any font already available in After Effects.</div>
+<div class="cx-cap-active-row">
+<select class="counter-select" id="flexCaptionActiveMode" title="Active word emphasis style"><option value="colorPop">Active Color • Pop</option><option value="color">Active Color Only</option><option value="pop">Active Pop Only</option></select>
+<span class="cx-cap-px"><input class="counter-input small" id="flexCaptionActivePop" min="0" max="40" type="number" value="12" title="Active word pop amount in percent"/><em>px</em></span>
+</div>
+<div class="cx-cap-colors">
+<span class="cx-cap-color-label">COLORS</span>
+<label class="cx-cap-swatch" title="Normal caption color"><input id="flexCaptionColor" type="color" value="#ffffff"/></label>
+<label class="cx-cap-swatch cx-cap-swatch-active" title="Active word color"><input id="flexCaptionEmphasisColor" type="color" value="#7b61ff"/></label>
+<button class="cx-cap-swatch-add" id="btnFlexAddSwatch" title="Add custom color">+</button>
+</div>
+<div class="cx-cap-effect-toggles">
+<label class="caption-toggle"><input id="flexCaptionKaraoke" type="checkbox"/> Active Word</label>
+<div class="cx-cap-words-row cx-cap-active-style-row">
+<span class="cx-cap-words-label">ACTIVE WORD STYLE</span>
+<div class="cx-cap-words-seg" id="flexCaptionActiveStyle">
+<button class="active" data-active-style="pill" data-obs type="button">Pill</button>
+<button data-active-style="underline" data-obs type="button">Underline</button>
+<button data-active-style="highlight" data-obs type="button">Highlighter</button>
+</div>
+</div>
+<label class="caption-toggle"><input checked id="flexChkShadow" type="checkbox"/> Shadow</label>
+<label class="caption-toggle"><input id="flexChkBg" type="checkbox"/> BG</label>
+<input id="flexCaptionBgColor" type="color" value="#000000" title="Caption background color"/>
+</div>
+</div>
+<details class="cx-cap-step cx-cap-fine-tuning" data-cap-stage-panel="style" hidden>
+<summary>Advanced Fine Tuning</summary>
+<div class="cx-cap-slider-row"><span class="cx-cap-slider-label">Speed</span><input id="flexCaptionSpeed" max="30" min="4" type="range" value="14"/><span class="cx-cap-slider-val" id="flexCaptionSpeedVal">47%</span></div>
+<div class="cx-cap-slider-row"><span class="cx-cap-slider-label">Intensity</span><input id="flexCaptionIntensity" max="100" min="0" type="range" value="60"/><span class="cx-cap-slider-val" id="flexCaptionIntensityVal">60%</span></div>
+<div class="cx-cap-slider-row"><span class="cx-cap-slider-label">Key Size</span><input id="flexCaptionKeywordScale" max="300" min="100" step="5" type="range" value="135" title="Keyword (*word*) size relative to normal captions"/><span class="cx-cap-slider-val" id="flexCaptionKeywordScaleVal">1.35x</span></div>
+<div class="cx-cap-slider-row"><span class="cx-cap-slider-label">Key Glow</span><input id="flexCaptionKeywordGlow" max="100" min="0" type="range" value="40" title="Keyword glow intensity"/><span class="cx-cap-slider-val" id="flexCaptionKeywordGlowVal">40%</span></div>
+</details>
+<div class="cx-cap-bottom" data-cap-stage-panel="style" hidden>
+<button class="tool-btn wide primary cx-cap-generate" data-obs disabled id="btnFlexCaptionCreate">✨ GENERATE CAPTIONS</button>
+<div class="cx-cap-bottom-side">
+<button class="tool-btn cx-cap-icon-btn" id="btnFlexUpdateCaptions" title="Update the visual style of captions already generated in After Effects">↻ UPDATE STYLE</button>
+</div>
+</div>
+<div class="cx-cap-build-progress" hidden id="flexCaptionBuildProgress"><i></i><span>Preparing captions…</span></div>
+</div>
+
+<!-- Local AI still-image background removal -->
+<div class="tool-section cx-ai-bg-card" id="studioAiBgRemover">
+<div class="tool-section-head"><div class="tool-section-title">AI BACKGROUND REMOVER</div><span class="tool-help" title="Removes the background from one selected still-image layer locally with U²-Net. The result is imported as a transparent PNG and the original layer is kept as a disabled backup.">?</span></div>
+<div class="cx-studio-context cx-bg-target-context"><span class="cx-context-icon">◇</span><b id="cxStudioCompLabel">NO ACTIVE COMP</b><i></i><span id="cxStudioSelectionLabel">SELECT ONE IMAGE LAYER</span><button type="button" id="btnStudioRefreshContext" title="Refresh the selected still-image layer">↻</button></div>
+<div class="cx-bg-pipeline" id="aiBgPipeline" aria-label="Background removal steps">
+<div class="cx-bg-pipeline-step is-active" data-bg-step="select"><span>1</span>Select</div>
+<div class="cx-bg-pipeline-step" data-bg-step="process"><span>2</span>Process</div>
+<div class="cx-bg-pipeline-step" data-bg-step="import"><span>3</span>Import</div>
+</div>
+<div class="cx-ai-bg-hero"><div class="cx-ai-bg-icon" aria-hidden="true"><i></i><b>AI</b></div><div><strong>STILL IMAGE → TRANSPARENT PNG</strong><span>Offline · unlimited use · original layer preserved</span></div></div>
+<div class="cx-ai-bg-preview" id="aiBgPreview" role="button" tabindex="0" aria-label="Drop a still image or click to browse"><div class="cx-ai-bg-preview-empty"><b>DROP IMAGE HERE</b><span>PNG, JPG, JPEG or WebP · or select a layer in the comp</span></div><img id="aiBgPreviewImage" alt="Background removal result preview" hidden/></div>
+<input accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" id="aiBgFileInput" style="display:none" type="file"/>
+<div class="cx-caption-block"><div class="cx-caption-block-label">EDGE REFINEMENT</div>
+<div class="counter-row"><label class="cx-range-label">Cleanup <input id="aiBgCutoff" max="35" min="0" step="1" type="range" value="5"/><span id="aiBgCutoffValue">5%</span></label><label class="cx-range-label">Feather <input id="aiBgFeather" max="12" min="0" step="1" type="range" value="1"/><span id="aiBgFeatherValue">1px</span></label></div>
+</div>
+<label class="caption-toggle cx-ai-bg-original-toggle"><input checked id="aiBgDisableOriginal" type="checkbox"/> Keep original as a disabled backup</label>
+<div class="cx-dual-actions cx-ai-bg-actions">
+<button class="tool-btn wide primary" id="btnAiRemoveBackground">REMOVE BACKGROUND</button>
+<button class="tool-btn wide" id="btnAiBgRestore" title="Select a generated AI cutout layer first">RESTORE SELECTED ORIGINAL</button>
+</div>
+<div class="hint cx-ai-bg-status" id="aiBgStatus" role="status" aria-live="polite">Drop an image, click to browse, or select one still-image layer in the active composition.</div></div>
+<div class="tool-section cx-exploder-card cx-ssae-card" id="ssToAeCard">
+<div class="cx-exploder-head">
+<span class="cx-exploder-bolt" aria-hidden="true">▦</span>
+<div><div class="cx-exploder-title">SCREENSHOT → MOTION <span class="cx-ssae-beta">SMART DETECTION</span></div><div class="cx-ssae-subtitle">Detect, review and animate meaningful UI elements in After Effects</div></div>
+<button class="tool-help cx-exploder-help" type="button" title="Hybrid Motion keeps the exact screenshot as its base, adds local recovery patches, and separates detected elements for animation." aria-label="About Screenshot Animator">?</button>
+</div>
+
+<div class="cx-exploder-drop cx-pro-dropzone cx-ssae-drop" id="ssToAeDropzone" role="button" tabindex="0" aria-label="Paste a UI screenshot (Ctrl+V), drop a file, or press Enter to browse">
+<div class="cx-ssae-empty" id="ssToAeEmpty"><span class="cx-ssae-upload-icon">↥</span><strong>Drop or paste a UI screenshot</strong><small>PNG, JPG or WEBP — Ctrl+V, drag & drop, or click to browse</small></div>
+<canvas id="ssToAePreviewCanvas" aria-label="Screenshot region preview"></canvas>
+<div class="cx-ssae-preview-toolbar" id="ssToAePreviewToolbar" hidden><button type="button" data-ssae-type="all">ALL <b id="ssToAeCountAll">0</b></button><button type="button" data-ssae-type="text"><i class="is-text"></i>TEXT <b id="ssToAeCountText">0</b></button><button type="button" data-ssae-type="icon"><i class="is-icon"></i>ICON <b id="ssToAeCountIcon">0</b></button><button type="button" data-ssae-type="image"><i class="is-image"></i>IMAGE <b id="ssToAeCountImage">0</b></button><button type="button" data-ssae-type="shape"><i class="is-shape"></i>SHAPE <b id="ssToAeCountShape">0</b></button></div>
+<input type="file" id="ssToAeFileInput" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden/>
+</div>
+<button class="cx-exploder-paste cx-ssae-timeline" id="btnSsToAeDetectTimeline" type="button">▤ DETECT SELECTED TIMELINE IMAGE</button>
+
+<div class="cx-ssae-flow" aria-label="Screenshot Animator workflow"><span class="is-active"><b>1</b> SOURCE</span><span><b>2</b> REVIEW</span><span><b>3</b> BUILD</span></div>
+
+<div class="cx-exploder-group">
+<div class="cx-exploder-group-title">ADJUSTMENTS</div>
+<label class="cx-exploder-field cx-ssae-mode"><span>Build Mode</span><select class="counter-select" id="ssToAeMode"><option value="layered">Hybrid Motion — Recommended</option><option value="safe">Original Screenshot — Static</option></select></label>
+<div class="cx-exploder-sliders">
+<label class="cx-exploder-slider"><span class="cx-exploder-slider-label">Detail</span><input type="range" id="ssToAeDetail" min="1" max="5" step="1" value="3"/><output id="ssToAeDetailVal" for="ssToAeDetail">3</output></label>
+<label class="cx-exploder-slider"><span class="cx-exploder-slider-label">Region Padding</span><input type="range" id="ssToAeOffset" min="0" max="12" step="1" value="2"/><output id="ssToAeOffsetVal" for="ssToAeOffset">2px</output></label>
+</div>
+<div class="cx-ssae-options"><label><input type="checkbox" id="ssToAeGroupNested" checked/> Group nested elements</label><label><input type="checkbox" id="ssToAeAutoParent" checked/> Create group controllers</label><label><input type="checkbox" id="ssToAeAnimate" checked/> Apply entrance animation</label></div>
+</div>
+
+<div class="cx-exploder-group cx-ssae-layer-settings">
+<div class="cx-exploder-group-title">LAYER SETTINGS <span>Per-type motion override</span></div>
+<label class="cx-ssae-background-lock"><input type="checkbox" checked disabled/><span><b>Preserve Background Plate</b><small>Always keeps the original screenshot visually intact</small></span><em>SAFE</em></label>
+<div class="cx-ssae-type-overrides">
+<label><span><i class="is-text"></i>Text</span><select id="ssToAeMotionText"><option value="global">Global</option><option value="fade">Fade</option><option value="slideup">Slide Up</option><option value="scale">Scale In</option><option value="none">None</option></select></label>
+<label><span><i class="is-icon"></i>Icon</span><select id="ssToAeMotionIcon"><option value="global">Global</option><option value="scale">Scale In</option><option value="fade">Fade</option><option value="slideup">Slide Up</option><option value="none">None</option></select></label>
+<label><span><i class="is-image"></i>Image</span><select id="ssToAeMotionImage"><option value="global">Global</option><option value="smooth">Smooth UI</option><option value="scale">Scale In</option><option value="fade">Fade</option><option value="none">None</option></select></label>
+<label><span><i class="is-shape"></i>Shape</span><select id="ssToAeMotionShape"><option value="global">Global</option><option value="fade">Fade</option><option value="scale">Scale In</option><option value="slideup">Slide Up</option><option value="none">None</option></select></label>
+</div>
+</div>
+
+<div class="cx-exploder-group">
+<div class="cx-exploder-group-title">ANIMATION</div>
+<div class="cx-exploder-fields">
+<label class="cx-exploder-field"><span>Motion</span><select class="counter-select" id="ssToAeMotion"><option value="smooth">Smooth UI</option><option value="slideup">Slide Up</option><option value="slidedown">Slide Down</option><option value="slideleft">Slide Left</option><option value="slideright">Slide Right</option><option value="scale">Scale In</option><option value="fade">Fade</option><option value="none">None</option></select></label>
+<label class="cx-exploder-field"><span>Sequence</span><select class="counter-select" id="ssToAeSequence"><option value="top">Top to Bottom</option><option value="left">Left to Right</option><option value="largest">Largest First</option><option value="center">Center Out</option><option value="simultaneous">Simultaneous</option></select></label>
+</div>
+<div class="cx-exploder-sliders">
+<label class="cx-exploder-slider"><span class="cx-exploder-slider-label">Animation Duration</span><input type="range" id="ssToAeDuration" min="0.15" max="2" step="0.05" value="0.55"/><output id="ssToAeDurationVal" for="ssToAeDuration">0.55s</output></label>
+<label class="cx-exploder-slider"><span class="cx-exploder-slider-label">Layer Stagger</span><input type="range" id="ssToAeStagger" min="0" max="0.5" step="0.01" value="0.06"/><output id="ssToAeStaggerVal" for="ssToAeStagger">0.06s</output></label>
+</div>
+</div>
+
+<div class="cx-ssae-summary" id="ssToAeSummary"><b>NO SCREENSHOT ANALYSED</b><span>Load an image, then click a detected region to include or exclude it.</span></div>
+<div class="cx-ssae-actions"><button class="cx-exploder-paste" id="btnSsToAeAnalyze" type="button">⌁ ANALYSE REGIONS</button><button class="cx-exploder-build" id="btnSsToAeBuild" type="button" disabled><span>✓ BUILD ANIMATED UI</span></button></div>
+<p class="cx-exploder-footer" id="ssToAeStatus" role="status" aria-live="polite">Hybrid Motion preserves the full screenshot and hides moving-element ghosts with local recovery patches.</p>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════════════════════════════════════
+     TOOLKIT PANEL — Shape Toolkit · Timeline Filters · Layer Groups · FX Manager
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="app-panel" id="panel-toolkit">
+<div class="tools-scroll">
+<div class="tool-dash-row tools-project-row">
+<div class="tool-section" id="toolkitRoundProSection">
+<div class="tool-section-head">
+<div class="tool-section-title">ROUND PRO</div>
+<span class="tool-help" title="Adds a live rounded mask on the selected layer. Square crops from the center, Rectangle keeps aspect, Circle makes a circular mask. After Apply, tweak CompX Global Roundness in Effect Controls. Undo removes the CompX mask.">?</span>
+</div>
+<div class="tool-grid tool-grid-3 cx-roundpro-modes">
+<button class="tool-btn" type="button" data-rp-mode="square" title="Square matte from the layer center">Square</button>
+<button class="tool-btn active" type="button" data-rp-mode="rectangle" title="Keep the layer aspect ratio">Rectangle</button>
+<button class="tool-btn" type="button" data-rp-mode="circle" title="Circular matte">Circle</button>
+</div>
+<div class="cx-flexgrid-fields">
+<label class="cx-flexgrid-field"><span>Radius</span><input class="counter-input" id="rp-radius" min="0" max="10000" step="1" type="number" value="150"/></label>
+<label class="cx-flexgrid-field"><span>TL</span><input class="counter-input" id="rp-tl" min="0" max="10000" step="1" type="number" value="0" disabled/></label>
+<label class="cx-flexgrid-field"><span>TR</span><input class="counter-input" id="rp-tr" min="0" max="10000" step="1" type="number" value="0" disabled/></label>
+<label class="cx-flexgrid-field"><span>BL</span><input class="counter-input" id="rp-bl" min="0" max="10000" step="1" type="number" value="0" disabled/></label>
+<label class="cx-flexgrid-field"><span>BR</span><input class="counter-input" id="rp-br" min="0" max="10000" step="1" type="number" value="0" disabled/></label>
+</div>
+<div class="cx-roundpro-toggles">
+<label class="layer-match-toggle" title="Use one radius for every corner"><input id="rp-uniform" type="checkbox" checked/> Link corners</label>
+<label class="layer-match-toggle" title="Scale the radius to each layer's size"><input id="rp-consistent" type="checkbox" checked/> Consistent size</label>
+</div>
+<div class="tool-grid tool-grid-2">
+<button class="tool-btn primary" id="btnRoundProApply" type="button" title="Apply the rounded matte to selected layers">Apply</button>
+<button class="tool-btn" id="btnRoundProUndo" type="button" title="Remove the CompX Round Pro mask from selected layers">Undo</button>
+</div>
+<button class="tool-btn" id="btnRoundProFit" type="button" title="Fit selected layers to the composition">Fit to Comp</button>
+<p class="hint cx-flexgrid-help">Footage and solids get a rounded mask; shape rectangles keep their fill and use native roundness when corners are linked. Unlink corners for per-corner control. Tweak CompX Global Roundness in Effect Controls.</p>
+</div>
+<div class="tool-section" id="toolkitShapeSourceSection">
+<div class="tool-section-head">
+<div class="tool-section-title">🎨 SHAPE TOOLKIT</div>
+<span class="tool-help" title="Select one or more Shape Layers, then click to add After Effects shape operators, line-style presets, or one-click motion presets.">?</span>
+</div>
+<div class="shape-toolkit" id="shapeToolkit">
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">WORKFLOW</div>
+<div class="counter-row"><select class="counter-select" id="shapeTargetMode" title="Choose where Shape Toolkit operations are applied"><option value="auto">Target: Auto</option><option value="selected">Selected Group</option><option value="layer">Entire Layer</option></select><input class="counter-input small" id="shapeDurationFrames" min="1" max="300" type="number" value="24" title="Animation duration in frames for Motion presets and animated Fine Controls"/><select class="counter-select" id="shapeEaseMode" title="Easing for Motion presets and animated Fine Controls"><option value="smooth">Smooth</option><option value="snappy">Snappy</option><option value="linear">Linear</option></select></div>
+<div class="hint">Auto targets the selected Shape Group, or the whole layer when no group is selected. Duration controls Motion timing; Ease affects keyframed tools. Alt-click adds a new modifier copy.</div>
+</div>
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">OPERATORS</div>
+<div class="tool-grid tool-grid-3">
+<button class="tool-btn" data-shape-op="trim" title="Add Trim Paths">✂ Trim</button>
+<button class="tool-btn" data-shape-taper="end" title="Taper the end of every targeted stroke">➤ Taper End</button>
+<button class="tool-btn" data-shape-taper="both" title="Taper both ends of every targeted stroke">◆ Taper Both</button>
+<button class="tool-btn" data-shape-op="dashes" title="Add Dashes to stroke">┊ Dashes</button>
+<button class="tool-btn" data-shape-op="offset" title="Add Offset Paths">◒ Offset</button>
+<button class="tool-btn" data-shape-op="repeater" title="Add Repeater">❖ Repeater</button>
+<button class="tool-btn" data-shape-op="zigzag" title="Add Zig Zag">〰 Zig Zag</button>
+<button class="tool-btn" data-shape-op="twist" title="Add Twist">🌀 Twist</button>
+<button class="tool-btn" data-shape-op="round" title="Add Round Corners">⌒ Round</button>
+<button class="tool-btn" data-shape-op="pucker" title="Add Pucker &amp; Bloat">◑ Pucker</button>
+<button class="tool-btn" data-shape-op="wigglePaths" title="Add Wiggle Paths (Roughen)">〰 Wig Path</button>
+<button class="tool-btn" data-shape-op="wiggleTransform" title="Add Wiggle Transform">⤨ Wig Xf</button>
+<button class="tool-btn" data-shape-op="merge" title="Add Merge Paths">⧉ Merge</button>
+<button class="tool-btn" data-shape-op="fill" title="Add Fill">■ Fill</button>
+<button class="tool-btn" data-shape-op="stroke" title="Add Stroke">▢ Stroke</button>
+</div>
+</div>
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">LINE PRESETS</div>
+<div class="tool-grid tool-grid-3">
+<button class="tool-btn" data-shape-preset="lightning" title="Stroke → Trim (write-on) → Taper → Dashes">⚡ Lightning</button>
+<button class="tool-btn" data-shape-preset="social" title="Stroke + Trim + Round Cap + Small Taper">● Social</button>
+<button class="tool-btn" data-shape-preset="arrow" title="Trim + Taper (End Width 0)">➤ Arrow</button>
+<button class="tool-btn" data-shape-preset="signature" title="Trim Paths + Round Stroke + Easy Ease">✍ Signature</button>
+<button class="tool-btn" data-shape-preset="road" title="Dashes + animated offset">🛣 Road</button>
+</div>
+</div>
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">MOTION</div>
+<div class="tool-grid tool-grid-3">
+<button class="tool-btn" data-shape-preset="drawLine" title="Write-on: Trim End 0→100 with easy ease">✏ Draw</button>
+<button class="tool-btn" data-shape-preset="eraseLine" title="Erase: Trim Start 0→100">▱ Erase</button>
+<button class="tool-btn" data-shape-preset="loadingCircle" title="Spinning trimmed segment">◌ Loader</button>
+<button class="tool-btn" data-shape-preset="spinner" title="Rotation loop + trim">✷ Spinner</button>
+<button class="tool-btn" data-shape-preset="loadingBar" title="Trim End 0→100 looping">▭ Bar</button>
+<button class="tool-btn" data-shape-preset="arrowDraw" title="Arrow + write-on">➹ Arrow Draw</button>
+</div>
+</div>
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">FINE CONTROLS</div>
+<div class="tool-grid tool-grid-3">
+<button class="tool-btn" data-shape-ctrl="trim" title="Open Trim Paths controls (sliders + quick presets)">✂ Trim…</button>
+<button class="tool-btn" data-shape-ctrl="taper" title="Open Taper controls (sliders + presets)">📏 Taper…</button>
+<button class="tool-btn" data-shape-ctrl="dashes" title="Open Dashes controls (sliders)">┊ Dashes…</button>
+</div>
+</div>
+<div class="tool-subgroup shape-subgroup">
+<div class="tool-subgroup-title">REMOVE &amp; RESET</div>
+<div class="tool-grid tool-grid-3"><button class="tool-btn" data-shape-reset="trim" title="Remove Trim Paths from the target">Remove Trim</button><button class="tool-btn" data-shape-reset="dashes" title="Remove all dash and gap entries from targeted strokes">Remove Dashes</button><button class="tool-btn" data-shape-reset="stroke" title="Reset targeted stroke width, caps, opacity, dashes, and taper">Reset Stroke</button></div>
+</div>
+</div>
+</div>
+</div>
+ </div>
+</div>
+<!-- ═══════════════════════════════════════════════════════════════════
+     ORBIT 3D PANEL — Camera, 2D to 3D, Mesh primitives
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="app-panel" id="panel-advanced">
+<div class="tools-scroll">
+<div class="tool-section cx-camera-card cx3d-panel" id="cxCamera3D">
+  <div class="cx3d-header">
+    <div class="cx3d-brand"><span class="cx3d-brand-icon" aria-hidden="true">&#9678;</span><div><strong>ORBIT 3D</strong><small>Camera · Extrude · Mesh</small></div></div>
+    <div class="cx3d-header-actions"><span class="cx-feature-status" id="cxCameraStateBadge" role="status" aria-live="polite">NOT SET</span><button id="btn3DRigClean" class="cx3d-icon-btn danger" title="Clean all 3D rig layers and controllers" aria-label="Clean all 3D rigs">&#9003;</button></div>
+  </div>
+  <div class="cx-camera-workflow cx3d-workflow">
+    <div class="cx3d-rig-lens">
+      <label class="cx3d-rig-select"><span>MOVE</span><select id="cxCameraMoveMode" class="cx-select" title="Camera move"><option value="orbitLeft">Orbit Left</option><option value="orbitRight">Orbit Right</option><option value="orbitUp">Orbit Up</option><option value="orbitDown">Orbit Down</option><option value="truckLeft">Truck Left</option><option value="truckRight">Truck Right</option><option value="forward">Push In</option><option value="backward">Pull Out</option><option value="panLeft">Pan Left</option><option value="panRight">Pan Right</option><option value="tiltUp">Tilt Up</option><option value="tiltDown">Tilt Down</option></select></label>
+      <div class="cx3d-lens-control"><span>LENS</span><input id="cxCameraLens" class="cx-input" type="number" min="1" max="500" value="24" title="Camera focal length in millimeters"><div class="cx3d-lens-chips" aria-label="Lens presets"><button type="button" data-camera-lens="18">18</button><button type="button" class="active" data-camera-lens="24">24</button><button type="button" data-camera-lens="35">35</button><button type="button" data-camera-lens="50">50</button><button type="button" data-camera-lens="85">85</button></div></div>
+    </div>
+    <div class="cx3d-feature-tiles" aria-label="Camera targeting">
+      <button class="cx3d-feature-tile" id="btnCameraTarget" data-camera-action="target"><span class="cx3d-feature-icon">&#9678;</span><b>TARGET</b><small>Follow selected layer</small></button>
+      <button class="cx3d-feature-tile" id="btnCameraLookAt" data-camera-action="lookAt"><span class="cx3d-feature-icon">&#9673;</span><b>LOOK AT</b><small>Snap to selection</small></button>
+      <button class="cx3d-feature-tile" id="btnCameraAutoFocus" data-camera-action="autoFocus"><span class="cx3d-feature-icon">&#10022;</span><b>AUTO FOCUS</b><small>Track focus distance</small></button>
+    </div>
+    <div class="cx3d-shot-row"><span>SHOT</span><div class="cx3d-segmented" role="group" aria-label="Shot size"><button class="cx3d-btn" data-camera-frame="wide">WIDE</button><button class="cx3d-btn active" data-camera-frame="medium">MEDIUM</button><button class="cx3d-btn" data-camera-frame="close">CLOSE</button></div></div>
+    <div class="cx-camera-number-grid cx-camera-number-grid-2 cx3d-move-fields"><label>DISTANCE<input id="cxCameraDistance" class="cx-input" type="number" min="1" max="100000" step="10" value="500"></label><label>FRAMES<input id="cxCameraDuration" class="cx-input" type="number" min="1" max="300" value="24"></label></div>
+    <div class="cx3d-primary-row"><button class="cx3d-btn cx3d-secondary" data-camera-action="setup"><span>&#11041;</span><b>SETUP</b><small>Create camera rig</small></button><button class="cx3d-btn cx3d-animate" data-camera-action="move"><span>&#8767;</span><b>ANIMATE</b><small>Keyframe the move</small></button><button class="cx3d-btn cx3d-secondary" id="cxCameraDOF" data-camera-action="dof" aria-pressed="false"><span>&#9673;</span><b>DOF</b><small>Depth of field</small></button></div>
+    <div class="cx3d-utility-row"><button class="cx3d-btn" data-camera-action="reset">&#8635; RESET</button><button class="cx3d-btn danger" data-camera-action="unrig">&#9003; UNRIG</button></div>
+  </div>
+  <section class="cx3d-quick-tools cx3d-super" id="cx3dConvertTools">
+    <h3>2D → 3D <label class="cx3d-mesh-depth">DEPTH <input id="cxMeshExtrudeDepth" max="800" min="4" step="4" type="number" value="80" title="Extrusion depth in pixels"/></label></h3>
+    <p class="cx3d-super-hint">Select a shape or text layer for Extrude. For Path → 3D, select the Path in the timeline first.</p>
+    <div class="cx3d-quick-grid cx3d-quick-grid-2">
+      <button class="cx3d-btn" id="btn3DMeshExtrude" type="button" title="Turn the selected shape or text layer into extruded 3D"><span>&#9650;</span><b>EXTRUDE</b><small>Selected shape / text</small></button>
+      <button class="cx3d-btn" id="btn3DMeshPathExtrude" type="button" title="Select a mask or shape path, then build a 3D extruded shape from it"><span>&#10548;</span><b>PATH → 3D</b><small>Selected path only</small></button>
+    </div>
+  </section>
+  <section class="cx3d-quick-tools" id="cx3dMeshTools">
+    <h3>CREATE</h3>
+    <div class="cx3d-quick-grid">
+      <button class="cx3d-btn" id="btn3DMeshCube" type="button" title="Create an extruded 3D cube"><span>&#9635;</span><b>CUBE</b><small>Native 3D shape</small></button>
+      <button class="cx3d-btn" id="btn3DMeshPlane" type="button" title="Create a 3D plane"><span>&#9638;</span><b>PLANE</b><small>Flat 3D surface</small></button>
+      <button class="cx3d-btn" id="btn3DMeshCylinder" type="button" title="Create an extruded 3D cylinder"><span>&#9678;</span><b>CYLINDER</b><small>Native 3D shape</small></button>
+      <button class="cx3d-btn" id="btn3DMeshSphere" type="button" title="Create a rounded 3D sphere"><span>&#9679;</span><b>SPHERE</b><small>Beveled 3D disc</small></button>
+      <button class="cx3d-btn" id="btn3DMeshImport" type="button" title="Import a GLB or GLTF model into the active composition"><span>&#9651;</span><b>IMPORT GLB</b><small>GLB / GLTF file</small></button>
+      <button class="cx3d-btn" id="btn3DMeshEnvLight" type="button" title="Add an environment light for native 3D"><span>&#9728;</span><b>ENV LIGHT</b><small>Light the scene</small></button>
+    </div>
+  </section>
+  <section class="cx3d-quick-tools" id="cx3dSceneTools">
+    <h3>SCENE</h3>
+    <div class="cx3d-quick-grid">
+      <button class="cx3d-btn" id="btn3DRigLight" type="button" title="Add a 3-point orbit light rig"><span>&#9728;</span><b>LIGHT RIG</b><small>3-point lights</small></button>
+      <button class="cx3d-btn" id="btn3DRigFloor" type="button" title="Add a 3D ground plane"><span>&#9638;</span><b>FLOOR</b><small>Ground &amp; shadows</small></button>
+      <button class="cx3d-btn" id="btn3DRigStacker" type="button" title="Spread selected layers in Z depth"><span>&#9636;</span><b>STACK</b><small>Z-depth layers</small></button>
+    </div>
+  </section>
+  <div class="cx-feature-status cx3d-footer-status" id="cxCameraStatus" role="status" aria-live="polite">Open a comp, then Setup the camera rig — or extrude a shape.</div>
+</div>
+
+
+</div>
+<div class="hint" id="advancedHint" role="status" aria-live="polite">Advanced tools ready.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MOTION LAB PANEL — Curve Lab, Orbit Bounce
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="app-panel" id="panel-pro">
+<div class="tools-scroll">
+
+<div class="tool-section cx-graph-card" id="cxGraphCardWrap"><div id="cxFlow20"></div></div>
+
+<div class="tool-section cx-graph-card cx-flex-bounce-card" id="cxFlexBounceCard">
+  <div class="fx20-topbar">
+    <div class="fx20-titleblock">
+      <div class="fx20-title"><span class="fx20-kicker"></span><strong>ORBIT BOUNCE</strong></div>
+      <div class="fx20-subtitle">Spring after the last keyframe — Amplitude / Frequency / Damping</div>
+    </div>
+  </div>
+  <div class="fxb-canvas-wrap"><canvas id="fxbCanvas" width="500" height="140" aria-label="Bounce curve preview"></canvas></div>
+  <div class="fxb-sliders">
+    <label class="fxb-row"><span>AMPLITUDE</span><input id="fxbAmp" type="range" min="0" max="40" step="1" value="20"/><b id="fxbAmpVal">20</b></label>
+    <label class="fxb-row"><span>FREQUENCY</span><input id="fxbFreq" type="range" min="0" max="20" step="0.1" value="2"/><b id="fxbFreqVal">2</b></label>
+    <label class="fxb-row"><span>DAMPING</span><input id="fxbDamp" type="range" min="0" max="15" step="0.1" value="4"/><b id="fxbDampVal">4</b></label>
+  </div>
+  <div class="fx20-actions">
+    <button type="button" id="fxbReset">RESET</button>
+    <button type="button" id="fxbRemove">REMOVE</button>
+  </div>
+  <button type="button" id="fxbApply" class="fx20-apply">✓ APPLY BOUNCE</button>
+  <div class="fx20-status" id="fxbStatus">Select a keyframed Timeline property, then Apply.</div>
+</div>
+
+</div>
+</div>
+
+<div class="app-panel" id="panel-tracker">
+<div class="tracker-scroll">
+<div class="tracker-status-card">
+<div class="tracker-dot nocomp" id="trackerDot"></div>
+<div class="tracker-status-text-wrap">
+<div class="tracker-status-text" id="trackerStatusText">Connecting…</div>
+<div class="tracker-comp-name" id="trackerCompName"></div>
+</div>
+</div>
+<div class="tracker-ring-card">
+<div class="tracker-streak-time" id="trackerStreakTime">00:00</div>
+<div class="tracker-streak-label">of <span id="trackerIntervalLabel">20:00</span> work streak</div>
+<div class="tracker-progress-track"><div class="tracker-progress-fill" id="trackerProgressFill"></div></div>
+</div>
+<div class="tracker-break-banner" id="trackerBreakBanner" style="display:none;">
+<div class="tracker-break-msg">👁 20 min continuous work — time for an eye break</div>
+<button class="tool-btn wide primary" id="btnStartBreak">Start 20s Eye Break</button>
+<button class="tool-btn wide" id="btnSkipBreak" style="margin-top:4px;">⏩ Skip Break</button>
+</div>
+<div class="tracker-total-row">
+<div class="tracker-total-box">
+<div class="tracker-total-label">TODAY</div>
+<div class="tracker-total-value" id="trackerTodayTotal">00:00:00</div>
+</div>
+<button class="tool-btn" id="btnResetToday">Reset Today</button>
+</div>
+<div class="tool-section">
+<div class="tool-section-head">
+<div class="tool-section-title">📅 HISTORY</div>
+</div>
+<div class="tracker-total-row" style="margin-bottom:8px;">
+<div class="tracker-total-box">
+<div class="tracker-total-label">LAST 7 DAYS</div>
+<div class="tracker-total-value" id="trackerWeekTotal">00:00:00</div>
+</div>
+</div>
+<div class="studio-list" id="trackerHistoryList">
+<div class="studio-empty">No past days tracked yet — history fills in once today rolls over to tomorrow.</div>
+</div>
+</div>
+<div class="tool-section tracker-workspace">
+<div class="tool-section-head"><div class="tool-section-title">✅ TODO & NOTES</div><span class="tracker-word-count" id="trackerNoteCount">0 / 500 words</span></div>
+<div class="tracker-todo-add"><input class="counter-input" id="trackerTodoInput" maxlength="160" placeholder="Add a task and press Enter…"/><button class="tool-btn primary" id="btnTrackerTodoAdd">Add</button></div>
+<div class="tracker-todo-list" id="trackerTodoList"></div>
+<textarea class="studio-textarea tracker-notes" id="trackerNotes" maxlength="3500" rows="5" placeholder="Project notes — saved locally in this panel (up to 500 words)."></textarea>
+<div class="hint">Tasks and notes are stored locally and stay available after restarting the panel.</div>
+</div>
+<div class="tool-section">
+<div class="tool-section-title">⚙ SETTINGS</div>
+<div class="tracker-setting-row">
+<span class="tracker-setting-label">Work interval (min)</span>
+<input class="counter-input small" id="settingWorkInterval" max="120" min="1" type="number" value="20"/>
+</div>
+<div class="tracker-setting-row">
+<span class="tracker-setting-label">Idle threshold (sec)</span>
+<input class="counter-input small" id="settingIdleThreshold" max="300" min="10" type="number" value="45"/>
+</div>
+<div class="tracker-note">Idle threshold = how long without activity before the timer pauses.</div>
+</div>
+</div>
+</div>
+<div class="app-panel" id="panel-colors">
+<div class="tools-scroll">
+  <div class="cx-colors-legacy">
+  <div class="cx-color-head">
+  <strong>CUSTOM COLORS</strong>
+  <span>Pick, apply and organize colors for your comp</span>
+  </div>
+  <!-- Color Picker -->
+  <div class="cx-color-card">
+  <div class="cx-color-card-head">
+  <span class="cx-color-card-icon" aria-hidden="true">🎨</span>
+  <div class="cx-color-card-title">COLOR PICKER</div>
+  <button class="tool-help" data-obs type="button" title="Pick a color from the selected layer or choose manually. Apply to selected layers." aria-label="About the Color Picker">?</button>
+  </div>
+  <div class="cx-color-pick-row">
+  <input id="colorPickerMain" type="color" value="#ff6600" title="Pick a color"/>
+  <input class="counter-input cx-color-hex" id="colorHexInput" placeholder="#ff6600" type="text" value="#ff6600" spellcheck="false"/>
+  <button class="cx-eyedropper-btn cx-btn-icon" data-obs id="btnScreenEyedropper" type="button" title="Click, then pick a pixel from any image, video, Composition or screen area">⌾</button>
+  <button class="cx-btn" data-obs id="btnColorPickFromLayer" type="button" title="Pick color from selected layer's fill/solid">Pick</button>
+  </div>
+  <div class="cx-eyedropper-status" id="colorEyedropperStatus">⌾ Screen picker ready · click anywhere to sample</div>
+  <!-- RGB & HSL inputs -->
+  <div class="cx-color-fields">
+  <div class="cx-color-fields-row">
+  <label><span>R</span><input class="counter-input" id="colorRInput" type="number" min="0" max="255" placeholder="R"/></label>
+  <label><span>G</span><input class="counter-input" id="colorGInput" type="number" min="0" max="255" placeholder="G"/></label>
+  <label><span>B</span><input class="counter-input" id="colorBInput" type="number" min="0" max="255" placeholder="B"/></label>
+  </div>
+  <div class="cx-color-fields-row">
+  <label><span>H</span><input class="counter-input" id="colorHInput" type="number" min="0" max="360" placeholder="H"/></label>
+  <label><span>S%</span><input class="counter-input" id="colorSInput" type="number" min="0" max="100" placeholder="S%"/></label>
+  <label><span>L%</span><input class="counter-input" id="colorLInput" type="number" min="0" max="100" placeholder="L%"/></label>
+  </div>
+  </div>
+  <div class="cx-color-actions">
+  <button class="cx-btn cx-btn-primary" data-obs id="btnColorApplyFill" type="button">Apply Fill</button>
+  <button class="cx-btn" data-obs id="btnColorApplySolid" type="button">Apply to Solid</button>
+  <button class="cx-btn" data-obs id="btnColorSaveSwatch" type="button">Save Swatch</button>
+  </div>
+  </div>
+  <!-- Recent Colors -->
+  <div class="cx-color-card">
+  <div class="cx-color-card-head">
+  <span class="cx-color-card-icon" aria-hidden="true">⏱</span>
+  <div class="cx-color-card-title">RECENT COLORS</div>
+  <button class="cx-color-clear" data-obs id="btnClearRecent" type="button">CLEAR</button>
+  </div>
+  <div class="swatch-grid" id="recentColorGrid">
+  <div class="studio-empty">No recent colors.</div>
+  </div>
+  </div>
+  <!-- Swatches -->
+  <div class="cx-color-card">
+  <div class="cx-color-card-head">
+  <span class="cx-color-card-icon" aria-hidden="true">🔖</span>
+  <div class="cx-color-card-title">SWATCHES</div>
+  <button class="cx-color-clear" data-obs id="btnClearSwatches" type="button">CLEAR</button>
+  <button class="tool-help" data-obs type="button" title="Saved colors. Click to load/copy, double-click to apply, or use the x button to remove." aria-label="About swatches">?</button>
+  </div>
+  <div class="swatch-grid" id="swatchGrid">
+  <div class="studio-empty">No swatches saved yet. Pick a color and click "Save Swatch".</div>
+  </div>
+  </div>
+  <!-- My Palettes -->
+  <div class="cx-color-card">
+  <div class="cx-color-card-head">
+  <span class="cx-color-card-icon" aria-hidden="true">🎨</span>
+  <div class="cx-color-card-title">MY PALETTES</div>
+  <button class="cx-btn cx-btn-mini" data-obs id="btnNewPalette" type="button">+ New</button>
+  </div>
+  <div id="paletteList">
+  <div class="studio-empty">No custom palettes yet.</div>
+  </div>
+  </div>
+  <!-- Gradient Builder -->
+  <div class="cx-color-card cx-gradient-builder">
+  <div class="cx-color-card-head">
+  <span class="cx-color-card-icon" aria-hidden="true">🌈</span>
+  <div class="cx-color-card-title">GRADIENT BUILDER</div>
+  <button class="tool-help" data-obs type="button" title="Build a 2-stop Ramp or 4-stop gradient, preview it live, save it, and apply it to selected layers." aria-label="About the Gradient Builder">?</button>
+  </div>
+  <div class="cx-gradient-preview" id="customGradientPreview"><span id="customGradientLabel">2 stops · 0°</span></div>
+  <div class="counter-row cx-gradient-stops" style="margin-bottom:6px;gap:6px;">
+  <label title="Start color"><span>1</span><input id="gradColor1" type="color" value="#EA2A2A"/><button class="cx-stop-eyedropper" data-eyedrop-target="gradColor1" type="button" title="Pick Stop 1 from the screen">⌾</button></label>
+  <label title="Second color"><span>2</span><input id="gradColor2" type="color" value="#D1511A"/><button class="cx-stop-eyedropper" data-eyedrop-target="gradColor2" type="button" title="Pick Stop 2 from the screen">⌾</button></label>
+  <label class="grad-extra-stop" title="Third color"><span>3</span><input id="gradColor3" type="color" value="#7C3AED"/><button class="cx-stop-eyedropper" data-eyedrop-target="gradColor3" type="button" title="Pick Stop 3 from the screen">⌾</button></label>
+  <label class="grad-extra-stop" title="Fourth color"><span>4</span><input id="gradColor4" type="color" value="#22D3EE"/><button class="cx-stop-eyedropper" data-eyedrop-target="gradColor4" type="button" title="Pick Stop 4 from the screen">⌾</button></label>
+  </div>
+  <div class="counter-row cx-color-grad-options" style="margin-bottom:6px;">
+  <select class="counter-input" id="gradStopMode">
+  <option value="2">2 Stops</option>
+  <option value="4">4 Stops</option>
+  </select>
+  <select class="counter-input" id="gradType">
+  <option value="1">Linear</option>
+  <option value="2">Radial</option>
+  </select>
+  <input class="counter-input" id="gradAngle" type="number" min="-360" max="360" placeholder="Angle" value="0" title="Gradient angle"/>
+  </div>
+  <div class="cx-color-actions" style="margin-bottom:6px;">
+  <button class="cx-btn" data-obs id="btnGradientSwap" type="button" title="Reverse the color order">⇄ Swap</button>
+  <button class="cx-btn" data-obs id="btnGradientHarmony" type="button" title="Generate a balanced gradient from the current first color">✦ Harmony</button>
+  <button class="cx-btn" data-obs id="btnSaveGradient" type="button" title="Save this gradient variant">＋ Save</button>
+  </div>
+  <button class="cx-btn cx-btn-primary cx-btn-wide" data-obs id="btnApplyCustomGrad" type="button">Apply Gradient</button>
+  <div class="cx-gradient-saved-head"><span>SAVED VARIANTS</span><button class="cx-btn cx-btn-mini" data-obs id="btnScanColorDuplicates" type="button" title="Scan saved and built-in colors/gradients for duplicates">Scan duplicates</button></div>
+  <div class="cx-gradient-saved" id="savedGradientGrid"><div class="studio-empty">No saved gradients yet.</div></div>
+  <div class="cx-color-audit" id="colorDuplicateStatus">Duplicate scan ready.</div>
+  </div>
+  <!-- Colorplate (Existing Solid/Gradient library renders here) -->
+  <details class="cx-color-card cx-library-details" open>
+  <summary class="cx-library-head">
+  <span class="cx-color-card-icon" aria-hidden="true">📚</span>
+  <span class="cx-color-card-title">COLOR LIBRARY</span>
+  <span class="cx-library-sub">SaaS · Marketing · Warm · 2-Color · 4-Color</span>
+  <span class="cx-library-caret" aria-hidden="true">▾</span>
+  </summary>
+  <div class="cx-library-body">
+  <div id="cxColorPlate"></div>
+  </div>
+  </details>
+  </div><!--/cx-colors-legacy-->
+</div>
+</div>
+<div class="app-panel" id="panel-comps">
+<div id="compositionLibraryView" aria-label="Composition Library">
+  <div class="compx-comp-toolbar"><input id="compxCompPath" readonly placeholder="Composition storage folder…"/><button id="btnCompxCompBrowse">Browse</button><button id="btnCompxCompRefresh" title="Refresh">↻</button><button class="primary" id="btnCompxCompAdd" title="Save active After Effects composition to library">+ Add to Comp</button><button id="btnCompxCompTheme" title="Switch Comp Saver theme" aria-label="Switch Comp Saver theme">Theme</button></div>
+  <div class="compx-comp-filter"><input id="compxCompSearch" placeholder="Search compositions…" type="text"/><label>Card size <input id="compxCompSize" min="90" max="220" step="5" type="range" value="140"/></label><span id="compxCompCount">0</span></div>
+  <div class="compx-comp-categories" id="compxCompCategories"></div>
+  <div class="compx-comp-bulk"><span id="compxCompSelected">0 selected</span><input id="compxCompCategoryInput" placeholder="Category name…" type="text"/><button class="primary" id="btnCompxCompApplyCategory">Apply</button><button class="compx-bulk-delete" id="btnCompxCompBulkDelete" title="Delete selected compositions">⌫</button><button id="btnCompxCompClearSelection">Clear</button></div>
+  <div class="compx-comp-grid" id="compxCompGrid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     COMP SAVER — Add to Library Modal
+     Lives inside #panel-comps so theme vars apply
+     ═══════════════════════════════════════════ -->
+<div class="compx-add-backdrop" id="compxAddModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="compxAddModalTitle">
+  <div class="compx-add-box">
+    <div class="compx-add-header">
+      <span id="compxAddModalTitle">Add to Library</span>
+      <button class="compx-add-close" id="btnCompxAddClose" title="Close" type="button">×</button>
+    </div>
+    <div class="compx-add-body">
+      <p class="compx-add-subtitle">Rename comp &amp; assign a category.</p>
+
+      <div class="compx-add-field">
+        <label class="compx-add-label" for="compxAddName">Comp Name</label>
+        <input class="compx-add-input" id="compxAddName" type="text" placeholder="comp_name" autocomplete="off"/>
+      </div>
+
+      <div class="compx-add-field">
+        <label class="compx-add-label" for="compxAddCatSelect">Existing Category</label>
+        <select class="compx-add-input compx-add-select" id="compxAddCatSelect">
+          <option value="">— No category —</option>
+        </select>
+      </div>
+
+      <div class="compx-add-field">
+        <label class="compx-add-label" for="compxAddNewCat">Or Create New Category</label>
+        <input class="compx-add-input" id="compxAddNewCat" type="text" placeholder="e.g. own-ui" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="compx-add-footer">
+      <button class="compx-add-btn-cancel" id="btnCompxAddCancel" type="button">Cancel</button>
+      <button class="compx-add-btn-confirm primary" id="btnCompxAddConfirm" type="button">
+        <span id="compxAddBtnLabel">+ Add Comp</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="app-panel" id="panel-sfx">
+<div class="asset-type-row" id="assetTypeRow" aria-label="Library types">
+<button class="shelf" data-type="mogrt" title="MOGRT"><span>MOGRT</span></button>
+<button class="shelf" data-type="textanim" title="Text Animation"><span>TEXT</span></button>
+<button class="shelf" data-type="motions" title="Motion presets"><span>MOTIONS</span></button>
+<button class="shelf active" data-type="sfx" title="Sound Effects"><span>SFX</span></button>
+<button class="shelf" data-type="ffx" title="FFX Presets"><span>FFX</span></button>
+</div>
+<div id="sfxMogrtView" aria-label="Drop SFX or MOGRT files and folders anywhere in this library">
+<div class="library-filter-strip">
+<div class="search-row"><input id="search" placeholder="Search assets…" type="text"/></div>
+<div class="tabs-row" id="tabsRow">
+<button class="tab active" data-view="all">All Files</button>
+<button class="tab" data-view="favorites" title="Show favorite-marked assets">Favorites</button>
+</div>
+<div class="controls-group">
+<select class="select-control" id="sortBy">
+<option value="name">Sort: Name</option>
+<option value="duration">Sort: Duration</option>
+</select>
+</div>
+</div>
+<div class="lib-toolbar">
+<div class="lib-status-bar">
+<span class="lib-item-count" id="libItemCount">0 items</span>
+<div class="lib-status-actions">
+<div class="lib-view-toggle" title="View mode">
+<button class="lib-view-btn active" id="btnGridView" title="Grid view">▦</button>
+<button class="lib-view-btn" id="btnListView" title="List view">☰</button>
+</div>
+<button class="lib-status-btn" id="btnRefreshView" title="Refresh library">↻</button>
+</div>
+</div>
+<div class="library-action-strip">
+<div class="actions-row">
+<button class="btn primary compact-icon-btn" id="btnAddFiles" title="Add files · or drag and drop into the library">+</button>
+<button class="btn compact-icon-btn" id="btnAddFolder" title="Import folder · or drag and drop into the library">F</button>
+<button class="btn compact-icon-btn" id="btnRemoveMarkedSfx" title="Remove marked files or marked folders from the library">✕★</button>
+<button class="btn compact-icon-btn" id="btnCheckMissing" title="Check missing files">!</button>
+<button class="btn compact-icon-btn" id="btnRelinkLibrary" title="Relink missing files">L</button>
+<div class="mixer-wrap mixer-top-wrap">
+<button class="btn mixer-toggle" id="btnMixer" title="Volume" aria-label="Volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"></path><path d="M16 9c1.3 1.5 1.3 4.5 0 6M19 6c3 3.2 3 8.8 0 12"></path></svg></button>
+<button class="btn mixer-toggle" id="btnPitch" title="Pitch" aria-label="Pitch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c3-7 5 3 8-5s5 3 8-5"></path><path d="M18 4v5M16 6h4"></path></svg></button>
+<div class="mixer-popover" id="mixerPopover" style="display:none;">
+<div class="slider-block" id="volumeBlock">
+<div class="slider-label"><span>VOLUME</span><span class="val" id="volumeVal">100%</span></div>
+<input id="volume" max="200" min="0" step="1" type="range" value="100"/>
+</div>
+<div class="slider-block" id="pitchBlock">
+<div class="slider-label"><span>PITCH</span><span class="val" id="pitchVal">0 st</span></div>
+<input id="pitch" max="12" min="-12" step="1" type="range" value="0"/>
+</div>
+</div>
+</div>
+
+<div hidden aria-hidden="true">
+<button id="btnBatchMode" type="button"></button><button id="btnReset" type="button"></button>
+<button id="btnBackupLibrary" type="button"></button><button id="btnRestoreLibrary" type="button"></button>
+<span id="mogrtCacheInfo"></span><button id="btnClearMogrtCache" type="button"></button>
+<button id="btnCopyDiagnostics" type="button"></button><span id="diagnosticSummary"></span>
+</div>
+
+</div>
+<div class="card-size-row" title="Resize the sound cards">
+<span class="card-size-icon">▪</span>
+<input id="cardSizeSlider" max="220" min="90" step="5" type="range" value="130"/>
+<span class="card-size-icon big">▪</span>
+</div>
+</div>
+</div><!-- /lib-toolbar -->
+<div class="collections-row" id="collectionsRow" style="display:none;">
+<!-- collection chips injected by main.js -->
+</div>
+<div class="batch-bar" id="batchBar" style="display:none;">
+<span id="batchCount">0 selected</span>
+<div class="batch-actions">
+<button class="btn small" id="batchColor">🎨 Color</button>
+<button class="btn small" id="batchCollection">🗂 Add to…</button>
+<button class="btn small" id="batchDelete">✕ Delete</button>
+</div>
+</div>
+<div class="main-layout" id="mainLayout">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<span class="title">LIBRARY</span>
+</div>
+<div class="lib-sidebar-subhead">FOLDERS</div>
+<div class="folder-tree" id="folderTree">
+<!-- tree view injected by main.js -->
+</div>
+<div class="lib-sidebar-footer"><span id="libSidebarFooter">0 items</span></div>
+</div>
+<div class="content-view">
+<div class="toolbar">
+<div class="breadcrumb-container" style="display:flex; align-items:center; gap:6px; min-width:0;">
+<button class="btn-collapse" id="btnCollapse" style="font-size:12px; padding:2px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); color:var(--text-dim); cursor:pointer;" title="Toggle Sidebar">&#9776;</button>
+<div class="breadcrumb" id="breadcrumb">All</div>
+</div>
+
+</div>
+<div class="library grid" id="library">
+<!-- rows/cards injected by main.js -->
+</div>
+</div>
+</div>
+<div class="transport">
+<div class="transport-main">
+<div class="now-playing" id="nowPlaying"><span class="label">Selected:</span> —</div>
+<div class="hint" id="playHint" style="margin-top:0;margin-bottom:0;">Click a sound to play · click again to stop</div>
+</div>
+<div class="tag-editor-row" id="tagEditorRow" style="display:none!important;"><input id="tagEditor" type="hidden"/></div>
+<div class="insert-row">
+
+</div>
+<div class="hint" id="hostHint">Connecting to host…</div>
+</div>
+</div><!-- /sfxMogrtView -->
+<div id="textAnimView" style="display:none;">
+<div class="cx-textlib-tabs" id="textLibraryTabs" role="tablist" aria-label="Text library mode">
+<button class="active" type="button" data-text-library-tab="styles">PREMIUM STYLES</button>
+<button type="button" data-text-library-tab="textfx">TEXT FX <em>125</em></button>
+</div>
+<div data-text-library-panel="styles">
+<div class="tool-section tanim-section tanim-mogrt-shell" style="margin:10px;">
+<div class="tool-section-head">
+<div class="tool-section-title">TEXT ANIMATION STYLES</div>
+<span class="tool-help" title="Premium text styles with built-in visual preview cards. Click a card to apply to the selected text layer. If no text layer is selected, CompX creates a demo text layer and applies the style.">?</span>
+</div>
+<div class="counter-row tanim-toolbar-row">
+<input class="counter-input" id="tanimSearch" placeholder="Search premium styles…" type="text"/>
+<select class="counter-select" id="tanimCategory" title="Filter text animations by motion family"><option value="all">All categories</option></select>
+</div>
+<div class="hint" id="tanimResultCount" role="status" aria-live="polite"></div>
+<div class="hint tanim-apply-hint">Click any card to apply. If no text layer is selected, a demo text layer will be created automatically.</div>
+<div class="library grid tanim-card-grid" id="tanimList">
+<div class="studio-empty">Loading text styles…</div>
+</div>
+</div>
+</div>
+<div class="cx-textfx-panel" data-text-library-panel="textfx" hidden>
+<div class="tool-section cx-textfx-shell">
+<div class="tool-section-head"><div><div class="tool-section-title">TEXT FX ANIMATION PACK</div><div class="cx-textfx-subtitle">Select IN or OUT, then apply only that animation</div></div><span class="tool-help" title="Select IN or OUT, choose a target level and preset, then apply only the selected direction to text layers.">?</span></div>
+<div class="cx-textfx-gallery-head" id="textFxPreview">
+<div class="cx-textfx-selected"><strong id="textFxPreviewName">Select a Text FX preset</strong><small id="textFxPreviewMeta">Simple · Characters</small></div>
+<div class="cx-textfx-direction" id="textFxDirection" role="group" aria-label="Text animation direction"><button class="active" type="button" data-text-fx-direction="IN">IN ANIMATION</button><button type="button" data-text-fx-direction="OUT">OUT ANIMATION</button></div>
+<button class="cx-textfx-replay" id="btnTextFxReplay" type="button" title="Replay visible GIF previews">&#9654; REPLAY</button>
+</div>
+<div class="cx-textfx-targets" id="textFxTargets" role="group" aria-label="Text animation target">
+<button class="active" type="button" data-text-fx-target="Characters">CHARACTERS</button>
+<button type="button" data-text-fx-target="Words">WORDS</button>
+<button type="button" data-text-fx-target="Lines">LINES</button>
+</div>
+<div class="cx-textfx-toolbar">
+<input class="counter-input" id="textFxSearch" placeholder="Search 125 animations..." type="text"/>
+<div class="cx-textfx-categories" id="textFxCategories">
+<button class="active" type="button" data-text-fx-category="all">ALL</button>
+<button type="button" data-text-fx-category="simple">SIMPLE</button>
+<button type="button" data-text-fx-category="modern">MODERN</button>
+<button type="button" data-text-fx-category="around">AROUND</button>
+<button type="button" data-text-fx-category="elastic">ELASTIC</button>
+<button type="button" data-text-fx-category="funny">FUNNY</button>
+<button type="button" data-text-fx-category="favorites">&#9733; FAV</button>
+</div>
+</div>
+<div class="cx-textfx-count" id="textFxCount" role="status" aria-live="polite">Scanning bundled Text FX...</div>
+<div class="cx-textfx-grid" id="textFxGrid"><div class="studio-empty">Loading Text FX preview cards...</div></div>
+<div class="cx-textfx-applybar">
+<label><input id="textFxKeepOriginal" type="checkbox"/> Keep original</label>
+<button class="primary" type="button" id="btnTextFxApplySelected">APPLY SELECTED IN</button>
+</div>
+<div class="cx-textfx-status" id="textFxStatus"><i></i><span>Select a text layer and an animation preset.</span></div>
+</div>
+</div>
+</div><!-- /textAnimView -->
+<div id="ffxPresetView" style="display:none;">
+<div class="tool-section" style="margin:10px;">
+<div class="tool-section-head">
+<div class="tool-section-title">FFX PRESET LIBRARY</div>
+<span class="tool-help" title="Browse .ffx animation presets and apply them to the selected layer(s) in After Effects. Add files exported from Effects &amp; Presets, or point at a folder of presets. After Effects only.">?</span>
+</div>
+<div class="counter-row">
+<input class="counter-input" id="ffxSearch" placeholder="Search presets…" type="text"/>
+</div>
+<div class="tool-grid tool-grid-2">
+<button class="tool-btn" id="btnFfxAdd">+ Add Presets</button>
+<button class="tool-btn" id="btnFfxAddFolder">📁 Import Folder</button>
+</div>
+<div class="studio-list" id="ffxList">
+<div class="studio-empty">No presets yet — add some .ffx files or a folder.</div>
+</div>
+<button class="tool-btn wide primary" id="btnFfxApply" title="Apply the selected preset to every selected layer">Apply to Selected Layers</button>
+</div>
+</div><!-- /ffxPresetView -->
+<div id="motionPresetView" style="display:none;">
+<div class="tool-section cx-textfx-shell">
+<div class="tool-section-head"><div><div class="tool-section-title">MOTION PRESETS</div><div class="cx-textfx-subtitle">Click a GIF, then insert the AEP as a collapsed precomp</div></div><span class="tool-help" title="These are ready-made After Effects projects. Open a composition, then click INSERT. The motion lands at the playhead with Collapse Transformations on, inside a CompX Motions project folder.">?</span></div>
+<div class="cx-textfx-gallery-head" id="motionPreview">
+<div class="cx-textfx-selected"><strong id="motionPreviewName">Select a motion</strong><small id="motionPreviewMeta">95 presets · click to insert</small></div>
+<button class="cx-textfx-replay" id="btnMotionReplay" type="button" title="Replay visible GIF previews">&#9654; REPLAY</button>
+</div>
+<div class="cx-textfx-toolbar cx-motion-toolbar">
+<input class="counter-input" id="motionSearch" placeholder="Search 95 motions..." type="text"/>
+<div class="cx-textfx-categories cx-motion-categories" id="motionCategories"></div>
+</div>
+<div class="cx-textfx-count" id="motionCount" role="status" aria-live="polite">Scanning motion presets...</div>
+<div class="cx-textfx-grid" id="motionGrid"><div class="studio-empty">Loading motion preview cards...</div></div>
+<div class="cx-textfx-applybar">
+<span class="cx-motion-drop-hint">Drop an .aep here to insert it</span>
+<button class="primary" type="button" id="btnMotionApplySelected">INSERT SELECTED</button>
+</div>
+<div class="cx-textfx-status" id="motionStatus"><i></i><span>Open a composition, then insert a motion.</span></div>
+</div>
+</div><!-- /motionPresetView -->
+<input accept=".mp3,.wav,.aiff,.aif,.m4a,.ogg" id="fileInputFiles" multiple="" type="file"/>
+<input directory="" id="fileInputFolder" multiple="" type="file" webkitdirectory=""/>
+<input accept=".json,application/json" id="fileInputLibraryBackup" style="display:none;" type="file"/>
+<input directory="" id="fileInputRelinkFolder" multiple="" style="display:none;" type="file" webkitdirectory=""/>
+<input accept=".srt" id="fileInputSRT" style="display:none;" type="file"/>
+<input accept=".ffx" id="fileInputFfx" multiple="" style="display:none;" type="file"/>
+<input directory="" id="fileInputFfxFolder" multiple="" style="display:none;" type="file" webkitdirectory=""/>
+<input accept=".srt" id="fileInputCaptionSRT" style="display:none;" type="file"/>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div><!-- /panel-sfx -->
+</div><!-- /cx-app-main -->
+<!-- Custom Modal Popup (must live outside .app-panel so it stays visible on every tab) -->
+<div class="modal-backdrop" id="lgSettingsModal" style="display:none;">
+<div class="modal-box lg-settings-box" id="lgSettingsBox">
+<div class="modal-header lg-settings-header">
+  <span class="lg-settings-header-icon" aria-hidden="true">⚙</span>
+  <span class="lg-settings-header-title">Plugin Settings</span>
+</div>
+<div class="modal-body lg-settings-body">
+  <div class="lg-plugin-card">
+    <div class="lg-plugin-card-top">
+      <div class="lg-plugin-card-icon" aria-hidden="true">✨</div>
+      <div class="lg-plugin-card-heading">
+        <div class="lg-plugin-card-name">Native Plugin</div>
+        <div class="lg-plugin-card-tags">
+          <span class="lg-plugin-chip">Liquid Glass</span>
+          <span class="lg-plugin-chip">Deep Glow</span>
+          <span class="lg-plugin-chip">Shadow Studio</span>
+        </div>
+      </div>
+      <span class="tool-help lg-plugin-help" title="One-time install copies the real After Effects effect into your Plug-ins folder. After that, Apply adds it to the selected layer with full native, animatable, GPU-speed controls in AE's own Effect Controls panel.">?</span>
+    </div>
+    <p class="lg-plugin-card-desc">Install once into your After Effects Plug-ins folder. Windows gets the .aex pack; macOS installs Liquid Glass, Deep Glow 2 and Shadow Studio 3 from the bundled .plugin. Restart AE, then use the Tools-tab buttons on a selected layer.</p>
+    <div class="lg-native-pack" id="lgNativePack">
+      <div class="lg-native-row" data-native-plugin="liquidglass"><b>Liquid Glass</b><span class="lg-plugin-chip">Win + Mac</span><span class="lg-status" id="npStatus-liquidglass">Checking…</span><button class="tool-btn primary lg-action-btn" type="button" data-np-install="liquidglass">Install</button><button class="tool-btn danger lg-action-btn" type="button" data-np-uninstall="liquidglass" hidden>Uninstall</button></div>
+      <div class="lg-native-row" data-native-plugin="deepglow"><b>Deep Glow</b><span class="lg-status" id="npStatus-deepglow">Checking…</span><button class="tool-btn primary lg-action-btn" type="button" data-np-install="deepglow">Install</button><button class="tool-btn danger lg-action-btn" type="button" data-np-uninstall="deepglow" hidden>Uninstall</button></div>
+      <div class="lg-native-row" data-native-plugin="deepglow2"><b>Deep Glow 2</b><span class="lg-plugin-chip">Win + Mac</span><span class="lg-status" id="npStatus-deepglow2">Checking…</span><button class="tool-btn primary lg-action-btn" type="button" data-np-install="deepglow2">Install</button><button class="tool-btn danger lg-action-btn" type="button" data-np-uninstall="deepglow2" hidden>Uninstall</button></div>
+      <div class="lg-native-row" data-native-plugin="shadow2"><b>Shadow Studio 2</b><span class="lg-status" id="npStatus-shadow2">Checking…</span><button class="tool-btn primary lg-action-btn" type="button" data-np-install="shadow2">Install</button><button class="tool-btn danger lg-action-btn" type="button" data-np-uninstall="shadow2" hidden>Uninstall</button></div>
+      <div class="lg-native-row" data-native-plugin="shadow3"><b>Shadow Studio 3</b><span class="lg-plugin-chip">Win + Mac</span><span class="lg-status" id="npStatus-shadow3">Checking…</span><button class="tool-btn primary lg-action-btn" type="button" data-np-install="shadow3">Install</button><button class="tool-btn danger lg-action-btn" type="button" data-np-uninstall="shadow3" hidden>Uninstall</button></div>
+      <button class="tool-btn primary lg-action-btn" id="btnNpInstallAll" type="button">Install All Native Plugins</button>
+    </div>
+    <div class="hint lg-settings-hint">One-time step — copies the effect into your After Effects Plug-ins folder. Restart After Effects after installing.</div>
+  </div>
+  <div class="lg-plugin-card" id="stgCardFonts">
+    <div class="lg-plugin-card-top">
+      <div class="lg-plugin-card-icon" aria-hidden="true">🔤</div>
+      <div class="lg-plugin-card-heading">
+        <div class="lg-plugin-card-name">Bangla Fonts</div>
+        <div class="lg-plugin-card-tags"><span class="lg-plugin-chip">Auto Captions</span><span class="lg-plugin-chip">One-time</span></div>
+      </div>
+    </div>
+    <p class="lg-plugin-card-desc">Install the bundled Bangla caption fonts once so they appear in After Effects' font menus. The live preview works from the extension without installing.</p>
+    <button class="tool-btn primary lg-action-btn" data-obs id="btnInstallBanglaFonts" type="button">⬇ Install Bangla Fonts</button>
+    <div class="hint" id="banglaFontStatus">Fonts are used by the Auto Captions live preview. Install once to use them inside After Effects.</div>
+  </div>
+  <div class="lg-plugin-card" id="stgCardAutoCaptions">
+    <div class="lg-plugin-card-top">
+      <div class="lg-plugin-card-icon" aria-hidden="true">🎙️</div>
+      <div class="lg-plugin-card-heading">
+        <div class="lg-plugin-card-name">Auto Captions Runtime</div>
+        <div class="lg-plugin-card-tags"><span class="lg-plugin-chip">Whisper</span><span class="lg-plugin-chip">Local</span></div>
+      </div>
+    </div>
+    <div id="flexRuntimeConsent">
+      <p class="lg-plugin-card-desc" id="flexRuntimeConsentText">CompX will download a private local transcription runtime. No system software or PATH changes.</p>
+      <progress id="flexRuntimeProgress" max="100" value="0"></progress>
+      <div class="lg-plugin-card-actions">
+        <button class="tool-btn primary lg-action-btn" data-obs id="btnFlexRuntimeAllow" type="button">⬇ Download &amp; Continue</button>
+        <button class="tool-btn ghost lg-action-btn" id="btnFlexRuntimeCancel" type="button">Not Now</button>
+      </div>
+    </div>
+  </div>
+  <div class="lg-plugin-card" id="stgCardBgRemover">
+    <div class="lg-plugin-card-top">
+      <div class="lg-plugin-card-icon" aria-hidden="true">🖼️</div>
+      <div class="lg-plugin-card-heading">
+        <div class="lg-plugin-card-name">Background Remover Model</div>
+        <div class="lg-plugin-card-tags"><span class="lg-plugin-chip">U²-Net</span><span class="lg-plugin-chip">Local</span></div>
+      </div>
+    </div>
+    <div id="aiBgRuntimeConsent">
+      <p class="lg-plugin-card-desc">CompX will download the verified U²-Net model once (about 168 MB). Images stay on this computer and there is no per-image cost.</p>
+      <progress id="aiBgRuntimeProgress" max="100" value="0"></progress>
+      <div class="lg-plugin-card-actions">
+        <button class="tool-btn primary lg-action-btn" data-obs id="btnAiBgRuntimeAllow" type="button">⬇ Download &amp; Continue</button>
+        <button class="tool-btn ghost lg-action-btn" id="btnAiBgRuntimeCancel" type="button">Not Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+<button class="btn primary" id="lgSettingsClose">Close</button>
+</div>
+</div>
+</div>
+<!-- Custom Modal Popup (must live outside .app-panel so it stays visible on every tab) -->
+<div class="modal-backdrop cx-orbit-dialog" id="customModal" style="display:none;">
+<div class="modal-box cx-orbit-dialog-box" id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div class="modal-header" id="modalTitle">Title</div>
+<div class="modal-body">
+<div class="modal-message" id="modalMessage" style="display:none;"></div>
+<input class="modal-input" id="modalInput" placeholder="Type here..." style="display:none;" type="text"/>
+</div>
+<div class="modal-footer">
+<button class="btn" id="modalBtnCancel">Cancel</button>
+<button class="btn primary" id="modalBtnOk">OK</button>
+</div>
+</div>
+</div>
+<!-- Text Explode Popup (must live outside .app-panel so it stays visible on every tab) -->
+<div class="modal-backdrop" id="organizeModal" style="display:none;">
+<div class="modal-box organize-box" id="organizeBox">
+<div class="modal-header">🗂 Project Organize</div>
+<div class="modal-body">
+<div class="org-optlist">
+<label class="org-check"><input checked="" id="orgOptOrganize" type="checkbox"/> Organize Assets</label>
+<label class="org-check"><input checked="" id="orgOptEmpty" type="checkbox"/> Remove Empty Folders</label>
+<label class="org-check org-check-danger"><input id="orgOptUnused" type="checkbox"/> Remove Unused Footage</label>
+<label class="org-check org-check-danger"><input id="orgOptMerge" type="checkbox"/> Merge Duplicate Solids</label>
+<label class="org-check"><input checked="" id="orgOptGroup" type="checkbox"/> Group by Type</label>
+<label class="org-check"><input checked="" id="orgOptLabels" type="checkbox"/> Color Labels</label>
+</div>
+<div class="org-divider"></div>
+<div class="org-section-label">Analysis</div>
+<div class="org-stats">
+<div class="org-stat"><span class="org-stat-label">Assets</span><span class="org-stat-value" id="orgStatAssets">—</span></div>
+<div class="org-stat"><span class="org-stat-label">Will Move</span><span class="org-stat-value" id="orgStatMove">—</span></div>
+<div class="org-stat"><span class="org-stat-label">Unused</span><span class="org-stat-value" id="orgStatUnused">—</span></div>
+<div class="org-stat"><span class="org-stat-label">Missing</span><span class="org-stat-value org-stat-warn" id="orgStatMissing">—</span></div>
+</div>
+<div class="org-stat-extra" id="orgStatExtra" style="display:none;"></div>
+<div class="org-divider"></div>
+<div class="org-preview" id="orgPreview"><div class="org-preview-empty">Press “Preview Changes” to scan the project.</div></div>
+</div>
+<div class="modal-footer">
+<button class="btn" id="btnOrgCancel">Cancel</button>
+<button class="btn" id="btnOrgPreview">Preview Changes</button>
+<button class="btn primary" id="btnOrgApply">🗂 Organize Project</button>
+</div>
+</div>
+</div>
+<div class="modal-backdrop" id="shapeModal" style="display:none;">
+<div class="modal-box shape-ctrl-box">
+<div class="modal-header">
+<span id="shapeModalTitle">✂ Trim Paths</span>
+<button id="btnShapeClose" title="Close" type="button">×</button>
+</div>
+<div class="modal-body shape-ctrl-body">
+<div class="shape-tabs">
+<button class="shape-tab active" data-shape-tab="trim" type="button">✂ Trim</button>
+<button class="shape-tab" data-shape-tab="taper" type="button">📏 Taper</button>
+<button class="shape-tab" data-shape-tab="dashes" type="button">┊ Dashes</button>
+</div>
+<div class="shape-panel active" data-shape-panel="trim">
+<div class="shape-preset-label">Quick Presets</div>
+<div class="shape-preset-row">
+<button class="tool-btn" data-trim-preset="writeOn" type="button">Write On</button>
+<button class="tool-btn" data-trim-preset="reveal" type="button">Reveal</button>
+<button class="tool-btn" data-trim-preset="circleDraw" type="button">Circle Draw</button>
+<button class="tool-btn" data-trim-preset="reverseDraw" type="button">Reverse Draw</button>
+<button class="tool-btn" data-trim-preset="loop" type="button">Loop</button>
+</div>
+<div class="shape-custom-label">Custom</div>
+<label class="shape-slider"><span>Start</span><input id="trimStart" max="100" min="0" type="range" value="0"/><output id="trimStartV">0</output></label>
+<label class="shape-slider"><span>End</span><input id="trimEnd" max="100" min="0" type="range" value="100"/><output id="trimEndV">100</output></label>
+<label class="shape-slider"><span>Offset</span><input id="trimOffset" max="360" min="-360" type="range" value="0"/><output id="trimOffsetV">0</output></label>
+<label class="shape-check"><input checked="" id="trimAnimate" type="checkbox"/> Animate (write-on)</label>
+</div>
+<div class="shape-panel" data-shape-panel="taper">
+<div class="shape-preset-label">Presets</div>
+<div class="shape-preset-row">
+<button class="tool-btn" data-taper-preset="arrow" type="button">Arrow</button>
+<button class="tool-btn" data-taper-preset="brush" type="button">Brush</button>
+<button class="tool-btn" data-taper-preset="needle" type="button">Needle</button>
+<button class="tool-btn" data-taper-preset="speedLine" type="button">Speed Line</button>
+</div>
+<div class="shape-custom-label">Custom</div>
+<label class="shape-slider"><span>Start Width</span><input id="taperSW" max="200" min="0" type="range" value="100"/><output id="taperSWV">100</output></label>
+<label class="shape-slider"><span>End Width</span><input id="taperEW" max="200" min="0" type="range" value="0"/><output id="taperEWV">0</output></label>
+<label class="shape-slider"><span>Start Length</span><input id="taperSL" max="100" min="0" type="range" value="0"/><output id="taperSLV">0</output></label>
+<label class="shape-slider"><span>End Length</span><input id="taperEL" max="100" min="0" type="range" value="100"/><output id="taperELV">100</output></label>
+<label class="shape-slider"><span>Ease</span><input id="taperEase" max="100" min="0" type="range" value="50"/><output id="taperEaseV">50</output></label>
+<div class="shape-note">Taper needs After Effects 2020 or newer.</div>
+</div>
+<div class="shape-panel" data-shape-panel="dashes">
+<div class="shape-custom-label">Dash Pattern</div>
+<label class="shape-slider"><span>Dash</span><input id="dashDash" max="200" min="0" type="range" value="12"/><output id="dashDashV">12</output></label>
+<label class="shape-slider"><span>Gap</span><input id="dashGap" max="200" min="0" type="range" value="12"/><output id="dashGapV">12</output></label>
+<label class="shape-slider"><span>Offset</span><input id="dashOffset" max="360" min="-360" type="range" value="0"/><output id="dashOffsetV">0</output></label>
+<label class="shape-check"><input id="dashAnimate" type="checkbox"/> Animate Offset</label>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn" id="btnShapeCancel" type="button">Cancel</button>
+<button class="btn primary" id="btnShapeApply" type="button">Apply Custom</button>
+</div>
+</div>
+</div>
+<div class="modal-backdrop cx-glass-modal" id="beatSyncModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="beatSyncModalTitle">
+<div class="modal-box cx-beat-modal-box" id="beatSyncModalBox">
+<div class="modal-header" id="beatSyncModalTitle">MARK AUDIO BEATS</div>
+<div class="modal-body cx-beat-modal-body">
+<div class="cx-beat-glass-section">
+<div class="cx-beat-section-label">Audio Source</div>
+<div class="cx-beat-source-row">
+<div class="cx-beat-source-name" id="beatActiveSourceName">No audio selected</div>
+<button class="tool-btn cx-beat-detect-btn" id="btnBeatDetect" type="button">Detect</button>
+<button class="tool-btn" id="btnBeatChoose" type="button">Choose</button>
+</div>
+</div>
+<div class="cx-beat-glass-section">
+<div class="cx-beat-section-label">Settings</div>
+<div class="cx-beat-setting-row"><span id="beatSensitivityTxt">Threshold (sensitivity): 15%</span><input type="range" id="beatSensitivityVal" min="5" max="60" step="1" value="15"/></div>
+<div class="cx-beat-setting-inline"><span>Min beat spacing (sec)</span><input type="number" id="beatSpacingVal" min="0.05" max="2" step="0.05" value="0.2"/></div>
+<div class="cx-beat-setting-inline"><span>Marker target</span><select id="beatMarkerTarget" class="counter-select" style="flex:0 0 auto;width:160px;"><option value="comp">Composition</option><option value="layer">Selected layer(s)</option></select></div>
+</div>
+<button class="tool-btn wide primary cx-beat-generate-btn" id="btnGenerateBeatMarkers" type="button">Generate Beat Markers</button>
+<div class="hint" id="beatSyncStatus">Select audio in the timeline or choose a local file, then generate markers.</div>
+</div>
+<div class="modal-footer">
+<button class="btn" id="btnBeatSyncClose" type="button">Close</button>
+</div>
+</div>
+</div>
+<input accept=".mp3,.wav,.aiff,.aif,.m4a,.aac,.ogg,.mp4,.mov,.mkv,.avi,.webm,audio/*,video/*" id="beatAudioInput" style="display:none" type="file"/>
+<div class="modal-backdrop" id="numberCounterModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="numberCounterTitle">
+<div class="modal-box number-counter-box">
+<div class="modal-header"><span id="numberCounterTitle">NUMBER COUNTER</span><button type="button" id="btnNumberCounterClose" aria-label="Close Number Counter">×</button></div>
+<div class="modal-body number-counter-body">
+<p class="number-counter-description">Create an animated count, or link a layer to its progress.</p>
+<div class="counter-row">
+<input class="counter-input" id="counterFrom" aria-label="From value" title="From value" placeholder="From" type="number" value="0"/>
+<input class="counter-input" id="counterTo" aria-label="To value" title="To value" placeholder="To" type="number" value="100"/>
+</div>
+<div class="counter-row">
+<select class="counter-select" id="counterStyle" title="Number style">
+<option value="custom">Custom</option>
+<option selected="selected" value="plain">Plain</option>
+<option value="comma">Comma</option>
+<option value="currency">Currency</option>
+<option value="percent">Percent</option>
+</select>
+<select class="counter-select" id="counterLocale" title="Digit grouping locale">
+<option selected="" value="us">US</option>
+<option value="eu">EU</option>
+<option value="in">IN</option>
+<option value="none">None</option>
+</select>
+<select class="counter-select" id="counterSymbolPos" title="Symbol position (currency / percent styles)">
+<option selected="" value="prefix">P</option>
+<option value="suffix">S</option>
+</select>
+</div>
+<div class="counter-row" id="counterCustomRow" style="display:none;">
+<input class="counter-input small" id="counterDecimals" max="6" min="0" placeholder="Decimals" type="number" value="0"/>
+<input class="counter-input" id="counterPrefix" placeholder="Prefix (e.g. $)" type="text"/>
+<input class="counter-input" id="counterSuffix" placeholder="Suffix (e.g. %)" type="text"/>
+</div>
+<button class="tool-btn wide primary" id="btnCreateCounter">Create</button>
+<div class="counter-row" style="margin-top:8px;">
+<input class="counter-input small" id="counterPosStep" placeholder="px" title="Pixels the selected layer moves (Y) over the full count" type="number" value="12"/>
+<button class="tool-btn" id="btnApplyPoz" style="flex:1;" title="Link selected layer Y position to the nearest Number Counter progress">Link Position</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="explodeModal" style="display:none;">
+<div class="modal-box" id="explodeModalBox" style="max-width:300px;">
+<div class="modal-header">TEXT EXPLORER</div>
+<div class="modal-body">
+<div class="modal-message" style="display:block;margin-bottom:12px;">Select one or more text layers. Source layers remain as hidden backups.</div>
+<div class="tool-grid tool-grid-2" id="textExploderModes">
+<button class="tool-btn" data-text-explode-mode="characters" type="button">Characters</button>
+<button class="tool-btn" data-text-explode-mode="words" type="button">Words</button>
+<button class="tool-btn" data-text-explode-mode="lines" type="button">Lines</button>
+<button class="tool-btn" data-text-explode-mode="paragraphs" type="button">Paragraphs</button>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn" id="explodeModalCancel" type="button">Close</button>
+</div>
+</div>
+</div>
+
+</div>
+<div class="cx3d-confirm-backdrop" id="cx3dConfirmBackdrop" hidden>
+  <section class="cx3d-confirm-dialog" id="cx3dConfirmDialog" role="alertdialog" aria-modal="true" aria-labelledby="cx3dConfirmTitle" aria-describedby="cx3dConfirmMessage" tabindex="-1">
+    <div class="cx3d-confirm-accent" aria-hidden="true"></div>
+    <header class="cx3d-confirm-header">
+      <span class="cx3d-confirm-icon" id="cx3dConfirmIcon" aria-hidden="true">&#9888;</span>
+      <div><small>ORBIT 3D</small><h2 id="cx3dConfirmTitle">Confirm action</h2></div>
+      <button type="button" class="cx3d-confirm-close" id="cx3dConfirmClose" aria-label="Close confirmation">&#10005;</button>
+    </header>
+    <div class="cx3d-confirm-body">
+      <p id="cx3dConfirmMessage">Are you sure you want to continue?</p>
+      <div class="cx3d-confirm-impact"><span aria-hidden="true">!</span><p id="cx3dConfirmDetail">This operation changes the active composition.</p></div>
+    </div>
+    <footer class="cx3d-confirm-actions">
+      <button type="button" class="cx3d-confirm-cancel" id="cx3dConfirmCancel">CANCEL</button>
+      <button type="button" class="cx3d-confirm-accept" id="cx3dConfirmAccept">CONFIRM</button>
+    </footer>
+  </section>
+</div>
+<script src="js/CSInterface.js"></script>
+<script src="js/diagnostics.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/compx-license.js?v=65"></script>
+<script src="js/compx-loader.js?v=118"></script>
+<script src="js/license-gate.js"></script>
+<!-- main.js, advanced_features.js, graph20.js, colorplate.js, composition-library.js injected by compx-loader.js after licence verified. -->
+</body>
+</html>
