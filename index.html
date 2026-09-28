@@ -1288,6 +1288,7 @@
 <label class="sfxd-set"><span>Insert at</span><select id="sfxdInsertTarget" title="Where a segment lands when you press Insert"><option value="playhead">Playhead</option><option value="selected">Selected layer start</option><option value="start">Composition start</option></select></label>
 <label class="sfxd-set"><span>Organise</span><select id="sfxdOrganise" title="Where imported footage is filed in the project panel"><option value="folder">CompX SFX folder</option><option value="root">Project root</option></select></label>
 <label class="sfxd-set sfxd-set-check"><input type="checkbox" id="sfxdAutoPreview" checked/><span>Play on select</span></label>
+<button type="button" class="sfxd-mini" id="sfxdRestoreDropped" hidden title="Put sounds you removed from the index back into it">RESTORE REMOVED SOUNDS</button>
 </div>
 
 <div class="sfxd-body">
@@ -1305,6 +1306,7 @@
 <div class="sfxd-folders" id="sfxdFolders" role="listbox" aria-label="Indexed folders"></div>
 <div class="sfxd-lib-foot"><span id="sfxdLibFoot">0 indexed sounds</span></div>
 </aside>
+<div class="sfxd-resizer" id="sfxdResizer" role="separator" aria-orientation="vertical" aria-label="Library panel width" tabindex="0" title="Drag left or right to resize library"></div>
 
 <section class="sfxd-main">
 <div class="sfxd-searchbar">
@@ -1321,6 +1323,7 @@
 <button type="button" class="sfxd-chip" data-sfxd-filter="fav" aria-pressed="false">Favorites <em id="sfxdFavCount">0</em></button>
 </span>
 <span class="sfxd-filters-gap"></span>
+<button type="button" class="sfxd-hicon sm sfxd-labelfilter" id="sfxdLabelFilter" aria-haspopup="menu" aria-expanded="false" title="Filter by color label"><i class="sfxd-labeldot" aria-hidden="true"></i></button>
 <button type="button" class="sfxd-hicon sm" id="sfxdDensity" aria-pressed="false" title="Switch between comfortable and compact rows"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </div>
 
@@ -1404,6 +1407,7 @@
 <label class="sfxd-slider"><span>GAIN</span><input type="range" id="sfxdGain" min="-24" max="12" step="0.5" value="0" title="Level applied to the preview and to what you insert"/><b id="sfxdGainVal">0.0 dB</b></label>
 <label class="sfxd-slider"><span>PITCH</span><input type="range" id="sfxdPitch" min="-12" max="12" step="1" value="0" title="Semitones up or down, with the length held"/><b id="sfxdPitchVal">0 st</b></label>
 <label class="sfxd-slider"><span>SPEED</span><input type="range" id="sfxdSpeed" min="25" max="400" step="5" value="100" title="Playback rate — pitch follows it, the way tape does"/><b id="sfxdSpeedVal">1.00×</b></label>
+<button type="button" class="sfxd-mini" id="sfxdLockPitch" aria-pressed="false" title="Lock pitch while changing speed">LOCK PITCH</button>
 <button type="button" class="sfxd-mini" id="sfxdFxReset" title="Back to unity">RESET</button>
 </div>
 

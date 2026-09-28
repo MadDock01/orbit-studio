@@ -250,8 +250,8 @@
    never push the column wider than the panel. */
 #app #panel-sfxdesign .sfxd-body {
   display: grid !important;
-  grid-template-columns: clamp(126px, 31%, 200px) minmax(0, 1fr) !important;
-  gap: 6px !important;
+  grid-template-columns: var(--sfxd-lib-w, clamp(126px, 31%, 200px)) 6px minmax(0, 1fr) !important;
+  gap: 6px 0 !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
 }
@@ -1367,6 +1367,9 @@
     flex: 0 0 auto !important;
     min-height: 0 !important;
   }
+  #app #panel-sfxdesign .sfxd-resizer {
+    display: none !important;
+  }
   #app #panel-sfxdesign .sfxd-results {
     min-height: 116px !important;
   }
@@ -1423,4 +1426,181 @@
   #app #panel-sfxdesign .sfxd-handle::after {
     transition: none !important;
   }
+}
+
+
+/* ============================================================
+   SoundDesigner parity: context menu, colour labels, pins,
+   library drawer resize, lock pitch
+   ============================================================ */
+
+/* ---- Drawer resize bar ---- */
+#app #panel-sfxdesign .sfxd-resizer {
+  position: relative !important;
+  cursor: col-resize !important;
+  touch-action: none !important;
+  outline: none !important;
+}
+#app #panel-sfxdesign .sfxd-resizer::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 30% !important;
+  bottom: 30% !important;
+  left: 2px !important;
+  width: 2px !important;
+  border-radius: 2px !important;
+  background: var(--sx-line) !important;
+  transition: background 0.15s ease !important;
+}
+#app #panel-sfxdesign .sfxd-resizer:hover::after,
+#app #panel-sfxdesign .sfxd-resizer:focus-visible::after,
+#app #panel-sfxdesign .sfxd-resizer.is-drag::after {
+  background: var(--sx-accent) !important;
+  top: 8% !important;
+  bottom: 8% !important;
+}
+
+/* ---- Colour label dot (rows and the filter button) ---- */
+#app #panel-sfxdesign .sfxd-labeldot {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  width: 7px !important;
+  height: 7px !important;
+  margin-right: 4px !important;
+  border-radius: 50% !important;
+  background: var(--sfxd-label, transparent) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45) !important;
+  vertical-align: middle !important;
+}
+#app #panel-sfxdesign .sfxd-labelfilter .sfxd-labeldot {
+  width: 9px !important;
+  height: 9px !important;
+  margin: 0 !important;
+  border: 1px dashed var(--sx-dim) !important;
+  box-shadow: none !important;
+}
+#app #panel-sfxdesign .sfxd-labelfilter.is-on .sfxd-labeldot {
+  border: 0 !important;
+  box-shadow: 0 0 6px var(--sfxd-label) !important;
+}
+#app #panel-sfxdesign .sfxd-labelfilter.is-on {
+  border-color: var(--sfxd-label) !important;
+}
+
+#app #panel-sfxdesign .sfxd-pinmark {
+  flex: 0 0 auto !important;
+  width: 11px !important;
+  height: 11px !important;
+  margin-left: 4px !important;
+  fill: none !important;
+  stroke: var(--sx-accent) !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+/* ---- Context menu ---- */
+#app #panel-sfxdesign {
+  position: relative;
+}
+#app #panel-sfxdesign .sfxd-menu {
+  position: absolute !important;
+  z-index: 60 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 170px !important;
+  max-width: 240px !important;
+  padding: 5px !important;
+  border: 1px solid var(--sx-line) !important;
+  border-radius: 8px !important;
+  background: #0b120d !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(60, 255, 95, 0.05) !important;
+}
+#app #panel-sfxdesign .sfxd-menu[hidden] {
+  display: none !important;
+}
+#app #panel-sfxdesign .sfxd-menu > button {
+  display: block !important;
+  width: 100% !important;
+  min-height: 24px !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 5px 8px !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: var(--sx-text) !important;
+  font: 500 10px/1.25 "Segoe UI", sans-serif !important;
+  text-align: left !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+#app #panel-sfxdesign .sfxd-menu > button:hover,
+#app #panel-sfxdesign .sfxd-menu > button:focus-visible {
+  background: #13221a !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+#app #panel-sfxdesign .sfxd-menu > button.is-danger {
+  color: #ff9b9b !important;
+}
+#app #panel-sfxdesign .sfxd-menu > button.is-danger:hover {
+  background: #2a1214 !important;
+}
+#app #panel-sfxdesign .sfxd-menu-title {
+  overflow: hidden !important;
+  padding: 3px 8px 5px !important;
+  border-bottom: 1px solid var(--sx-line-soft) !important;
+  margin-bottom: 2px !important;
+  color: var(--sx-dim) !important;
+  font: 600 9px/1.2 "Segoe UI", sans-serif !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+#app #panel-sfxdesign .sfxd-menu-label {
+  padding: 4px 8px 2px !important;
+  color: var(--sx-faint) !important;
+  font: 600 8px/1.2 "Segoe UI", sans-serif !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+#app #panel-sfxdesign .sfxd-menu-sep {
+  height: 1px !important;
+  margin: 3px 2px !important;
+  background: var(--sx-line-soft) !important;
+}
+#app #panel-sfxdesign .sfxd-menu-swatches {
+  display: flex !important;
+  gap: 6px !important;
+  padding: 4px 8px 6px !important;
+}
+#app #panel-sfxdesign .sfxd-swatch {
+  flex: 0 0 auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 2px solid transparent !important;
+  border-radius: 50% !important;
+  background: var(--sfxd-label) padding-box !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5) !important;
+  cursor: pointer !important;
+}
+#app #panel-sfxdesign .sfxd-swatch:hover,
+#app #panel-sfxdesign .sfxd-swatch:focus-visible {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  outline: none !important;
+}
+#app #panel-sfxdesign .sfxd-swatch.is-on {
+  border-color: #ffffff !important;
+}
+
+/* ---- Settings: restore removed sounds ---- */
+#app #panel-sfxdesign #sfxdRestoreDropped[hidden] {
+  display: none !important;
 }

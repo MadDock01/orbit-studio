@@ -44,6 +44,11 @@
   var PEAK_CACHE_CAP = 400;
   var ONESHOT_MAX = 2;        // seconds; the One shots / Ambience line
   var ZOOMS = [1, 2, 4, 8, 16];
+  var LABELS = [
+    { name: "Red", c: "#ff5f6d" }, { name: "Orange", c: "#ffa94d" },
+    { name: "Yellow", c: "#ffe066" }, { name: "Green", c: "#3cff5f" },
+    { name: "Blue", c: "#4dabf7" }, { name: "Purple", c: "#b197fc" }
+  ];
 
   var fsMod = null, pathMod = null, osMod = null;
   try {
@@ -258,6 +263,11 @@
       filters: document.getElementById("sfxdFilters"),
       favCount: document.getElementById("sfxdFavCount"),
       density: document.getElementById("sfxdDensity"),
+      labelFilter: document.getElementById("sfxdLabelFilter"),
+      resizer: document.getElementById("sfxdResizer"),
+      body: panel.querySelector(".sfxd-body"),
+      lockPitch: document.getElementById("sfxdLockPitch"),
+      restoreDropped: document.getElementById("sfxdRestoreDropped"),
       count: document.getElementById("sfxdCount"),
       sort: document.getElementById("sfxdSort"),
       results: document.getElementById("sfxdResults"),
@@ -307,6 +317,11 @@
     // ---------- state ----------
     var folders = readJson("folders", []);          // [{path, name}]
     var favs = readJson("favs", {});                // path -> 1
+    var labels = readJson("labels", {});            // path -> index into LABELS
+    var pins = readJson("pins", {});                // path -> time it was pinned
+    var dropped = readJson("dropped", {});          // path -> 1, removed from the index (file kept)
+    var labelFilter = read("labelFilter", "");      // "" is every label
+    var lockPitch = read("lockPitch", "0") === "1";
     var items = [];                                 // the whole index
     var view = [];                                  // what the list is showing
     var activeFolder = read("activeFolder", "");    // "" is every folder
@@ -406,7 +421,8 @@
         folders = kept;
         writeJson("folders", folders);
       }
-      items = next;
+      items = next.filter(function (it) { return !dropped[it.path]; });
+      paintDropped();
       paintFolders();
       render();
       if (!quiet) {
@@ -594,6 +610,7 @@
         if (filter === "fav" && !favs[it.path]) continue;
         if (filter === "oneshot" && !(it.duration >= 0 && it.duration <= ONESHOT_MAX)) continue;
         if (filter === "ambience" && !(it.duration > ONESHOT_MAX)) continue;
+        if (labelFilter !== "" && String(labels[it.path]) !== labelFilter) continue;
         if (query) {
           it._score = score(it, query);
           if (it._score < 0) continue;
@@ -604,6 +621,12 @@
       }
 
       out.sort(function (a, b) {
+        var pa = pins[a.path] || 0, pb = pins[b.path] || 0;
+        if (pa || pb) {
+          if (!pa) return 1;
+          if (!pb) return -1;
+          return pa - pb;       // pinned first, in the order they were pinned
+        }
         if (sortBy === "name") return a.name.localeCompare(b.name);
         if (sortBy === "size") return b.size - a.size;
         if (sortBy === "duration") {
@@ -653,7 +676,11 @@
           '<div class="sfxd-row' + (on ? " is-on" : "") + '" data-sfxd-i="' + i + '" role="option" tabindex="0" aria-selected="' + (on ? "true" : "false") + '" title="' + escapeAttr(it.path) + '">' +
           '<button type="button" class="sfxd-rowplay" data-sfxd-play="' + i + '" title="Audition this sound" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg></button>' +
           '<span class="sfxd-rowmid">' +
-          '<span class="sfxd-rowname"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M8 10v4M12 8.5v7M16 10.5v3"/></svg><b>' + escapeHtml(it.name) + "</b></span>" +
+          '<span class="sfxd-rowname">' +
+          (labels[it.path] != null && LABELS[labels[it.path]] ? '<i class="sfxd-labeldot" style="--sfxd-label:' + LABELS[labels[it.path]].c + '" title="' + LABELS[labels[it.path]].name + ' label"></i>' : "") +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M8 10v4M12 8.5v7M16 10.5v3"/></svg><b>' + escapeHtml(it.name) + "</b>" +
+          (pins[it.path] ? '<svg class="sfxd-pinmark" viewBox="0 0 24 24" aria-label="Pinned to top"><path d="M9 3.5h6l-1 5 3.5 3.5h-11L10 8.5Z"/><path d="M12 12v8.5"/></svg>' : "") +
+          "</span>" +
           '<canvas class="sfxd-rowwave" data-sfxd-wave="' + i + '"></canvas>' +
           "</span>" +
           '<span class="sfxd-rowinfo">' +
@@ -853,6 +880,241 @@
       el.density.setAttribute("aria-pressed", compact ? "true" : "false");
       paintResults();
     });
+
+    // ---------- context menu ----------
+    // Right-click (or the Menu key / Shift+F10) on a row: favourite, pin to
+    // top, colour label, and remove from the index. The same menu shell
+    // carries the colour-label filter.
+    var menu = document.createElement("div");
+    menu.className = "sfxd-menu";
+    menu.id = "sfxdMenu";
+    menu.setAttribute("role", "menu");
+    menu.hidden = true;
+    panel.appendChild(menu);
+    var menuItem = null, menuReturn = null, menuOpenedAt = 0;
+
+    function swatches(active, attr) {
+      var html = '<div class="sfxd-menu-swatches" role="group" aria-label="Color label">';
+      for (var i = 0; i < LABELS.length; i++) {
+        html += '<button type="button" role="menuitemradio" class="sfxd-swatch' + (String(active) === String(i) ? " is-on" : "") +
+          '" ' + attr + '="' + i + '" style="--sfxd-label:' + LABELS[i].c + '" aria-checked="' + (String(active) === String(i)) +
+          '" title="' + LABELS[i].name + '"></button>';
+      }
+      return html + "</div>";
+    }
+
+    function openMenu(html, x, y, returnTo) {
+      menu.innerHTML = html;
+      menu.hidden = false;
+      menuOpenedAt = Date.now();
+      menuReturn = returnTo || null;
+      var box = panel.getBoundingClientRect();
+      var w = menu.offsetWidth, h = menu.offsetHeight;
+      var left = Math.max(box.left + 4, Math.min(x, box.right - w - 4));
+      var top = Math.max(box.top + 4, Math.min(y, box.bottom - h - 4));
+      menu.style.left = (left - box.left) + "px";
+      menu.style.top = (top - box.top) + "px";
+      var first = menu.querySelector("button");
+      if (first) { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }
+    }
+
+    function closeMenu() {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      menuItem = null;
+      if (el.labelFilter) el.labelFilter.setAttribute("aria-expanded", "false");
+      if (menuReturn && menuReturn.focus) { try { menuReturn.focus(); } catch (e) { /* gone */ } }
+      menuReturn = null;
+    }
+
+    function openRowMenu(item, x, y, row) {
+      menuItem = item;
+      var fav = !!favs[item.path], pinned = !!pins[item.path];
+      openMenu(
+        '<div class="sfxd-menu-title">' + escapeHtml(item.name) + "</div>" +
+        '<button type="button" role="menuitem" data-sfxd-act="play">Preview sound</button>' +
+        '<button type="button" role="menuitem" data-sfxd-act="fav">' + (fav ? "Remove from favorites" : "Add to favorites") + "</button>" +
+        '<button type="button" role="menuitem" data-sfxd-act="pin">' + (pinned ? "Unpin from top" : "Pin to top") + "</button>" +
+        '<div class="sfxd-menu-sep"></div><div class="sfxd-menu-label">Color label</div>' +
+        swatches(labels[item.path], "data-sfxd-label") +
+        (labels[item.path] != null ? '<button type="button" role="menuitem" data-sfxd-act="unlabel">Remove color label</button>' : "") +
+        '<div class="sfxd-menu-sep"></div>' +
+        '<button type="button" role="menuitem" class="is-danger" data-sfxd-act="drop">Remove from index (keeps source file)</button>',
+        x, y, row);
+    }
+
+    function openLabelFilterMenu() {
+      var r = el.labelFilter.getBoundingClientRect();
+      el.labelFilter.setAttribute("aria-expanded", "true");
+      openMenu(
+        '<div class="sfxd-menu-label">Filter by color label</div>' +
+        swatches(labelFilter, "data-sfxd-labelfilter") +
+        '<button type="button" role="menuitem" data-sfxd-act="alllabels">' + (labelFilter === "" ? "✓ " : "") + "All labels</button>",
+        r.right - 170, r.bottom + 4, el.labelFilter);
+    }
+
+    function paintLabelFilter() {
+      if (!el.labelFilter) return;
+      var on = labelFilter !== "" && LABELS[labelFilter];
+      el.labelFilter.classList.toggle("is-on", !!on);
+      el.labelFilter.style.setProperty("--sfxd-label", on ? LABELS[labelFilter].c : "transparent");
+      el.labelFilter.title = on ? "Showing " + LABELS[labelFilter].name + " labels — click to change" : "Filter by color label";
+    }
+
+    function paintDropped() {
+      if (!el.restoreDropped) return;
+      var n = 0, k;
+      for (k in dropped) if (dropped[k]) n++;
+      el.restoreDropped.hidden = n === 0;
+      el.restoreDropped.textContent = "RESTORE " + n + " REMOVED SOUND" + (n === 1 ? "" : "S");
+    }
+
+    menu.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b) return;
+      var lf = b.getAttribute("data-sfxd-labelfilter");
+      if (lf !== null) {
+        labelFilter = labelFilter === lf ? "" : lf;
+        write("labelFilter", labelFilter);
+        paintLabelFilter(); closeMenu(); render();
+        return;
+      }
+      var act = b.getAttribute("data-sfxd-act");
+      if (act === "alllabels") {
+        labelFilter = ""; write("labelFilter", ""); paintLabelFilter(); closeMenu(); render();
+        return;
+      }
+      var it = menuItem;
+      if (!it) { closeMenu(); return; }
+      var lab = b.getAttribute("data-sfxd-label");
+      if (lab !== null) {
+        labels[it.path] = Number(lab);
+        writeJson("labels", labels);
+        closeMenu(); render();
+        return;
+      }
+      if (act === "play") { closeMenu(); select(it, true); return; }
+      if (act === "fav") {
+        if (favs[it.path]) delete favs[it.path]; else favs[it.path] = 1;
+        writeJson("favs", favs);
+      } else if (act === "pin") {
+        if (pins[it.path]) delete pins[it.path]; else pins[it.path] = Date.now();
+        writeJson("pins", pins);
+      } else if (act === "unlabel") {
+        delete labels[it.path];
+        writeJson("labels", labels);
+      } else if (act === "drop") {
+        dropped[it.path] = 1;
+        writeJson("dropped", dropped);
+        items = items.filter(function (x) { return x.path !== it.path; });
+        paintDropped();
+        paintFolders();
+        say("Removed from the search index. The source file was kept.");
+      }
+      closeMenu();
+      render();
+    });
+
+    menu.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") { ev.preventDefault(); closeMenu(); return; }
+      if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+      ev.preventDefault();
+      var list = Array.prototype.slice.call(menu.querySelectorAll("button"));
+      var i = list.indexOf(document.activeElement);
+      i = ev.key === "ArrowDown" ? (i + 1) % list.length : (i - 1 + list.length) % list.length;
+      list[i].focus();
+    });
+
+    document.addEventListener("mousedown", function (ev) {
+      if (!menu.hidden && !menu.contains(ev.target) && ev.target !== el.labelFilter) closeMenu();
+    }, true);
+    window.addEventListener("resize", closeMenu);
+    window.addEventListener("compx:sfxd-hidden", closeMenu);
+    // A scroll that lands right after opening is the one that brought the row
+    // into view, not the user moving on.
+    if (el.results) el.results.addEventListener("scroll", function () {
+      if (Date.now() - menuOpenedAt > 250) closeMenu();
+    });
+
+    if (el.results) {
+      el.results.addEventListener("contextmenu", function (ev) {
+        var row = ev.target.closest("[data-sfxd-i]");
+        if (!row) return;
+        var it = view[Number(row.getAttribute("data-sfxd-i"))];
+        if (!it) return;
+        ev.preventDefault();
+        openRowMenu(it, ev.clientX, ev.clientY, row);
+      });
+      el.results.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ContextMenu" && !(ev.shiftKey && ev.key === "F10")) return;
+        var row = ev.target.closest && ev.target.closest("[data-sfxd-i]");
+        if (!row) return;
+        var it = view[Number(row.getAttribute("data-sfxd-i"))];
+        if (!it) return;
+        ev.preventDefault();
+        var r = row.getBoundingClientRect();
+        openRowMenu(it, r.left + 24, r.bottom - 4, row);
+      });
+    }
+
+    if (el.labelFilter) el.labelFilter.addEventListener("click", function () {
+      if (!menu.hidden && el.labelFilter.getAttribute("aria-expanded") === "true") closeMenu();
+      else openLabelFilterMenu();
+    });
+
+    if (el.restoreDropped) el.restoreDropped.addEventListener("click", function () {
+      dropped = {};
+      writeJson("dropped", dropped);
+      rescan(true);
+      say("Removed sounds are back in the index.");
+    });
+
+    // ---------- library drawer width ----------
+    // Drag the bar between the folder list and the results, or use the arrow
+    // keys on it. The width is remembered.
+    function setLibWidth(px) {
+      if (!el.body) return;
+      var max = Math.max(160, el.body.clientWidth * 0.55);
+      var w = Math.round(Math.max(120, Math.min(max, px)));
+      el.body.style.setProperty("--sfxd-lib-w", w + "px");
+      if (el.resizer) el.resizer.setAttribute("aria-valuenow", String(w));
+      return w;
+    }
+    var savedLibW = Number(read("libWidth", 0));
+    if (savedLibW) setLibWidth(savedLibW);
+    if (el.resizer && el.body) {
+      el.resizer.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        var lib = el.body.querySelector(".sfxd-lib");
+        var startX = ev.clientX, startW = lib ? lib.getBoundingClientRect().width : 180;
+        el.resizer.classList.add("is-drag");
+        try { el.resizer.setPointerCapture(ev.pointerId); } catch (e) { /* old CEP */ }
+        function move(e) { setLibWidth(startW + e.clientX - startX); }
+        function up() {
+          el.resizer.classList.remove("is-drag");
+          el.resizer.removeEventListener("pointermove", move);
+          el.resizer.removeEventListener("pointerup", up);
+          el.resizer.removeEventListener("pointercancel", up);
+          var w = lib ? Math.round(lib.getBoundingClientRect().width) : 0;
+          if (w) write("libWidth", w);
+          lanePeakCache = {}; queueRowWaves();
+        }
+        el.resizer.addEventListener("pointermove", move);
+        el.resizer.addEventListener("pointerup", up);
+        el.resizer.addEventListener("pointercancel", up);
+      });
+      el.resizer.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        ev.preventDefault();
+        var lib = el.body.querySelector(".sfxd-lib");
+        var w = lib ? lib.getBoundingClientRect().width : 180;
+        write("libWidth", setLibWidth(w + (ev.key === "ArrowRight" ? 1 : -1) * (ev.shiftKey ? 40 : 10)));
+      });
+      el.resizer.addEventListener("dblclick", function () {
+        el.body.style.removeProperty("--sfxd-lib-w");
+        write("libWidth", 0);
+      });
+    }
 
     // ---------- selection ----------
     function select(item, autoPlay) {
@@ -1108,7 +1370,7 @@
       var bits = [];
       if (fx.gain) bits.push((fx.gain > 0 ? "+" : "") + fx.gain.toFixed(1) + " dB");
       if (fx.pitch) bits.push((fx.pitch > 0 ? "+" : "") + fx.pitch + " st");
-      if (Math.abs(fx.speed - 1) > 0.001) bits.push(fx.speed.toFixed(2) + "×");
+      if (Math.abs(fx.speed - 1) > 0.001) bits.push(fx.speed.toFixed(2) + "×" + (lockPitch ? " (pitch locked)" : ""));
       if (el.fxState) el.fxState.textContent = bits.length ? bits.join(" · ") : "Effects";
       if (el.fxBtn) el.fxBtn.classList.toggle("is-active", bits.length > 0);
     }
@@ -1136,6 +1398,20 @@
       readFx();
       say("Effects back to unity.");
     });
+    function paintLockPitch() {
+      if (!el.lockPitch) return;
+      el.lockPitch.classList.toggle("is-on", lockPitch);
+      el.lockPitch.setAttribute("aria-pressed", lockPitch ? "true" : "false");
+      el.lockPitch.title = lockPitch ? "Unlock pitch from speed" : "Lock pitch while changing speed";
+    }
+    if (el.lockPitch) el.lockPitch.addEventListener("click", function () {
+      lockPitch = !lockPitch;
+      write("lockPitch", lockPitch ? "1" : "0");
+      paintLockPitch();
+      readFx();
+      say(lockPitch ? "Pitch locked: speed now changes only the length." : "Pitch follows speed again, like tape.");
+    });
+
     if (el.fxBtn) el.fxBtn.addEventListener("click", function () {
       var open = el.fxRack.hidden;
       el.fxRack.hidden = !open;
@@ -1219,7 +1495,7 @@
     function renderSegment(done) {
       var c = ctx();
       if (!c || !buffer) { done(null); return; }
-      var key = [selA.toFixed(5), selB.toFixed(5), reversed ? 1 : 0, fx.gain, fx.pitch, fx.speed].join("|");
+      var key = [selA.toFixed(5), selB.toFixed(5), reversed ? 1 : 0, fx.gain, fx.pitch, fx.speed, lockPitch ? 1 : 0].join("|");
       if (rendered && renderKey === key) { done(rendered); return; }
 
       var sliced = segmentSlice(c);
@@ -1233,6 +1509,13 @@
 
       function applySpeed(buf) {
         if (Math.abs(fx.speed - 1) < 0.002 && linear === 1) { finish(buf); return; }
+        if (lockPitch && Math.abs(fx.speed - 1) >= 0.002) {
+          // Pitch locked: change only the length, then apply the gain.
+          var stretched = olaStretch(buf, 1 / fx.speed, c);
+          if (linear === 1) finish(stretched);
+          else renderRate(stretched, 1, linear, finish);
+          return;
+        }
         renderRate(buf, fx.speed, linear, finish);
       }
 
@@ -1472,6 +1755,9 @@
     }
     if (el.host && window.CompXHostBridge) el.host.classList.add("is-live");
 
+    paintLockPitch();
+    paintLabelFilter();
+    paintDropped();
     readFx();
     paintFilters();
     paintFolders();
