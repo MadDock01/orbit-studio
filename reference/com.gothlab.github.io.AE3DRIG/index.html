@@ -122,11 +122,18 @@
   <script>
     var csInterface = new CSInterface();
 
+    // Host functions live under AE3DRIG_* so they cannot collide with other
+    // panels (After Effects runs every panel in one ExtendScript engine).
+    // The extension path goes over as a JSON string: a folder with an
+    // apostrophe in it (e.g. "Sonjoy's") used to break every button.
     function runJSX(fnName) {
       var path = csInterface.getSystemPath(SystemPath.EXTENSION);
-      path = "'" + path + "'";
-      csInterface.evalScript(fnName + "(" + path + ");");
-      document.activeElement.blur();
+      csInterface.evalScript("AE3DRIG_" + fnName + "(" + JSON.stringify(path) + ");", function (res) {
+        if (res === "EvalScript error.") {
+          alert("AE 3D Rig: the host script is not loaded. Restart After Effects, or reinstall the panel.");
+        }
+      });
+      if (document.activeElement) document.activeElement.blur();
     }
 
     window.addEventListener('load', () => {
