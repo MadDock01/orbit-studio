@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ExtensionManifest
+        ExtensionBundleId="com.gothlab.github.io.AE3DRIG"
+        ExtensionBundleVersion="1.0.0"
+        Version="7.0"
+        ExtensionBundleName="AE3DRIG"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ExtensionList>
+        <Extension Id="com.gothlab.github.io.AE3DRIG" Version="1.0.0" />
+    </ExtensionList>
+    <ExecutionEnvironment>
+        <HostList>
+            <Host Name="AEFT" Version="[13.0,99.9]" />
+        </HostList>
+        <LocaleList>
+            <Locale Code="All" />
+        </LocaleList>
+        <RequiredRuntimeList>
+            <RequiredRuntime Name="CSXS" Version="[6.0,99.9]" />
+        </RequiredRuntimeList>
+    </ExecutionEnvironment>
+    <DispatchInfoList>
+        <Extension Id="com.gothlab.github.io.AE3DRIG">
+            <DispatchInfo>
+                <Resources>
+                    <MainPath>./index.html</MainPath>
+                    <ScriptPath>./Host.jsx</ScriptPath>
+                    <CEFCommandLine/>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>true</AutoVisible>
+                </Lifecycle>
+                <UI>
+                    <Type>Panel</Type>
+                    <Menu>AE3DRIG</Menu>
+                    <Geometry>
+                        <Size>
+                            <Height>566</Height>
+                            <Width>260</Width>
+                        </Size>
+                    </Geometry>
+                    <Icons />
+                </UI>
+            </DispatchInfo>
+        </Extension>
+    </DispatchInfoList>
+</ExtensionManifest>
