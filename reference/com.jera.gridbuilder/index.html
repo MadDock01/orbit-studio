@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Grid Builder</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .tab-container {
+        display: flex;
+        border-bottom: 1px solid #444;
+        margin-bottom: 15px;
+      }
+      .tab-link {
+        background-color: transparent;
+        color: #aaa;
+        border: none;
+        cursor: pointer;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: bold;
+        flex: 1;
+        outline: none;
+        transition: 0.2s;
+      }
+      .tab-link:hover {
+        background-color: #333;
+        color: #fff;
+      }
+      .tab-link.active {
+        background-color: #1e1e1e;
+        color: #e57200;
+        border-bottom: 2px solid #e57200;
+      }
+      .tab-content {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="tab-container">
+        <button class="tab-link active" onclick="openTab(event, 'GridBuilder')">
+          Grid Builder
+        </button>
+        <button class="tab-link" onclick="openTab(event, 'ProximityEngine')">
+          Proximity
+        </button>
+      </div>
+
+      <div id="GridBuilder" class="tab-content" style="display: block">
+        <div class="row">
+          <label>Mode:</label>
+          <select id="mode">
+            <option value="0">Rectangular</option>
+            <option value="1">Radial</option>
+            <option value="3">Path</option>
+            <option value="2">Spherical</option>
+            <option value="4">Morph</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="btnCreate" disabled style="opacity: 0.5" class="bc">
+            Checking License...
+          </button>
+        </div>
+
+        <hr />
+
+        <div class="section-title">Grid Control</div>
+        <div class="row">
+          <select id="gridSelect">
+            <option value="">Loading...</option>
+          </select>
+          <button id="btnDuplicateGrid" style="width: auto; padding: 4px 8px">
+            <img
+              src="src/content_copy_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+              class="btn-icon"
+            />
+          </button>
+          <button
+            id="btnRemoveGrid"
+            style="
+              width: auto;
+              padding: 4px 8px;
+              background: #6b2222;
+              border-color: #8c2a2a;
+            "
+          >
+            <img
+              src="src/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+              class="btn-icon"
+            />
+          </button>
+          <button id="btnRefreshGrids" style="width: auto; padding: 4px 8px">
+            <img
+              src="src/refresh_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+              class="btn-icon"
+            />
+          </button>
+        </div>
+        <hr />
+        <div
+          class="row"
+          style="
+            margin-top: 8px;
+            justify-content: flex-start;
+            gap: 8px;
+            align-items: center;
+          "
+        >
+          <span style="font-size: 11px; color: #ccc; white-space: nowrap"
+            >Change to:</span
+          >
+          <select id="updateMode" style="flex: 1">
+            <option value="0">Rectangular</option>
+            <option value="1">Radial</option>
+            <option value="3">Path</option>
+            <option value="2">Spherical</option>
+            <option value="4">Morph</option>
+          </select>
+          <button
+            id="btnChangeMode"
+            style="width: auto; padding: 4px 12px; margin: 0"
+          >
+            Change
+          </button>
+        </div>
+        <hr />
+        <ul id="layerList" class="layer-list"></ul>
+        <div style="height: 10px; display: flex; flex-direction: row"></div>
+        <div style="display: flex; flex-direction: row; gap: 10px">
+          <button id="btnAdd">Add Layer to Grid</button>
+          <button id="btnReplace">Replace</button>
+        </div>
+      </div>
+
+      <div id="ProximityEngine" class="tab-content" style="display: none">
+        <div class="section-title">Target Grid</div>
+        <div class="row">
+          <select id="proxTargetGrid" style="flex: 1">
+            <option value="">Select Grid...</option>
+          </select>
+          <button
+            id="btnRefreshProxGrids"
+            style="width: auto; padding: 4px 8px"
+          >
+            <img
+              src="src/refresh_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+              class="btn-icon"
+            />
+          </button>
+        </div>
+        <button
+          id="btnAddProxGroup"
+          class="bc"
+          style="margin-top: 0px; opacity: 0.5"
+        >
+          + Add Proximity Group
+        </button>
+
+        <hr />
+
+        <div id="proxGroupSection" style="display: none">
+          <div class="section-title">Active Proximity</div>
+          <div class="row">
+            <select id="proxActiveGroup" style="flex: 1">
+              <option value="">Proximity 1</option>
+            </select>
+            <button
+              id="btnRemoveProxGroup"
+              title="Delete Entire Proximity Group"
+              style="
+                width: auto;
+                padding: 4px 8px;
+                background: #6b2222;
+                border-color: #8c2a2a;
+              "
+            >
+              <img
+                src="src/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                class="btn-icon"
+              />
+            </button>
+          </div>
+
+          <ul
+            id="proxNodeList"
+            class="layer-list"
+            style="margin-top: 8px; margin-bottom: 8px"
+          ></ul>
+
+          <div style="display: flex; flex-direction: row; gap: 10px">
+            <button id="btnAddProxNode">Add Effector</button>
+            <button id="btnLinkProperty" disabled style="opacity: 0.5">
+              Link Custom Properties
+            </button>
+          </div>
+
+          <hr />
+        </div>
+
+        <div id="customMapSection" style="display: none">
+          <div class="section-title">Manage Custom Maps</div>
+          <div class="row">
+            <select id="proxCustomMaps" style="flex: 1">
+              <option value="">Custom Map 1 (Slider)</option>
+            </select>
+            <button
+              id="btnRemoveCustomMap"
+              style="
+                width: auto;
+                padding: 4px 8px;
+                background: #6b2222;
+                border-color: #8c2a2a;
+              "
+            >
+              <img
+                src="src/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"
+                class="btn-icon"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+      }
+    </script>
+
+    <script src="host.js"></script>
+  </body>
+</html>
